@@ -192,7 +192,6 @@ where  Id=@Id  ";
             }
         }
 
-
         public async Task<ResultVM> InsertDetails(CeilingDetailVM ObjDetail, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };

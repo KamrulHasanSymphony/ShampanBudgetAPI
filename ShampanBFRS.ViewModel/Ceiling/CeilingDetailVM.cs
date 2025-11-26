@@ -33,6 +33,8 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public decimal? LineTotal { get; set; }
         public string? IsPost { get; set; }
         public string? Serial { get; set; }
+        public string? COACode { get; set; }
+        public string? COAName { get; set; }
 
     }
 }
