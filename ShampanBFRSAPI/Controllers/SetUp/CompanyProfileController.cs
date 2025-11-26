@@ -97,7 +97,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             try
             {
                  _service = new CompanyProfileService();
-                resultVM = await _service.List(new[] { "H.Id" }, new[] { vm.Id}, null);
+                resultVM = await _service.List(new[] { "H.CompanyID" }, new[] { vm.Id}, null);
                 return resultVM;
             }
             catch (Exception ex)

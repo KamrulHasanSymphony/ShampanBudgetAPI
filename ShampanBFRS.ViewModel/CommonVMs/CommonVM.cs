@@ -27,7 +27,7 @@
         public string? YearId { get; set; }
         public string? BudgetSetNo { get; set; }
         public string? BudgetType { get; set; }
-
+        public string? TransactionType { get; set; }
 
     }
 

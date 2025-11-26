@@ -291,7 +291,10 @@ namespace ShampanBFRS.Service.Ceiling
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
-                result = await _repo.GetGridData(options, conn, transaction);
+                string[] conditionalFields = new[] { "c.CreatedBy", "c.TransactionType" };
+                string[] conditionalValues = new[] { options.vm.UserId, options.vm.TransactionType };
+
+                result = await _repo.GetGridData(options, conditionalFields, conditionalValues, conn, transaction);
 
                 return result;
             }

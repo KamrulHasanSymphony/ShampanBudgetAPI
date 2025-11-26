@@ -10,7 +10,7 @@ namespace ShampanBFRS.Service.SetUp
 {
     public class FiscalYearService
     {
-        
+
         public async Task<ResultVM> Insert(FiscalYearVM fiscalYear)
         {
             string CodeGroup = "FiscalYear";
@@ -171,7 +171,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 transaction = conn.BeginTransaction();
 
-           result = await _repo.Delete(vm, conn, transaction);
+                result = await _repo.Delete(vm, conn, transaction);
 
                 if (isNewConnection)
                 {
@@ -259,7 +259,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 transaction = conn.BeginTransaction();
 
-                result = await _repo.ListAsDataTable(conditionalFields, conditionalValues, vm,conn, transaction);
+                result = await _repo.ListAsDataTable(conditionalFields, conditionalValues, vm, conn, transaction);
 
                 if (isNewConnection)
                 {
@@ -303,7 +303,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 transaction = conn.BeginTransaction();
 
-         result = await _repo.Dropdown(conn, transaction);
+                result = await _repo.Dropdown(conn, transaction);
 
                 if (isNewConnection)
                 {
@@ -334,7 +334,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

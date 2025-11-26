@@ -440,7 +440,9 @@ SELECT
     ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn,
     ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
     ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastModifiedOn,
-    ISNULL(H.BIN, '') AS BIN
+    ISNULL(H.BIN, '') AS BIN,
+    ISNULL(FORMAT(H.FYearStart, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS FYearStart,
+    ISNULL(FORMAT(H.FYearEnd, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS FYearEnd
 
 FROM 
     CompanyInfo AS H
@@ -451,7 +453,7 @@ WHERE
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                 {
-                    query += " AND H.Id = @Id ";
+                    query += " AND H.CompanyID = @CompanyID ";
                 }
 
                 // Apply additional conditions
@@ -464,7 +466,7 @@ WHERE
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                 {
-                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+                    objComm.SelectCommand.Parameters.AddWithValue("@CompanyID", vm.Id);
                 }
 
                 objComm.Fill(dataTable);
@@ -492,6 +494,8 @@ WHERE
                     LastModifiedBy = row["LastModifiedBy"].ToString(),
                     LastModifiedOn = row["LastModifiedOn"].ToString(),
                     BIN = row["BIN"].ToString(),
+                    FYearStart = row["FYearStart"].ToString(),
+                    FYearEnd = row["FYearEnd"].ToString(),
 
                 }).ToList();
 

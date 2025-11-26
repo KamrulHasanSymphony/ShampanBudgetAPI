@@ -3,6 +3,7 @@ using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.QuestionVM;
+using ShampanBFRS.ViewModel.Utility;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -259,7 +260,7 @@ where  Id=@Id  ";
             }
         }
 
-        public async Task<ResultVM> GetGridData(GridOptions options, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> xxxxGetGridData(GridOptions options, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
@@ -309,7 +310,7 @@ where  Id=@Id  ";
                 ) AS a
                 WHERE rowindex > @skip AND (@take=0 OR rowindex <= @take)";
 
-                data = KendoGrid<CeilingVM>.GetGridDataQuestions_CMD(options, sqlQuery, "H.Id");
+                data = KendoGrid<CeilingVM>.GetGridDataQuestions_CMD(options, sqlQuery, "c.Id");
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
@@ -323,6 +324,90 @@ where  Id=@Id  ";
                 result.Message = ex.Message;
                 result.ExMessage = ex.ToString();
                 return result;
+            }
+        }
+
+        public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
+        {
+            bool isNewConnection = false;
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                var data = new GridEntity<CeilingVM>();
+
+                // Define your SQL query string
+                string sqlQuery = $@"
+                    -- Count query
+                    SELECT COUNT(DISTINCT c.Id) AS totalcount
+                FROM Ceilings c
+                WHERE c.IsArchive != 1
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingVM>.FilterCondition(options.filter) + ")" : "");
+
+                // Apply additional conditions
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                sqlQuery += @"
+            -- Data query with pagination and sorting
+            SELECT *
+                FROM (
+                    SELECT ROW_NUMBER() OVER(ORDER BY " +
+                        (options.sort.Count > 0
+                            ? "c." + options.sort[0].field + " " + options.sort[0].dir
+                            : "c.Id DESC") + @") AS rowindex,
+                           ISNULL(c.Id,0) AS Id
+                           ,ISNULL(c.CompanyId,0) AS CompanyId
+                           ,ISNULL(c.BranchId,0) AS BranchId
+                           ,ISNULL(c.GLFiscalYearId,0) AS FiscalYearId
+                           ,ISNULL(c.BudgetSetNo,0) AS BudgetSetNo
+                           ,ISNULL(c.BudgetType,'') AS BudgetType
+                           ,ISNULL(c.Code,0) AS Code
+                           ,ISNULL(FORMAT(c.TransactionDate,'yyyy-MM-dd HH:mm'),'') AS TransactionDate
+                           ,ISNULL(c.IsPost ,'') AS IsPost
+                           ,ISNULL(c.Remarks,'') AS Remarks
+                           ,ISNULL(c.IsActive ,0) AS IsActive
+                           ,ISNULL(c.IsArchive,0) AS IsArchive
+                           ,ISNULL(c.CreatedBy,'') AS CreatedBy
+                           ,ISNULL(FORMAT(c.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn
+                           ,ISNULL(c.TransactionType,'') AS TransactionType
+                             FROM Ceilings c
+                    WHERE c.IsArchive != 1
+
+            -- Add the filter condition
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingVM>.FilterCondition(options.filter) + ")" : "");
+
+                // Apply additional conditions
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                sqlQuery += @"
+            ) AS a
+            WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+        ";
+
+                data = KendoGrid<CeilingVM>.GetTransactionalGridData_CMD(options, sqlQuery, "CO.Id", conditionalFields, conditionalValues);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = data;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
             }
         }
 
