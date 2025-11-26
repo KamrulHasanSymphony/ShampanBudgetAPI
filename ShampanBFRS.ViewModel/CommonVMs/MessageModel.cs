@@ -6,6 +6,7 @@
         public static string Fail { get; set; } = "Fail";
 
         public static string RetrievedSuccess { get; set; } = "Grid data retrieved successfully.";
+        public static string DBConnFail { get; set; } = "Database connection failed!";
 
         public static string InsertSuccess { get; set; } = "Data Saved Successfully";
         public static string UpdateSuccess { get; set; } = "Data Updated Successfully";

@@ -18,8 +18,8 @@ namespace ShampanBFRS.Repository.Ceiling
 
             try
             {
-                if (conn == null) throw new Exception("Database connection failed!");
-                if (transaction == null) throw new Exception("Database connection failed!");
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string sqlText = "";
                 int count = 0;
@@ -119,8 +119,8 @@ namespace ShampanBFRS.Repository.Ceiling
 
             try
             {
-                if (conn == null) throw new Exception("Database connection failed!");
-                if (transaction == null) throw new Exception("Database connection failed!");
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string sqlText = "";
                 int count = 0;
@@ -198,8 +198,8 @@ where  Id=@Id  ";
 
             try
             {
-                if (conn == null) throw new Exception("Database connection failed!");
-                if (transaction == null) throw new Exception("Database connection failed!");
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string sqlText = "";
 
@@ -265,8 +265,8 @@ where  Id=@Id  ";
 
             try
             {
-                if (conn == null) throw new Exception("Database connection failed!");
-                if (transaction == null) throw new Exception("Database connection failed!");
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 var data = new GridEntity<CeilingVM>();
 
@@ -334,8 +334,8 @@ where  Id=@Id  ";
 
             try
             {
-                if (conn == null) throw new Exception("Database connection failed!");
-                if (transaction == null) throw new Exception("Database connection failed!");
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string query = @"
                 SELECT 
@@ -427,8 +427,8 @@ WHERE 1=1 ";
 
             try
             {
-                if (conn == null) throw new Exception("Database connection failed!");
-                if (transaction == null) throw new Exception("Database connection failed!");
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string query = $@"
                 delete CeilingDetails where GLCeilingId=@GLCeilingId";
