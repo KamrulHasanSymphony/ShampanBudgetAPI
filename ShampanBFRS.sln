@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36109.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShampanBFRSAPI", "ShampanBFRSAPI\ShampanBFRSAPI.csproj", "{21765CAD-41BD-F91D-3F10-2823A463191D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShampanBFRS.ViewModel", "ShampanBFRS.ViewModel\ShampanBFRS.ViewModel.csproj", "{C7BD7737-4876-9EEC-DF2F-2C6D4ACD26AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShampanBFRS.Repository", "ShampanBFRS.Repository\ShampanBFRS.Repository.csproj", "{49DE2F96-AE00-548C-9B38-BC395303B906}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShampanBFRS.Service", "ShampanBFRS.Service\ShampanBFRS.Service.csproj", "{16DA8180-F36A-7D67-DD52-35EA8E2C27D6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21765CAD-41BD-F91D-3F10-2823A463191D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21765CAD-41BD-F91D-3F10-2823A463191D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21765CAD-41BD-F91D-3F10-2823A463191D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21765CAD-41BD-F91D-3F10-2823A463191D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7BD7737-4876-9EEC-DF2F-2C6D4ACD26AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7BD7737-4876-9EEC-DF2F-2C6D4ACD26AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7BD7737-4876-9EEC-DF2F-2C6D4ACD26AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7BD7737-4876-9EEC-DF2F-2C6D4ACD26AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49DE2F96-AE00-548C-9B38-BC395303B906}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49DE2F96-AE00-548C-9B38-BC395303B906}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49DE2F96-AE00-548C-9B38-BC395303B906}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49DE2F96-AE00-548C-9B38-BC395303B906}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16DA8180-F36A-7D67-DD52-35EA8E2C27D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16DA8180-F36A-7D67-DD52-35EA8E2C27D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16DA8180-F36A-7D67-DD52-35EA8E2C27D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16DA8180-F36A-7D67-DD52-35EA8E2C27D6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0332051-DDC3-470E-8153-01EC66F6EECD}
+	EndGlobalSection
+EndGlobal
