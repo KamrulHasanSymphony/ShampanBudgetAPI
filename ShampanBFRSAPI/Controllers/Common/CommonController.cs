@@ -143,7 +143,7 @@ namespace ShampanBFRSAPI.Controllers.Common
             try
             {
                 CommonService _commonService = new CommonService();
-                resultVM = await _commonService.GetFiscalYearComboBox(new[] { "FiscalYearId" }, new[] { "" }, null);
+                resultVM = await _commonService.GetFiscalYearComboBox(new[] { "Id" }, new[] { "" }, null);
                 return resultVM;
             }
             catch (Exception ex)

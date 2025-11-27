@@ -1856,7 +1856,7 @@ WHERE P.IsActive = 1 ";
 
                 string query = @"
 SELECT 
-[FiscalYearId] as Id
+[Id] as Id
 ,[Year] as [Name]
  FROM FiscalYears
 WHERE 
