@@ -35,6 +35,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public string? Serial { get; set; }
         public string? COACode { get; set; }
         public string? COAName { get; set; }
+        public decimal? InputTotal { get; set; }
 
     }
 }
