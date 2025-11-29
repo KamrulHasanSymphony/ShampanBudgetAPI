@@ -227,7 +227,6 @@ where  Id=@Id  ";
 ,@Amount
 ,@IsPost
 
-
 )SELECT SCOPE_IDENTITY() ";
 
                 SqlCommand commands = new SqlCommand(sqlText, conn, transaction);
@@ -242,7 +241,6 @@ where  Id=@Id  ";
                 commands.Parameters.Add("@IsPost", SqlDbType.NVarChar).Value = "N";
 
                 ObjDetail.Id = Convert.ToInt32(commands.ExecuteScalar());
-
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.InsertSuccess;

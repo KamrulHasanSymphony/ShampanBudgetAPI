@@ -216,7 +216,8 @@ namespace ShampanBFRS.Service.Ceiling
                     {
                         dVM = new CeilingDetailVM();
                         dVM.GLFiscalYearDetailId = item.Id;
-                        dVM.AccountId = detailVM.AccountId;
+                        dVM.AccountId = detailVM.AccountId;                        
+                        dVM.InputTotal = detailVM.InputTotal;
                         dVM.PeriodSl = item.PeriodSl;
                         dVM.PeriodStart = item.MonthStart;
                         dVM.PeriodEnd = item.MonthEnd;
