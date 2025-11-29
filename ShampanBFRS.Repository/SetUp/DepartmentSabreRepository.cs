@@ -191,8 +191,8 @@ namespace ShampanBFRS.Repository.SetUp
                 var list = dt.AsEnumerable().Select(row => new DepartmentSabreVM
                 {
                     Id = row.Field<int>("Id"),
-                    DepartmentId = row.Field<int>("Name"),
-                    SabreId = row.Field<int>("Description")                    
+                    DepartmentId = row.Field<int>("DepartmentId"),
+                    SabreId = row.Field<int>("SabreId")                    
                 }).ToList();
 
                 result.Status = "Success";
@@ -302,7 +302,6 @@ namespace ShampanBFRS.Repository.SetUp
                 -- Count
                 SELECT COUNT(DISTINCT H.Id) AS totalcount
                 FROM DepartmentSabres H
-                WHERE H.IsArchive != 1
                 " + (options.filter.Filters.Count > 0
                         ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")"
                         : "") + @"
@@ -319,7 +318,6 @@ namespace ShampanBFRS.Repository.SetUp
                            ISNULL(H.SabreId,'') AS SabreId
                            
                     FROM DepartmentSabres H
-                    WHERE H.IsArchive != 1
                     " + (options.filter.Filters.Count > 0
                             ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")"
                             : "") + @"
