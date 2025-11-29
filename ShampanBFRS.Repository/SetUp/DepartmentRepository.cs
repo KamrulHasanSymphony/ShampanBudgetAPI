@@ -1,22 +1,23 @@
-﻿using ShampanBFRS.Repository.Common;
-using ShampanBFRS.ViewModel.CommonVMs;
-using ShampanBFRS.ViewModel.KendoCommon;
-using ShampanBFRS.ViewModel.QuestionVM;
-using ShampanBFRS.ViewModel.SetUpVMs;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShampanBFRS.Repository.Common;
+using ShampanBFRS.ViewModel.CommonVMs;
+using ShampanBFRS.ViewModel.SetUpVMs;
+using ShampanBFRS.ViewModel.Utility;
+using ShampanBFRS.ViewModel.KendoCommon;
+using ShampanBFRS.ViewModel.QuestionVM;
 
-namespace ShampanBFRS.Repository.Question
+namespace ShampanBFRS.Repository.SetUp
 {
-    public class ExamineeRepository : CommonRepository
+    public class DepartmentRepository : CommonRepository
     {
         // Insert Method
-        public async Task<ResultVM> Insert(ExamineeVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Insert(DepartmentVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
@@ -26,34 +27,33 @@ namespace ShampanBFRS.Repository.Question
                 if (transaction == null) transaction = conn.BeginTransaction();
 
                 string query = @"
-                INSERT INTO Examinees
+                INSERT INTO Departments
                 (
-                    ExamineeGroupId, Name, MobileNo, LogInId, Password, IsChangePassword, IsActive, IsArchive, CreatedBy, CreatedFrom, CreatedAt
+                    Name, Description, Reference, Remarks, IsActive, IsArchive, CreatedBy, CreatedFrom,CreatedOn
                 )
                 VALUES
                 (
-                    @ExamineeGroupId, @Name, @MobileNo, @LogInId, @Password, @IsChangePassword, @IsActive, @IsArchive, @CreatedBy, @CreatedFrom, GETDATE()
+                    @Name, @Description, @Reference, @Remarks, @IsActive, @IsArchive, @CreatedBy, @CreatedFrom,GETDate()
                 );
                 SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@ExamineeGroupId", vm.ExamineeGroupId);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@MobileNo", vm.MobileNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LogInId", vm.LogInId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Password", vm.Password ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsChangePassword", vm.IsChangePassword);
+                    cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Reference", vm.Reference ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
 
-                    vm.Id = Convert.ToInt64(cmd.ExecuteScalar());
+                    vm.Id =Convert.ToInt32(cmd.ExecuteScalar());
+
                 }
 
                 result.Status = "Success";
-                result.Message = "Examinee inserted successfully.";
+                result.Message = "Department inserted successfully.";
                 result.Id = vm.Id.ToString();
                 result.DataVM = vm;
 
@@ -68,7 +68,7 @@ namespace ShampanBFRS.Repository.Question
         }
 
         // Update Method
-        public async Task<ResultVM> Update(ExamineeVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Update(DepartmentVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", Id = vm.Id.ToString(), DataVM = vm };
 
@@ -78,29 +78,25 @@ namespace ShampanBFRS.Repository.Question
                 if (transaction == null) transaction = conn.BeginTransaction();
 
                 string query = @"
-                UPDATE Examinees
+                UPDATE Departments
                 SET 
-                    ExamineeGroupId = @ExamineeGroupId,
                     Name = @Name,
-                    MobileNo = @MobileNo,
-                    LogInId = @LogInId,
-                    Password = @Password,
-                    IsChangePassword = @IsChangePassword,
+                    Description = @Description,
+                    Reference = @Reference,
+                    Remarks = @Remarks,
                     IsActive = @IsActive,
                     LastUpdateBy = @LastUpdateBy,
                     LastUpdateFrom = @LastUpdateFrom,
-                    LastUpdateAt = GETDATE()
+                    LastUpdateOn = GETDATE()
                 WHERE Id = @Id";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
-                    cmd.Parameters.AddWithValue("@ExamineeGroupId", vm.ExamineeGroupId);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@MobileNo", vm.MobileNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LogInId", vm.LogInId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Password", vm.Password ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsChangePassword", vm.IsChangePassword);
+                    cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Reference", vm.Reference ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
@@ -109,7 +105,7 @@ namespace ShampanBFRS.Repository.Question
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "Examinee updated successfully.";
+                        result.Message = "Department updated successfully.";
                     }
                     else
                     {
@@ -143,8 +139,8 @@ namespace ShampanBFRS.Repository.Question
                 UPDATE Examinees
                 SET IsArchive = 1, IsActive = 0,
                     LastUpdateBy = @LastUpdateBy,
-                    LastUpdateFrom = @LastUpdateFrom,
-                    LastUpdateAt = GETDATE()
+                    LastUpdateFrom = @LastUpdateFrom
+     
                 WHERE Id IN ({inClause})";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
@@ -160,7 +156,7 @@ namespace ShampanBFRS.Repository.Question
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "Examinee deleted successfully.";
+                        result.Message = "Department deleted successfully.";
                     }
                     else
                     {
@@ -192,19 +188,16 @@ namespace ShampanBFRS.Repository.Question
                 string query = @"
                 SELECT 
                     ISNULL(M.Id,0) AS Id,
-                    ISNULL(M.ExamineeGroupId, 0) AS ExamineeGroupId,
                     ISNULL(M.Name, '') AS Name,
-                    ISNULL(M.MobileNo, '') AS MobileNo,
-                    ISNULL(M.LogInId, '') AS LogInId,
-                    ISNULL(M.Password, '') AS Password,
-                    ISNULL(M.IsChangePassword, 0) AS IsChangePassword,
+                    ISNULL(M.Description, '') AS Description,
+                    ISNULL(M.Reference, '') AS Reference,
+                    ISNULL(M.Remarks, '') AS Remarks,                   
                     ISNULL(M.IsActive, 0) AS IsActive,
                     ISNULL(M.IsArchive, 0) AS IsArchive,
                     ISNULL(M.CreatedBy, '') AS CreatedBy,
-                    ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
-                    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-                    ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
-                FROM Examinees M
+                    ISNULL(FORMAT(M.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn,
+                    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy
+                FROM Departments M
                 WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
@@ -220,25 +213,23 @@ namespace ShampanBFRS.Repository.Question
 
                 adapter.Fill(dt);
 
-                var list = dt.AsEnumerable().Select(row => new ExamineeVM
+                var list = dt.AsEnumerable().Select(row => new DepartmentVM
                 {
-                    Id = row.Field<long>("Id"),
-                    ExamineeGroupId = row.Field<int>("ExamineeGroupId"),
+                    Id = row.Field<int>("Id"),
                     Name = row.Field<string>("Name"),
-                    MobileNo = row.Field<string>("MobileNo"),
-                    LogInId = row.Field<string>("LogInId"),
-                    Password = row.Field<string>("Password"),
-                    IsChangePassword = row.Field<bool>("IsChangePassword"),
+                    Description = row.Field<string>("Description"),
+                    Reference = row.Field<string>("Reference"),
+                    Remarks = row.Field<string>("Remarks"),
                     IsActive = row.Field<bool>("IsActive"),
                     IsArchive = row.Field<bool>("IsArchive"),
                     CreatedBy = row.Field<string>("CreatedBy"),
-                    CreatedAt = row.Field<string>("CreatedAt"),
+                    CreatedOn = row.Field<string>("CreatedOn"),
                     LastUpdateBy = row.Field<string>("LastUpdateBy"),
-                    LastUpdateAt = row.Field<string>("LastUpdateAt")
+                   // LastUpdateAt = row.Field<string>("LastUpdateOn")
                 }).ToList();
 
                 result.Status = "Success";
-                result.Message = "Examinees retrieved successfully.";
+                result.Message = "Department retrieved successfully.";
                 result.DataVM = list;
 
                 return result;
@@ -263,8 +254,8 @@ namespace ShampanBFRS.Repository.Question
                 if (conn == null) throw new Exception("Database connection failed!");
 
                 string query = @"
-                SELECT Id, ExamineeGroupId, Name, MobileNo, LogInId, IsChangePassword, IsActive, IsArchive, CreatedBy, CreatedAt, LastUpdateBy, LastUpdateAt
-                FROM Examinees
+                SELECT Id,Name, Description, Reference, Remarks, IsActive, IsArchive, CreatedBy, CreatedAt, LastUpdateBy, LastUpdateAt
+                FROM Departments
                 WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
@@ -281,7 +272,7 @@ namespace ShampanBFRS.Repository.Question
                 adapter.Fill(dt);
 
                 result.Status = "Success";
-                result.Message = "Examinees DataTable retrieved successfully.";
+                result.Message = "Department DataTable retrieved successfully.";
                 result.DataVM = dt;
                 return result;
             }
@@ -305,7 +296,7 @@ namespace ShampanBFRS.Repository.Question
 
                 string query = @"
                 SELECT Id, Name
-                FROM Examinees
+                FROM Departments
                 WHERE IsActive = 1 AND IsArchive = 0
                 ORDER BY Name";
 
@@ -317,7 +308,7 @@ namespace ShampanBFRS.Repository.Question
                 }
 
                 result.Status = "Success";
-                result.Message = "Examinees dropdown data retrieved successfully.";
+                result.Message = "Department dropdown data retrieved successfully.";
                 result.DataVM = dt;
                 return result;
             }
