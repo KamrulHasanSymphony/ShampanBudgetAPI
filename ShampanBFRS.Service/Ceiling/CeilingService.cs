@@ -114,6 +114,8 @@ namespace ShampanBFRS.Service.Ceiling
                     throw new Exception(result.Message);
                 }
 
+                result.DataVM = model;
+
                 return result;
             }
             catch (Exception ex)
@@ -216,7 +218,7 @@ namespace ShampanBFRS.Service.Ceiling
                     {
                         dVM = new CeilingDetailVM();
                         dVM.GLFiscalYearDetailId = item.Id;
-                        dVM.AccountId = detailVM.AccountId;                        
+                        dVM.AccountId = detailVM.AccountId;
                         dVM.InputTotal = detailVM.InputTotal;
                         dVM.PeriodSl = item.PeriodSl;
                         dVM.PeriodStart = item.MonthStart;
@@ -292,8 +294,8 @@ namespace ShampanBFRS.Service.Ceiling
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
-                string[] conditionalFields = new[] { "c.CreatedBy", "c.TransactionType" };
-                string[] conditionalValues = new[] { options.vm.UserId, options.vm.TransactionType };
+                string[] conditionalFields = new[] { "c.CreatedBy", "c.TransactionType", "c.BudgetType" };
+                string[] conditionalValues = new[] { options.vm.UserId, options.vm.TransactionType, options.vm.BudgetType };
 
                 result = await _repo.GetGridData(options, conditionalFields, conditionalValues, conn, transaction);
 
@@ -312,14 +314,16 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
-        public async Task<ResultVM> GetAllSabreDataForDetails(GridOptions options, string curentBranchId, string yearId, string budgetSetNo, string budgetType)
+        public async Task<ResultVM> GetAllSabreDataForDetails(GridOptions options)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             try
             {
                 var data = new GridEntity<CeilingDetailVM>();
-                result.DataVM = KendoGrid<CeilingDetailVM>.GetGridData_5(options, "GetAllSabreDataForDetails", "get_summary", "c.Id", curentBranchId, yearId, budgetSetNo, budgetType, "");
+                result.DataVM = KendoGrid<CeilingDetailVM>.GetGridData_5(options, "GetAllSabreDataForDetails"
+                    , "get_summary", "c.Id", options.vm.BranchId, options.vm.YearId, options.vm.BudgetSetNo
+                    , options.vm.BudgetType, options.vm.UserId);
 
                 result.Status = MessageModel.Success;
                 return result;
