@@ -397,38 +397,39 @@ namespace ShampanBFRS.Repository.SetUp
                 var data = new GridEntity<DepartmentSabreVM>();
 
                 string sqlQuery = @"
-                -- Count
-                SELECT COUNT(DISTINCT H.Id) AS totalcount
-                FROM DepartmentSabres H
-                     LEFT OUTER JOIN Sabres SB ON H.SabreId = SB.Id
-                     LEFT OUTER JOIN Departments DP ON H.DepartmentId = DP.Id
-                " + (options.filter.Filters.Count > 0
-                        ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")"
-                        : "") + @"
+    -- Count
+    SELECT COUNT(DISTINCT H.DepartmentId) AS totalcount
+    FROM DepartmentSabres H
+    LEFT OUTER JOIN Sabres SB ON H.SabreId = SB.Id
+    LEFT OUTER JOIN Departments DP ON H.DepartmentId = DP.Id
+    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")" : "") + @"
 
-                -- Data
-                SELECT *
-                FROM (
-                    SELECT ROW_NUMBER() OVER(ORDER BY " +
-                        (options.sort.Count > 0
-                            ? "H." + options.sort[0].field + " " + options.sort[0].dir
-                            : "H.Id DESC") + @") AS rowindex,
-                           ISNULL(H.Id,0) AS Id,
-                           ISNULL(H.DepartmentId,'') AS DepartmentId,
-                           ISNULL(H.SabreId,'') AS SabreId,
-	                       ISNULL(SB.Name,'') AS SabreName,
-	                       ISNULL(SB.Code,'') AS SabreCode,
-	                       ISNULL(DP.Name,'') AS DepName,
-	                       ISNULL(DP.Remarks,'') AS Remark
-       
-                    FROM DepartmentSabres H
-                     LEFT OUTER JOIN Sabres SB ON H.SabreId = SB.Id
-                     LEFT OUTER JOIN Departments DP ON H.DepartmentId = DP.Id
-                    " + (options.filter.Filters.Count > 0
-                            ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")"
-                            : "") + @"
-                ) AS a
-                WHERE rowindex > @skip AND (@take=0 OR rowindex <= @take)";
+    -- Data
+    SELECT * FROM (
+        SELECT ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? "H." + options.sort[0].field + " " + options.sort[0].dir : "H.DepartmentId DESC") + @") AS rowindex,
+               
+               H.Id,
+                H.DepartmentId,
+                SB.Name AS SabreName,
+                SB.Code AS SabreCode,
+                DP.Name AS DepName,
+                DP.Remarks AS Remark
+            FROM (
+                SELECT 
+                    *,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY DepartmentId 
+                        ORDER BY Id DESC 
+                    ) AS rn
+                FROM DepartmentSabres
+            ) H
+            LEFT JOIN Sabres SB ON H.SabreId = SB.Id
+            LEFT JOIN Departments DP ON H.DepartmentId = DP.Id
+            WHERE H.rn = 1
+        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")" : "") + @"
+        --GROUP BY H.DepartmentId,  DP.Name, DP.Remarks
+    ) AS a
+    WHERE rowindex > @skip AND (@take=0 OR rowindex <= @take)";
 
                 data = KendoGrid<DepartmentSabreVM>.GetGridDataQuestions_CMD(options, sqlQuery, "H.Id");
 
