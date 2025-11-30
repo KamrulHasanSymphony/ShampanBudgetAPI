@@ -73,8 +73,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             try
             {
                 _CeilingService = new CeilingService();
-                resultVM = await _CeilingService.GetAllSabreDataForDetails(options, options.vm.BranchId, options.vm.YearId
-                    , options.vm.BudgetSetNo, options.vm.BudgetType);
+                resultVM = await _CeilingService.GetAllSabreDataForDetails(options);
                 return resultVM;
             }
             catch (Exception ex)
