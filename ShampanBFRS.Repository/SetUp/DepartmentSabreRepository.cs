@@ -11,6 +11,7 @@ using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.QuestionVM;
+using Newtonsoft.Json;
 
 namespace ShampanBFRS.Repository.SetUp
 {
@@ -59,6 +60,46 @@ namespace ShampanBFRS.Repository.SetUp
                 return result;
             }
         }
+
+        #region Insert
+        public async Task<ResultVM> detailsInsert(DepartmentSabreVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM();
+            try
+            {
+                string query = @"
+        INSERT INTO DepartmentSabres
+        (
+            DepartmentId, SabreId
+        )
+        VALUES
+        (
+            @DepartmentId, @SabreId
+        );
+        SELECT SCOPE_IDENTITY();";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@SabreId", vm.SabreId ?? (object)DBNull.Value);
+                   
+                    vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
+                }
+
+                result.Status = "Success";
+                result.Message = "Transfer Issue Detail inserted successfully.";
+                result.Id = vm.Id.ToString();
+                result.DataVM = vm;
+            }
+            catch (Exception ex)
+            {
+                result.Status = "Fail";
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+            }
+            return result;
+        }
+        #endregion
 
         // Update Method
         public async Task<ResultVM> Update(DepartmentSabreVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
@@ -157,6 +198,7 @@ namespace ShampanBFRS.Repository.SetUp
         }
 
         // List Method
+        // List Method (per-parent details call, no groupby)
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
             SqlConnection conn = null, SqlTransaction transaction = null)
         {
@@ -168,12 +210,12 @@ namespace ShampanBFRS.Repository.SetUp
                 if (conn == null) throw new Exception("Database connection failed!");
 
                 string query = @"
-                SELECT 
-                    ISNULL(M.Id,0) AS Id,
-                    ISNULL(M.DepartmentId, '') AS DepartmentId,
-                    ISNULL(M.SabreId, '') AS SabreId                  
-                FROM DepartmentSabres M
-                WHERE 1=1";
+        SELECT 
+            ISNULL(M.Id,0) AS Id,
+            ISNULL(M.DepartmentId, 0) AS DepartmentId,
+            ISNULL(M.SabreId, 0) AS SabreId                  
+        FROM DepartmentSabres M
+        WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                     query += " AND M.Id=@Id ";
@@ -192,8 +234,28 @@ namespace ShampanBFRS.Repository.SetUp
                 {
                     Id = row.Field<int>("Id"),
                     DepartmentId = row.Field<int>("DepartmentId"),
-                    SabreId = row.Field<int>("SabreId")                    
+                    SabreId = row.Field<int>("SabreId"),
+                    SabreList = new List<DepartmentSabreVM>()
                 }).ToList();
+
+                // ─────────── per-parent details call ───────────
+                foreach (var parent in list)
+                {
+                    // pass single department id as conditional value
+                    var detailsResult = DetailsList(new[] { "M.DepartmentId" }, new[] { parent.DepartmentId.ToString() }, vm, conn, transaction);
+
+                    if (detailsResult.Status == "Success" && detailsResult.DataVM is DataTable dts)
+                    {
+                        string json = JsonConvert.SerializeObject(dts);
+                        var details = JsonConvert.DeserializeObject<List<DepartmentSabreVM>>(json);
+
+                        parent.SabreList = details ?? new List<DepartmentSabreVM>();
+                    }
+                    else
+                    {
+                        parent.SabreList = new List<DepartmentSabreVM>();
+                    }
+                }
 
                 result.Status = "Success";
                 result.Message = "Department retrieved successfully.";
@@ -207,6 +269,42 @@ namespace ShampanBFRS.Repository.SetUp
                 result.ExMessage = ex.ToString();
                 return result;
             }
+        }
+
+        public ResultVM DetailsList(string[] conditionalFields, string[] conditionalValues, PeramModel vm, SqlConnection conn, SqlTransaction transaction)
+        {
+            ResultVM result = new ResultVM { Status = "Fail" };
+            DataTable dataTable = new DataTable();
+
+            try
+            {
+                string query = @"
+        SELECT 
+     ISNULL(M.Id,0) AS Id,
+     ISNULL(M.DepartmentId, 0) AS DepartmentId,
+     ISNULL(M.SabreId, 0) AS SabreId,
+	 ISNULL(SB.Code,'') AS Code,
+	 ISNULL(SB.Name,'') AS Name
+ FROM DepartmentSabres M
+ LEFT OUTER JOIN Sabres SB ON M.SabreId = SB.Id
+ WHERE 1=1";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter da = CreateAdapter(query, conn, transaction);
+                da.SelectCommand = ApplyParameters(da.SelectCommand, conditionalFields, conditionalValues);
+                da.Fill(dataTable);
+
+                result.Status = "Success";
+                result.Message = "Details data retrieved successfully.";
+                result.DataVM = dataTable;
+            }
+            catch (Exception ex)
+            {
+                result.Message = "Error in DetailsList";
+                result.ExMessage = ex.ToString();
+            }
+            return result;
         }
 
         // ListAsDataTable Method
@@ -302,6 +400,8 @@ namespace ShampanBFRS.Repository.SetUp
                 -- Count
                 SELECT COUNT(DISTINCT H.Id) AS totalcount
                 FROM DepartmentSabres H
+                     LEFT OUTER JOIN Sabres SB ON H.SabreId = SB.Id
+                     LEFT OUTER JOIN Departments DP ON H.DepartmentId = DP.Id
                 " + (options.filter.Filters.Count > 0
                         ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")"
                         : "") + @"
@@ -315,9 +415,15 @@ namespace ShampanBFRS.Repository.SetUp
                             : "H.Id DESC") + @") AS rowindex,
                            ISNULL(H.Id,0) AS Id,
                            ISNULL(H.DepartmentId,'') AS DepartmentId,
-                           ISNULL(H.SabreId,'') AS SabreId
-                           
+                           ISNULL(H.SabreId,'') AS SabreId,
+	                       ISNULL(SB.Name,'') AS SabreName,
+	                       ISNULL(SB.Code,'') AS SabreCode,
+	                       ISNULL(DP.Name,'') AS DepName,
+	                       ISNULL(DP.Remarks,'') AS Remark
+       
                     FROM DepartmentSabres H
+                     LEFT OUTER JOIN Sabres SB ON H.SabreId = SB.Id
+                     LEFT OUTER JOIN Departments DP ON H.DepartmentId = DP.Id
                     " + (options.filter.Filters.Count > 0
                             ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")"
                             : "") + @"

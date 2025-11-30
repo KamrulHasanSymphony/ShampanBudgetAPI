@@ -37,24 +37,34 @@ namespace ShampanBFRS.Service.SetUp
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
-                //#region Check Exist Data
-                //string[] conditionField = { "LogInId" };
-                //string[] conditionValue = { examinee.LogInId.Trim() };
+                if (departmentsabre.SabreList == null || !departmentsabre.SabreList.Any())
+                    throw new Exception("Department must have at least one detail record.");
 
-                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
+                bool allDetailsSuccess = true;
 
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exists!";
-                //    throw new Exception("Data Already Exists!");
-                //}
-                //#endregion
+                ResultVM lastDetailResult = null;  
 
-                result = await _repo.Insert(departmentsabre, conn, transaction);
+                foreach (var detail in departmentsabre.SabreList)
+                {
+                    var detailResult = await _repo.detailsInsert(detail, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
+                    if (detailResult.Status.ToLower() != "success")
+                    {
+                        allDetailsSuccess = false;
+                        throw new Exception(detailResult.Message);
+                    }
+
+                    lastDetailResult = detailResult;   
+                }
+
+                if (isNewConnection && allDetailsSuccess)
                 {
                     transaction.Commit();
+                    result.Status = "Success";
+                    result.Message = "Data inserted successfully.";
+
+                    result.Id = lastDetailResult.Id;
+                    result.DataVM = lastDetailResult.DataVM;
                 }
                 else
                 {
@@ -76,6 +86,7 @@ namespace ShampanBFRS.Service.SetUp
             }
         }
 
+
         public async Task<ResultVM> Update(DepartmentSabreVM departmentsabre)
         {
             DepartmentSabreRepository _repo = new DepartmentSabreRepository();
@@ -93,24 +104,60 @@ namespace ShampanBFRS.Service.SetUp
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
-                //#region Check Exist Data
-                //string[] conditionField = { "Id not", "LogInId" };
-                //string[] conditionValue = { department.Id.ToString(), department.LogInId.Trim() };
 
-                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exists!";
-                //    throw new Exception("Data Already Exists!");
-                //}
-                //#endregion
 
-                result = await _repo.Update(departmentsabre, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
+                if (departmentsabre.SabreList == null || !departmentsabre.SabreList.Any())
+                    throw new Exception("Transfer Issue must have at least one detail record.");
+
+
+                int? deptIdToDelete = departmentsabre.DepartmentId;
+
+                if (!deptIdToDelete.HasValue)
+                {
+                    var firstDetail = departmentsabre.SabreList.FirstOrDefault(d => d != null && d.DepartmentId.HasValue);
+                    if (firstDetail != null)
+                        deptIdToDelete = firstDetail.DepartmentId;
+                }
+
+                if (!deptIdToDelete.HasValue)
+                    throw new Exception("DepartmentId not provided. Cannot delete existing details.");
+
+                // Delete existing details
+                var deleteResult = _commonRepo.DetailsDelete("DepartmentSabres", new[] { "DepartmentId" }, new[] { deptIdToDelete.Value.ToString() }, conn, transaction);
+                if (deleteResult.Status == "Fail")
+                    throw new Exception("Error deleting previous detail records.");
+
+                bool allDetailsSuccess = true;
+
+                ResultVM lastDetailResult = null;
+
+                foreach (var detail in departmentsabre.SabreList)
+                {
+                    var detailResult = await _repo.detailsInsert(detail, conn, transaction);
+
+                    if (detailResult.Status.ToLower() != "success")
+                    {
+                        allDetailsSuccess = false;
+                        throw new Exception(detailResult.Message);
+                    }
+
+                    lastDetailResult = detailResult;
+                }
+
+                if (isNewConnection && allDetailsSuccess)
+                {
                     transaction.Commit();
+                    result.Status = "Success";
+                    result.Message = "Data updated successfully.";
+
+                    result.Id = lastDetailResult.Id;
+                    result.DataVM = lastDetailResult.DataVM;
+                }
                 else
+                {
                     throw new Exception(result.Message);
+                }
 
                 return result;
             }
