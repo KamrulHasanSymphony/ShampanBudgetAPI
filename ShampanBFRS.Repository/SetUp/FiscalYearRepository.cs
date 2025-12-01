@@ -54,27 +54,23 @@ namespace ShampanBFRS.Repository.SetUp
                             FiscalYearId,
                             Year,
                             Remarks,
-                            MonthId,
+                            --MonthId,
                             MonthStart,
                             MonthEnd,
                             MonthName,
-                            MonthLock,
-                            CreatedBy,
-                            CreatedOn,
-                            CreatedFrom
+                            MonthLock
+                            
                         )
                         VALUES (
                             @FiscalYearId,  
                             @Year,          
                             @Remarks,       
-                            @MonthId,       
+                            --@MonthId,       
                             @MonthStart,    
                             @MonthEnd,      
                             @MonthName,     
-                            @MonthLock,     
-                            @CreatedBy,     
-                            @CreatedOn,     
-                            @CreatedFrom
+                            @MonthLock  
+                            
                         )";
                     foreach (FiscalYearDetailVM item in vm.fiscalYearDetails)
                     {
@@ -82,19 +78,17 @@ namespace ShampanBFRS.Repository.SetUp
                         cmdDetails.Parameters.AddWithValue("@FiscalYearId", vm.Id);
                         cmdDetails.Parameters.AddWithValue("@Year", vm.Year);
                         cmdDetails.Parameters.AddWithValue("@Remarks", item.Remarks ?? "-");
-                        cmdDetails.Parameters.AddWithValue("@MonthId", item.MonthId ?? 0);
+                        //cmdDetails.Parameters.AddWithValue("@MonthId", item.MonthId ?? 0);
                         cmdDetails.Parameters.AddWithValue("@MonthStart", item.MonthStart);
                         cmdDetails.Parameters.AddWithValue("@MonthEnd", item.MonthEnd);
                         cmdDetails.Parameters.AddWithValue("@MonthName", item.MonthName);
                         cmdDetails.Parameters.AddWithValue("@MonthLock", item.MonthLock);
-                        cmdDetails.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy);
-                        cmdDetails.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom);
 
                         cmdDetails.ExecuteNonQuery();
                     }
 
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
                 }
