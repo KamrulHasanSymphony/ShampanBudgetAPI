@@ -11,14 +11,13 @@ using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.QuestionVM;
-using Newtonsoft.Json;
 
 namespace ShampanBFRS.Repository.SetUp
 {
-    public class DepartmentSabreRepository : CommonRepository
+    public class COAGroupRepository : CommonRepository
     {
         // Insert Method
-        public async Task<ResultVM> Insert(DepartmentSabreVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Insert(COAGroupVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
@@ -28,81 +27,49 @@ namespace ShampanBFRS.Repository.SetUp
                 if (transaction == null) transaction = conn.BeginTransaction();
 
                 string query = @"
-                INSERT INTO DepartmentSabres
-                (
-                    DepartmentId, SabreId
-                )
-                VALUES
-                (
-                    @DepartmentId, @SabreId
-                );
-                SELECT SCOPE_IDENTITY();";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
-                {
-                    cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@SabreId", vm.SabreId ?? (object)DBNull.Value);                
-                    vm.Id =Convert.ToInt32(cmd.ExecuteScalar());
-
-                }
-
-                result.Status = "Success";
-                result.Message = "DepartmentSabre inserted successfully.";
-                result.Id = vm.Id.ToString();
-                result.DataVM = vm;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.Message;
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-        }
-
-        #region Insert
-        public async Task<ResultVM> detailsInsert(DepartmentSabreVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
-        {
-            ResultVM result = new ResultVM();
-            try
-            {
-                string query = @"
-        INSERT INTO DepartmentSabres
+        INSERT INTO COAGroups
         (
-            DepartmentId, SabreId
+            Code, GroupSL, Category, Name, Remarks,
+            IsActive, IsArchive, CreatedBy,CreatedFrom,CreatedAt
         )
         VALUES
         (
-            @DepartmentId, @SabreId
+            @Code, @GroupSL, @Category, @Name, @Remarks,
+            @IsActive, @IsArchive, @CreatedBy, @CreatedFrom,GETDATE()
         );
         SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@SabreId", vm.SabreId ?? (object)DBNull.Value);
-                   
+                    cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@GroupSL", vm.GroupSL ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Category", vm.Category ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
+                    cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
+                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
+
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
                 }
 
                 result.Status = "Success";
-                result.Message = "Transfer Issue Detail inserted successfully.";
+                result.Message = "COAGroup inserted successfully.";
                 result.Id = vm.Id.ToString();
                 result.DataVM = vm;
             }
             catch (Exception ex)
             {
-                result.Status = "Fail";
                 result.Message = ex.Message;
                 result.ExMessage = ex.ToString();
             }
+
             return result;
         }
-        #endregion
 
         // Update Method
-        public async Task<ResultVM> Update(DepartmentSabreVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Update(COAGroupVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", Id = vm.Id.ToString(), DataVM = vm };
 
@@ -112,23 +79,34 @@ namespace ShampanBFRS.Repository.SetUp
                 if (transaction == null) transaction = conn.BeginTransaction();
 
                 string query = @"
-                UPDATE DepartmentSabres
+                UPDATE COAGroups
                 SET 
-                    DepartmentId = @DepartmentId,
-                    SabreId = @SabreId
-                   
+                    GroupSL =@GroupSL,
+                    Category =@Category,
+                    Name = @Name,
+                    Remarks = @Remarks,
+                    IsActive = @IsActive,
+                    LastUpdateBy = @LastUpdateBy,
+                    LastUpdateFrom = @LastUpdateFrom,
+                    LastUpdateAt = GETDATE()
                 WHERE Id = @Id";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
-                    cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@SabreId", vm.SabreId ?? (object)DBNull.Value);                   
+                    cmd.Parameters.AddWithValue("@GroupSL", vm.GroupSL ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Category", vm.Category ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
+                    cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
+
                     int rows = cmd.ExecuteNonQuery();
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "DepartmentSabre updated successfully.";
+                        result.Message = "Department updated successfully.";
                     }
                     else
                     {
@@ -159,11 +137,11 @@ namespace ShampanBFRS.Repository.SetUp
                 string inClause = string.Join(", ", vm.IDs.Select((id, index) => $"@Id{index}"));
 
                 string query = $@"
-                UPDATE DepartmentSabres
+                UPDATE COAGroups
                 SET IsArchive = 1, IsActive = 0,
                     LastUpdateBy = @LastUpdateBy,
-                    LastUpdateFrom = @LastUpdateFrom
-     
+                    LastUpdateFrom = @LastUpdateFrom,
+                    LastUpdateAt = GETDATE()
                 WHERE Id IN ({inClause})";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
@@ -179,7 +157,7 @@ namespace ShampanBFRS.Repository.SetUp
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "Department deleted successfully.";
+                        result.Message = "COAGroup deleted successfully.";
                     }
                     else
                     {
@@ -198,7 +176,6 @@ namespace ShampanBFRS.Repository.SetUp
         }
 
         // List Method
-        // List Method (per-parent details call, no groupby)
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
             SqlConnection conn = null, SqlTransaction transaction = null)
         {
@@ -210,12 +187,21 @@ namespace ShampanBFRS.Repository.SetUp
                 if (conn == null) throw new Exception("Database connection failed!");
 
                 string query = @"
-        SELECT 
-            ISNULL(M.Id,0) AS Id,
-            ISNULL(M.DepartmentId, 0) AS DepartmentId,
-            ISNULL(M.SabreId, 0) AS SabreId                  
-        FROM DepartmentSabres M
-        WHERE 1=1";
+                SELECT 
+                    ISNULL(M.Id,0) AS Id,
+                    ISNULL(M.Code, '') AS Code,
+                    ISNULL(M.GroupSL, '') AS GroupSL,
+                    ISNULL(M.Category, '') AS Category,
+                    ISNULL(M.Name, '') AS Name,
+                    ISNULL(M.Remarks, '') AS Remarks,                   
+                    ISNULL(M.IsActive, 0) AS IsActive,
+                    ISNULL(M.IsArchive, 0) AS IsArchive,
+                    ISNULL(M.CreatedBy, '') AS CreatedBy,
+                    ISNULL(FORMAT(M.CreatedAt,'yyyy-MM-dd HH:mm'),'') AS CreatedAt,
+                    ISNULL(M.LastUpdateBy,'') AS LastUpdateBy,
+                    ISNULL(FORMAT(M.LastUpdateAt,'yyyy-MM-dd HH:mm'),'') AS LastUpdateAt
+                FROM COAGroups M
+                WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                     query += " AND M.Id=@Id ";
@@ -230,32 +216,21 @@ namespace ShampanBFRS.Repository.SetUp
 
                 adapter.Fill(dt);
 
-                var list = dt.AsEnumerable().Select(row => new DepartmentSabreVM
+                var list = dt.AsEnumerable().Select(row => new COAGroupVM
                 {
                     Id = row.Field<int>("Id"),
-                    DepartmentId = row.Field<int>("DepartmentId"),
-                    SabreId = row.Field<int>("SabreId"),
-                    SabreList = new List<DepartmentSabreVM>()
+                    Code = row.Field<string>("Code"),
+                    GroupSL = row.Field<int>("GroupSL"),
+                    Category = row.Field<string>("Category"),
+                    Name = row.Field<string>("Name"),
+                    Remarks = row.Field<string>("Remarks"),
+                    IsActive = row.Field<bool>("IsActive"),
+                    IsArchive = row.Field<bool>("IsArchive"),
+                    CreatedBy = row.Field<string>("CreatedBy"),
+                    LastUpdateBy = row.Field<string>("LastUpdateBy"),
+                    LastUpdateAt = row.Field<string>("LastUpdateAt")
+
                 }).ToList();
-
-                // ─────────── per-parent details call ───────────
-                foreach (var parent in list)
-                {
-                    // pass single department id as conditional value
-                    var detailsResult = DetailsList(new[] { "M.DepartmentId" }, new[] { parent.DepartmentId.ToString() }, vm, conn, transaction);
-
-                    if (detailsResult.Status == "Success" && detailsResult.DataVM is DataTable dts)
-                    {
-                        string json = JsonConvert.SerializeObject(dts);
-                        var details = JsonConvert.DeserializeObject<List<DepartmentSabreVM>>(json);
-
-                        parent.SabreList = details ?? new List<DepartmentSabreVM>();
-                    }
-                    else
-                    {
-                        parent.SabreList = new List<DepartmentSabreVM>();
-                    }
-                }
 
                 result.Status = "Success";
                 result.Message = "Department retrieved successfully.";
@@ -271,42 +246,6 @@ namespace ShampanBFRS.Repository.SetUp
             }
         }
 
-        public ResultVM DetailsList(string[] conditionalFields, string[] conditionalValues, PeramModel vm, SqlConnection conn, SqlTransaction transaction)
-        {
-            ResultVM result = new ResultVM { Status = "Fail" };
-            DataTable dataTable = new DataTable();
-
-            try
-            {
-                string query = @"
-        SELECT 
-     ISNULL(M.Id,0) AS Id,
-     ISNULL(M.DepartmentId, 0) AS DepartmentId,
-     ISNULL(M.SabreId, 0) AS SabreId,
-	 ISNULL(SB.Code,'') AS Code,
-	 ISNULL(SB.Name,'') AS Name
- FROM DepartmentSabres M
- LEFT OUTER JOIN Sabres SB ON M.SabreId = SB.Id
- WHERE 1=1";
-
-                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
-
-                SqlDataAdapter da = CreateAdapter(query, conn, transaction);
-                da.SelectCommand = ApplyParameters(da.SelectCommand, conditionalFields, conditionalValues);
-                da.Fill(dataTable);
-
-                result.Status = "Success";
-                result.Message = "Details data retrieved successfully.";
-                result.DataVM = dataTable;
-            }
-            catch (Exception ex)
-            {
-                result.Message = "Error in DetailsList";
-                result.ExMessage = ex.ToString();
-            }
-            return result;
-        }
-
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
             SqlConnection conn = null, SqlTransaction transaction = null)
@@ -319,8 +258,8 @@ namespace ShampanBFRS.Repository.SetUp
                 if (conn == null) throw new Exception("Database connection failed!");
 
                 string query = @"
-                SELECT Id,DepartmentId, SabreId
-                FROM DepartmentSabres
+                SELECT Id,Code,GroupSL,Category,Name, Remarks, IsActive, IsArchive, CreatedBy, CreatedAt, LastUpdateBy, LastUpdateAt
+                FROM COAGroups
                 WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
@@ -361,7 +300,7 @@ namespace ShampanBFRS.Repository.SetUp
 
                 string query = @"
                 SELECT Id, Name
-                FROM DepartmentSabres
+                FROM COAGroups
                 WHERE IsActive = 1 AND IsArchive = 0
                 ORDER BY Name";
 
@@ -373,7 +312,7 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 result.Status = "Success";
-                result.Message = "DepartmentSabre dropdown data retrieved successfully.";
+                result.Message = "COAGroup dropdown data retrieved successfully.";
                 result.DataVM = dt;
                 return result;
             }
@@ -394,47 +333,48 @@ namespace ShampanBFRS.Repository.SetUp
             {
                 if (conn == null) throw new Exception("Database connection failed!");
 
-                var data = new GridEntity<DepartmentSabreVM>();
+                var data = new GridEntity<COAGroupVM>();
 
                 string sqlQuery = @"
-    -- Count
-    SELECT COUNT(DISTINCT H.DepartmentId) AS totalcount
-    FROM DepartmentSabres H
-    LEFT OUTER JOIN Sabres SB ON H.SabreId = SB.Id
-    LEFT OUTER JOIN Departments DP ON H.DepartmentId = DP.Id
-    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")" : "") + @"
+                -- Count
+                SELECT COUNT(DISTINCT H.Id) AS totalcount
+                FROM COAGroups H
+                WHERE H.IsArchive != 1
+                " + (options.filter.Filters.Count > 0
+                        ? " AND (" + GridQueryBuilder<COAGroupVM>.FilterCondition(options.filter) + ")"
+                        : "") + @"
 
-    -- Data
-    SELECT * FROM (
-        SELECT ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? "H." + options.sort[0].field + " " + options.sort[0].dir : "H.DepartmentId DESC") + @") AS rowindex,
-               
-               H.Id,
-                H.DepartmentId,
-                SB.Name AS SabreName,
-                SB.Code AS SabreCode,
-                DP.Name AS DepName,
-                DP.Remarks AS Remark
-            FROM (
-                SELECT 
-                    *,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY DepartmentId 
-                        ORDER BY Id DESC 
-                    ) AS rn
-                FROM DepartmentSabres
-            ) H
-            LEFT JOIN Sabres SB ON H.SabreId = SB.Id
-            LEFT JOIN Departments DP ON H.DepartmentId = DP.Id
-            WHERE H.rn = 1
-        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<DepartmentSabreVM>.FilterCondition(options.filter) + ")" : "") + @"
-        --GROUP BY H.DepartmentId,  DP.Name, DP.Remarks
-    ) AS a
-    WHERE rowindex > @skip AND (@take=0 OR rowindex <= @take)";
+                -- Data
+                SELECT *
+                FROM (
+                    SELECT ROW_NUMBER() OVER(ORDER BY " +
+                        (options.sort.Count > 0
+                            ? "H." + options.sort[0].field + " " + options.sort[0].dir
+                            : "H.Id DESC") + @") AS rowindex,
+                           ISNULL(H.Id,0) AS Id,
+                           ISNULL(H.Code,'') AS Code,
+                           ISNULL(H.GroupSL,'') AS GroupSL,
+                           ISNULL(H.Category,'') AS Category,
+                           ISNULL(H.Name,'') AS Name,
+                           ISNULL(H.Remarks,0) AS Remarks,
+                           ISNULL(H.IsActive,0) AS IsActive,
+                           CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
+                           ISNULL(H.CreatedBy,'') AS CreatedBy,
+                            ISNULL(FORMAT(H.CreatedAt,'yyyy-MM-dd HH:mm'),'') AS CreatedAt,
+                           ISNULL(H.LastUpdateBy,'') AS LastUpdateBy,
+                           ISNULL(FORMAT(H.LastUpdateAt,'yyyy-MM-dd HH:mm'),'') AS LastUpdateAt
+                    FROM COAGroups H
+                    WHERE H.IsArchive != 1
+                    " + (options.filter.Filters.Count > 0
+                            ? " AND (" + GridQueryBuilder<COAGroupVM>.FilterCondition(options.filter) + ")"
+                            : "") + @"
+                ) AS a
+                WHERE rowindex > @skip AND (@take=0 OR rowindex <= @take)";
 
-                data = KendoGrid<DepartmentSabreVM>.GetGridDataQuestions_CMD(options, sqlQuery, "H.Id");
+                data = KendoGrid<COAGroupVM>.GetGridDataQuestions_CMD(options, sqlQuery, "H.Id");
 
                 result.Status = "Success";
-                result.Message = "DepartmentSabre grid data retrieved successfully.";
+                result.Message = "COAGroup grid data retrieved successfully.";
                 result.DataVM = data;
 
                 return result;

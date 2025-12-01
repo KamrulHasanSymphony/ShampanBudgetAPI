@@ -13,58 +13,53 @@ using ShampanBFRS.ViewModel.QuestionVM;
 using ShampanBFRS.ViewModel.Utility;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.Repository.SetUp;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ShampanBFRS.Service.SetUp
 {
-    public class DepartmentSabreService
+    public class COAGroupService
     {
         CommonRepository _commonRepo = new CommonRepository();
 
-        public async Task<ResultVM> Insert(DepartmentSabreVM departmentsabre)
+        public async Task<ResultVM> Insert(COAGroupVM coagroup)
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             _commonRepo = new CommonRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
-
+            string CodeGroup = "COAGroup";
+            string CodeName = "COAGroup";
+           
             try
             {
                 conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
                 conn.Open();
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
+                string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
+                coagroup.Code = code;
+                // sabre.Code = code;
+                //#region Check Exist Data
+                //string[] conditionField = { "LogInId" };
+                //string[] conditionValue = { examinee.LogInId.Trim() };
 
-                if (departmentsabre.SabreList == null || !departmentsabre.SabreList.Any())
-                    throw new Exception("Department must have at least one detail record.");
+                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
 
-                bool allDetailsSuccess = true;
+                //if (exist)
+                //{
+                //    result.Message = "Data Already Exists!";
+                //    throw new Exception("Data Already Exists!");
+                //}
+                //#endregion
 
-                ResultVM lastDetailResult = null;  
+                result = await _repo.Insert(coagroup, conn, transaction);
 
-                foreach (var detail in departmentsabre.SabreList)
-                {
-                    var detailResult = await _repo.detailsInsert(detail, conn, transaction);
-
-                    if (detailResult.Status.ToLower() != "success")
-                    {
-                        allDetailsSuccess = false;
-                        throw new Exception(detailResult.Message);
-                    }
-
-                    lastDetailResult = detailResult;   
-                }
-
-                if (isNewConnection && allDetailsSuccess)
+                if (isNewConnection && result.Status == "Success")
                 {
                     transaction.Commit();
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
-
-                    result.Id = lastDetailResult.Id;
-                    result.DataVM = lastDetailResult.DataVM;
                 }
                 else
                 {
@@ -86,10 +81,9 @@ namespace ShampanBFRS.Service.SetUp
             }
         }
 
-
-        public async Task<ResultVM> Update(DepartmentSabreVM departmentsabre)
+        public async Task<ResultVM> Update(COAGroupVM coagroup)
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             _commonRepo = new CommonRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
@@ -104,60 +98,24 @@ namespace ShampanBFRS.Service.SetUp
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
+                //#region Check Exist Data
+                //string[] conditionField = { "Id not", "LogInId" };
+                //string[] conditionValue = { department.Id.ToString(), department.LogInId.Trim() };
 
+                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
+                //if (exist)
+                //{
+                //    result.Message = "Data Already Exists!";
+                //    throw new Exception("Data Already Exists!");
+                //}
+                //#endregion
 
+                result = await _repo.Update(coagroup, conn, transaction);
 
-                if (departmentsabre.SabreList == null || !departmentsabre.SabreList.Any())
-                    throw new Exception("Transfer Issue must have at least one detail record.");
-
-
-                int? deptIdToDelete = departmentsabre.DepartmentId;
-
-                if (!deptIdToDelete.HasValue)
-                {
-                    var firstDetail = departmentsabre.SabreList.FirstOrDefault(d => d != null && d.DepartmentId.HasValue);
-                    if (firstDetail != null)
-                        deptIdToDelete = firstDetail.DepartmentId;
-                }
-
-                if (!deptIdToDelete.HasValue)
-                    throw new Exception("DepartmentId not provided. Cannot delete existing details.");
-
-                // Delete existing details
-                var deleteResult = _commonRepo.DetailsDelete("DepartmentSabres", new[] { "DepartmentId" }, new[] { deptIdToDelete.Value.ToString() }, conn, transaction);
-                if (deleteResult.Status == "Fail")
-                    throw new Exception("Error deleting previous detail records.");
-
-                bool allDetailsSuccess = true;
-
-                ResultVM lastDetailResult = null;
-
-                foreach (var detail in departmentsabre.SabreList)
-                {
-                    var detailResult = await _repo.detailsInsert(detail, conn, transaction);
-
-                    if (detailResult.Status.ToLower() != "success")
-                    {
-                        allDetailsSuccess = false;
-                        throw new Exception(detailResult.Message);
-                    }
-
-                    lastDetailResult = detailResult;
-                }
-
-                if (isNewConnection && allDetailsSuccess)
-                {
+                if (isNewConnection && result.Status == "Success")
                     transaction.Commit();
-                    result.Status = "Success";
-                    result.Message = "Data updated successfully.";
-
-                    result.Id = lastDetailResult.Id;
-                    result.DataVM = lastDetailResult.DataVM;
-                }
                 else
-                {
                     throw new Exception(result.Message);
-                }
 
                 return result;
             }
@@ -176,7 +134,7 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> Delete(CommonVM vm)
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", IDs = vm.IDs };
 
             bool isNewConnection = false;
@@ -214,7 +172,7 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
             bool isNewConnection = false;
@@ -252,7 +210,7 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
             bool isNewConnection = false;
@@ -290,7 +248,7 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> Dropdown()
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
             bool isNewConnection = false;
@@ -328,7 +286,7 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
             bool isNewConnection = false;
@@ -366,7 +324,7 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            DepartmentSabreRepository _repo = new DepartmentSabreRepository();
+            COAGroupRepository _repo = new COAGroupRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
             bool isNewConnection = false;

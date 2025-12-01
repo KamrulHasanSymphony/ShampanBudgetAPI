@@ -72,7 +72,10 @@ namespace ShampanBFRSAPI.Controllers.Common
             try
             {
                 CommonService _commonService = new CommonService();
-                resultVM = await _commonService.EnumList(new[] { "EnumType" }, new[] { Vm.Value.ToString() }, null);
+                 resultVM = await _commonService.EnumList(
+            new[] { "EnumType" },
+            new[] { Vm.Value?.ToString() ?? string.Empty },
+            null);
                 return resultVM;
             }
             catch (Exception ex)
