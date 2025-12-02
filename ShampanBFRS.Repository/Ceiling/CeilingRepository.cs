@@ -690,7 +690,7 @@ SELECT
          CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year + 1 AS NVARCHAR) + ' AND c.BudgetType = ''Estimated'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
          / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
      , 2)
-END AS [Estimated(' + @NextYearName + ') %],
+END AS [Estimated %], --[Estimated(' + @NextYearName + ') %]
 
 CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0 
      THEN 0
@@ -698,7 +698,7 @@ CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.Budget
          CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Revised'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
          / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
      , 2)
-END AS [Revised(' + @CurrentYearName + ')%],
+END AS [Revised %], --[Revised(' + @CurrentYearName + ')%]
 
 CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0 
      THEN 0
@@ -706,7 +706,7 @@ CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.Budget
          CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year - 1 AS NVARCHAR) + ' AND c.BudgetType = ''Actual_Audited'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
          / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
      , 2)
-END AS [Actual Audited(' + @PrevYearName + ')%]
+END AS [Actual Audited %] --[Actual Audited(' + @PrevYearName + ')%]
 
 FROM Ceilings c
 INNER JOIN CeilingDetails cd ON c.Id = cd.GLCeilingId
