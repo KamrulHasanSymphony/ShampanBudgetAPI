@@ -543,7 +543,229 @@ WHERE 1=1 ";
             }
         }
 
+        public async Task<ResultVM> xxxxBudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues,
+             SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+--DECLARE @FYId INT = FYId;       
+--DECLARE @BranchId INT = 1; 
+DECLARE @Year INT;
+
+-- Get selected Fiscal Year
+SELECT @Year = [Year]
+FROM FiscalYears
+WHERE Id = @FYId;
+
+SELECT
+    COA.Code AS COACode,
+    COA.Name AS COAName,
+    s.Code AS SabreCode,
+    s.Name AS SabreName,
+
+    -- Next Year: Estimated
+    SUM(CASE WHEN FY.[Year] = @Year + 1 AND c.BudgetType = 'Estimated' THEN cd.Amount ELSE 0 END) AS Estimated,
+
+    -- Current Year: Revised
+    SUM(CASE WHEN FY.[Year] = @Year AND c.BudgetType = 'Revised' THEN cd.Amount ELSE 0 END) AS Revised,
+
+    -- Current Year: Approved
+    SUM(CASE WHEN FY.[Year] = @Year AND c.BudgetType = 'Approved' THEN cd.Amount ELSE 0 END) AS Approved,
+
+    -- Previous Year: Actual (Audited)
+    SUM(CASE WHEN FY.[Year] = @Year - 1 AND c.BudgetType = 'Actual_Audited' THEN cd.Amount ELSE 0 END) AS ActualAudited,
+
+    -- Current Year: 1st_6months_actual
+    SUM(CASE WHEN FY.[Year] = @Year AND c.BudgetType = '1st_6months_actual' THEN cd.Amount ELSE 0 END) AS First6MonthsActual
+
+FROM Ceilings c
+INNER JOIN CeilingDetails cd ON c.Id = cd.GLCeilingId
+INNER JOIN FiscalYears FY ON c.GLFiscalYearId = FY.Id
+INNER JOIN Sabres s ON cd.AccountId = s.Id
+INNER JOIN COAs COA ON COA.Id = s.COAId
+WHERE c.BudgetType IN ('Revised','1st_6months_actual','Approved','Actual_Audited','Estimated')
+  AND FY.[Year] IN (@Year - 1, @Year, @Year + 1)
+    
+
+
+";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.BranchId))
+                    query += " AND c.BranchId = @BranchId ";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                query += @"  
+GROUP BY s.Code, s.Name, COA.Code, COA.Name
+ORDER BY s.Code;"
+;
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                    adapter.SelectCommand.Parameters.AddWithValue("@FYId", vm.YearId);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.BranchId))
+                    adapter.SelectCommand.Parameters.AddWithValue("@BranchId", vm.BranchId);
+
+                adapter.Fill(dt);
+
+                var list = new List<Dictionary<string, object>>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    var dict = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        dict[col.ColumnName] = row[col];
+                    }
+                    list.Add(dict);
+                }
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> BudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues,
+             SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+DECLARE @Year INT;
+DECLARE @CurrentYearName NVARCHAR(50);
+DECLARE @PrevYearName NVARCHAR(50);
+DECLARE @NextYearName NVARCHAR(50);
+DECLARE @SQL NVARCHAR(MAX);
+
+-- Get selected Fiscal Year
+SELECT @Year = [Year] FROM FiscalYears WHERE Id = 7;
+
+SELECT @CurrentYearName = YearName FROM FiscalYears WHERE [Year] = @Year;
+SELECT @PrevYearName = YearName FROM FiscalYears WHERE [Year] = @Year - 1;
+SELECT @NextYearName = YearName FROM FiscalYears WHERE [Year] = @Year + 1;
+
+-- Build dynamic SQL
+SET @SQL = N'
+SELECT
+    COA.Code AS COACode,
+    COA.Name AS COAName,
+    s.Code AS SabreCode,
+    s.Name AS SabreName,
+
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year + 1 AS NVARCHAR) + ' AND c.BudgetType = ''Estimated'' THEN cd.Amount ELSE 0 END) AS [Estimated(' + @NextYearName + ')],
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Revised'' THEN cd.Amount ELSE 0 END) AS [Revised(' + @CurrentYearName + ')],
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS [Approved(' + @CurrentYearName + ')],
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year - 1 AS NVARCHAR) + ' AND c.BudgetType = ''Actual_Audited'' THEN cd.Amount ELSE 0 END) AS [Actual Audited(' + @PrevYearName + ')],
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''1st_6months_actual'' THEN cd.Amount ELSE 0 END) AS [1st 6 Months Actual(' + @CurrentYearName + ')]
+
+	 -- Ratios based on Approved
+    ,CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0 
+     THEN 0
+     ELSE ROUND(
+         CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year + 1 AS NVARCHAR) + ' AND c.BudgetType = ''Estimated'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
+         / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
+     , 2)
+END AS [Estimated(' + @NextYearName + ') %],
+
+CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0 
+     THEN 0
+     ELSE ROUND(
+         CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Revised'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
+         / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
+     , 2)
+END AS [Revised(' + @CurrentYearName + ')%],
+
+CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0 
+     THEN 0
+     ELSE ROUND(
+         CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year - 1 AS NVARCHAR) + ' AND c.BudgetType = ''Actual_Audited'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
+         / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
+     , 2)
+END AS [Actual Audited(' + @PrevYearName + ')%]
+
+FROM Ceilings c
+INNER JOIN CeilingDetails cd ON c.Id = cd.GLCeilingId
+INNER JOIN FiscalYears FY ON c.GLFiscalYearId = FY.Id
+INNER JOIN Sabres s ON cd.AccountId = s.Id
+INNER JOIN COAs COA ON COA.Id = s.COAId
+WHERE c.BudgetType IN (''Revised'',''1st_6months_actual'',''Approved'',''Actual_Audited'',''Estimated'')
+  AND FY.[Year] IN (' + CAST(@Year - 1 AS NVARCHAR) + ',' + CAST(@Year AS NVARCHAR) + ',' + CAST(@Year + 1 AS NVARCHAR) + ') ';
+
+-- Add branch filter if exists
+IF (@BranchId IS NOT NULL)
+    SET @SQL = @SQL + ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR) + ' ';
+
+-- Finish SQL
+SET @SQL = @SQL + '
+GROUP BY s.Code, s.Name, COA.Code, COA.Name
+ORDER BY s.Code;
+';
+
+-- Execute
+EXEC sp_executesql @SQL;
+
+";
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand.Parameters.AddWithValue("@FYId", vm.YearId);
+
+                if (!string.IsNullOrEmpty(vm.BranchId))
+                    adapter.SelectCommand.Parameters.AddWithValue("@BranchId", vm.BranchId);
+
+                adapter.Fill(dt);
+
+
+                var list = new List<Dictionary<string, object>>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    var dict = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        dict[col.ColumnName] = row[col];
+                    }
+                    list.Add(dict);
+                }
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
 
 
     }

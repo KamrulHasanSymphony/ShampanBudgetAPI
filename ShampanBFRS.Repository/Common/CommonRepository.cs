@@ -1857,7 +1857,7 @@ WHERE P.IsActive = 1 ";
                 string query = @"
 SELECT 
 [Id] as Id
-,[Year] as [Name]
+,[YearName] as [Name]
  FROM FiscalYears
 WHERE 
     1 = 1";
@@ -1865,12 +1865,12 @@ WHERE
 
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
+                query += @" order by Year";
+
                 SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
 
                 // SET additional conditions param
                 objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
-
-
 
                 objComm.Fill(dataTable);
 
