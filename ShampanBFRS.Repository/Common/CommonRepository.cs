@@ -2151,6 +2151,66 @@ WHERE
                 return result;
             }
         }
+
+        public async Task<ResultVM> StructureList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+                string sqlQuery = @"
+	         SELECT DISTINCT
+          ISNULL(H.Id, 0) Id
+         ,ISNULL(H.Code, '') Code
+         ,ISNULL(H.Name, '') Name
+         ,ISNULL(H.Remarks, '') Remarks 
+         ,ISNULL(H.IsActive, 0) IsActive
+         ,ISNULL(H.IsArchive, 0) IsArchive
+         ,CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive'   END Status
+         FROM Structures H
+         WHERE H.IsActive = 1
+        ";
+
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter objComm = CreateAdapter(sqlQuery, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+
+
+                objComm.Fill(dataTable);
+
+                var modelList = dataTable.AsEnumerable().Select(row => new StructureVM
+                {
+                    Id = Convert.ToInt32(row["Id"]),
+                    Code = row["Code"]?.ToString(),
+                    Name = row["Name"]?.ToString(),                
+                    Remarks = row["Remarks"]?.ToString(),
+                    IsActive = Convert.ToBoolean(row["IsActive"]),
+                    IsArchive = Convert.ToBoolean(row["IsArchive"]),
+
+                }).ToList();
+
+
+                result.Status = "Success";
+                result.Message = "Data retrieved successfully.";
+                result.DataVM = modelList;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+        }
     }
 
 }
