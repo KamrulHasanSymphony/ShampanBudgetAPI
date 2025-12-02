@@ -39,20 +39,14 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [Display(Name = "Remarks")]
         public string? Remarks { get; set; }
 
-        [Display(Name = "Is Active")]
-        public bool IsActive { get; set; }
-
-        [Display(Name = "Is Archive")]
-        public bool IsArchive { get; set; }
-
         [Display(Name = "Is Retained Earnings")]
-        public bool? IsRetainedEarning { get; set; }
+        public bool IsRetainedEarning { get; set; }
 
         [Display(Name = "Is Net Profit")]
-        public bool? IsNetProfit { get; set; }
+        public bool IsNetProfit { get; set; }
 
         [Display(Name = "Is Depreciation")]
-        public bool? IsDepreciation { get; set; }
+        public bool IsDepreciation { get; set; }
 
         public string? Segement01 { get; set; }
         public string? Segement02 { get; set; }

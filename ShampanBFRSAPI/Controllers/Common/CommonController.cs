@@ -226,6 +226,29 @@ namespace ShampanBFRSAPI.Controllers.Common
             }
         }
 
+        [HttpPost("COAGroupList")]
+        public async Task<ResultVM> CustomerList(CommonVM Vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                CommonService _commonService = new CommonService();
+                resultVM = await _commonService.COAGroupList(new[] { "" }, new[] { "" }, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = "Data not fetched.",
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
+
 
     }
 }
