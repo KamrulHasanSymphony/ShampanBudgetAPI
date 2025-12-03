@@ -202,6 +202,8 @@ namespace ShampanBFRSAPI.Controllers.SetUp
                 throw new Exception($"Error generating report: {ex.Message}");
             }
         }
+
+        
     }
 }
 
