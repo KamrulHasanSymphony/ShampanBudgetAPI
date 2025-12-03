@@ -43,12 +43,12 @@ namespace ShampanBFRS.Repository.SetUp
                 {
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy);
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ImagePath", string.IsNullOrEmpty(vm.ImagePath) ? DBNull.Value : vm.ImagePath);
+                    //cmd.Parameters.AddWithValue("@ImagePath", string.IsNullOrEmpty(vm.ImagePath) ? DBNull.Value : vm.ImagePath);
 
 
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
@@ -99,11 +99,11 @@ namespace ShampanBFRS.Repository.SetUp
                 {
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ImagePath", string.IsNullOrEmpty(vm.ImagePath) ? DBNull.Value : vm.ImagePath);
+                    //cmd.Parameters.AddWithValue("@ImagePath", string.IsNullOrEmpty(vm.ImagePath) ? DBNull.Value : vm.ImagePath);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
@@ -179,89 +179,6 @@ namespace ShampanBFRS.Repository.SetUp
                 
                 result.ExMessage = ex.Message;
                 result.Message = ex.Message;
-                return result;
-            }
-        }
-
-        // List Method
-        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
-        {
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
-
-            try
-            {
-                if (conn == null)
-                {
-                    throw new Exception("Database connection fail!");
-                }
-
-                string query = @"
-SELECT
-    ISNULL(M.Id, 0) Id,
-    ISNULL(M.Code, '') Code,
-    ISNULL(M.Name, '') Name,
-    ISNULL(M.Description, '') Description,
-    ISNULL(M.IsArchive, 0) IsArchive,
-    ISNULL(M.IsActive, 0) IsActive,
-    ISNULL(M.CreatedBy, '') CreatedBy,
-    ISNULL(FORMAT(M.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') CreatedOn,
-    ISNULL(M.LastModifiedBy, '') LastModifiedBy,
-    ISNULL(FORMAT(M.LastModifiedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') LastModifiedOn,
-    ISNULL(M.ImagePath,'') AS ImagePath
-
-FROM Products M
-WHERE 1 = 1
-";
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    query += " AND Id = @Id ";
-
-
-                }
-
-                // Apply additional conditions
-                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
-
-                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
-
-                // SET additional conditions param
-                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
-                }
-
-                objComm.Fill(dataTable);
-
-                var modelList = dataTable.AsEnumerable().Select(row => new ProductVM
-                {
-                    Id = row.Field<int>("Id"),
-                    Code = row.Field<string>("Code"),
-                    Name = row.Field<string>("Name"),
-                    Description = row.Field<string>("Description"),
-                    IsArchive = row.Field<bool>("IsArchive"),
-                    IsActive = row.Field<bool>("IsActive"),
-                    CreatedBy = row.Field<string>("CreatedBy"),
-                    CreatedOn = row.Field<string>("CreatedOn"),
-                    LastModifiedBy = row.Field<string>("LastModifiedBy"),
-                    LastModifiedOn = row.Field<string?>("LastModifiedOn"),
-                    ImagePath = row.Field<string>("ImagePath")
-
-                }).ToList();
-
-
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
-                result.DataVM = modelList;
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.Message;
-                result.ExMessage = ex.Message;
                 return result;
             }
         }
@@ -491,6 +408,97 @@ ORDER BY Name";
                 return result;
             }
         }
+
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
+            SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+                SELECT
+     ISNULL(P.Id, 0) AS Id
+    ,ISNULL(P.Code, '') AS Code
+    ,ISNULL(P.Name, '') AS Name
+    ,ISNULL(P.ConversionFactor, 0) AS ConversionFactor
+    ,ISNULL(P.CIFCharge, 0) AS CIFCharge
+    ,ISNULL(P.CifUsdRate, 0) AS CifUsdRate
+    ,ISNULL(P.InsuranceRate, 0) AS InsuranceRate
+    ,ISNULL(P.BankCharge, 0) AS BankCharge
+    ,ISNULL(P.OceanLoss, 0) AS OceanLoss
+    ,ISNULL(P.CPACharge, 0) AS CPACharge
+    ,ISNULL(P.HandelingCharge, 0) AS HandelingCharge
+    ,ISNULL(P.LightCharge, 0) AS LightCharge
+    ,ISNULL(P.Survey, 0) AS Survey
+    ,ISNULL(P.ExERLRate, 0) AS ExERLRate
+    ,ISNULL(P.DutyPerLiter, 0) AS DutyPerLiter
+    ,ISNULL(P.SDRate, 0) AS SDRate
+    ,ISNULL(P.DutyInTariff, 0) AS DutyInTariff
+    ,ISNULL(P.ATRate, 0) AS ATRate
+    ,ISNULL(P.VATRate, 0) AS VATRate
+FROM Products P
+WHERE 1 = 1;
+
+ ";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                    query += " AND P.Id=@Id ";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                    adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+
+                adapter.Fill(dt);
+
+                var list = dt.AsEnumerable().Select(row => new ProductVM
+                {
+                    Id = row.Field<int>("Id"),
+                    Code = row.Field<string>("Code"),
+                    Name = row.Field<string>("Name"),
+
+                    ConversionFactor = row.Field<decimal?>("ConversionFactor") ?? 0,
+                    CIFCharge = row.Field<decimal?>("CIFCharge") ?? 0,
+                    ExchangeRateUsd = row.Field<decimal?>("ExchangeRateUsd") ?? 0,
+                    InsuranceRate = row.Field<decimal?>("InsuranceRate") ?? 0,
+                    BankCharge = row.Field<decimal?>("BankCharge") ?? 0,
+                    OceanLoss = row.Field<decimal?>("OceanLoss") ?? 0,
+                    CPACharge = row.Field<decimal?>("CPACharge") ?? 0,
+                    HandelingCharge = row.Field<decimal?>("HandelingCharge") ?? 0,
+                    LightCharge = row.Field<decimal?>("LightCharge") ?? 0,
+                    Survey = row.Field<decimal?>("Survey") ?? 0,
+                    ExERLRate = row.Field<decimal?>("ExERLRate") ?? 0,
+                    DutyPerLiter = row.Field<decimal?>("DutyPerLiter") ?? 0,
+                    SDRate = row.Field<decimal?>("SDRate") ?? 0,
+                    DutyInTariff = row.Field<decimal?>("DutyInTariff") ?? 0,
+                    ATRate = row.Field<decimal?>("ATRate") ?? 0,
+                    VATRate = row.Field<decimal?>("VATRate") ?? 0
+                }).ToList();
+
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
 
 
     }

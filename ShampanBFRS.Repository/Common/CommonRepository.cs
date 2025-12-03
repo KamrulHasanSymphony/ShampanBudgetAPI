@@ -1177,7 +1177,7 @@ WHERE P.IsActive = 1 ";
                     Id = row.Field<int>("ProductId"),
                     Name = row.Field<string>("ProductName"),
                     Code = row.Field<string>("ProductCode"),
-                    Description = row.Field<string>("Description"),
+                    //Description = row.Field<string>("Description"),
                     Status = row.Field<string>("Status")
 
                 }).ToList();
