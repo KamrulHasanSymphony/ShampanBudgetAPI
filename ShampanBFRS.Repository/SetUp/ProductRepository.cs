@@ -29,13 +29,17 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
         INSERT INTO Products
         (
-            Code, Name, Description,
-            IsArchive, IsActive, CreatedBy,CreatedFrom, CreatedOn,ImagePath
+           Code, Name, ConversionFactor, CIFCharge, ExchangeRateUsd, InsuranceRate, BankCharge, 
+                    OceanLoss, CPACharge, HandelingCharge, LightCharge, Survey, CostLiterExImport, ExERLRate, 
+                    DutyPerLiter, Refined, Crude, SDRate, DutyInTariff, ATRate, VATRate, IsActive, CreatedBy, 
+                    CreatedFrom, CreatedAt
         )
         VALUES
         (
-            @Code, @Name, @Description,
-            @IsArchive, @IsActive, @CreatedBy, @CreatedFrom,GETDATE(),@ImagePath
+            @Code, @Name, @ConversionFactor, @CIFCharge, @ExchangeRateUsd, @InsuranceRate, @BankCharge, 
+                    @OceanLoss, @CPACharge, @HandelingCharge, @LightCharge, @Survey, @CostLiterExImport, @ExERLRate, 
+                    @DutyPerLiter, @Refined, @Crude, @SDRate, @DutyInTariff, @ATRate, @VATRate, @IsActive, @CreatedBy, 
+                    @CreatedFrom, GETDATE()
         );
         SELECT SCOPE_IDENTITY();";
 
@@ -43,12 +47,28 @@ namespace ShampanBFRS.Repository.SetUp
                 {
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    //cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
+                    cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BankCharge", vm.BankCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@OceanLoss", vm.OceanLoss ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CPACharge", vm.CPACharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HandelingCharge", vm.HandelingCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LightCharge", vm.LightCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Survey", vm.Survey ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CostLiterExImport", vm.CostLiterExImport ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ExERLRate", vm.ExERLRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DutyPerLiter", vm.DutyPerLiter ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Refined", vm.Refined ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Crude", vm.Crude ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@SDRate", vm.SDRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy);
+                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
-                    //cmd.Parameters.AddWithValue("@ImagePath", string.IsNullOrEmpty(vm.ImagePath) ? DBNull.Value : vm.ImagePath);
 
 
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
@@ -90,21 +110,60 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
         UPDATE Products
         SET
-            Name = @Name, Description = @Description,
-            IsActive = @IsActive, LastModifiedBy = @LastModifiedBy, LastUpdateFrom=@LastUpdateFrom,
-            LastModifiedOn = GETDATE(),ImagePath = @ImagePath
+                    Code = @Code,
+                    Name = @Name,
+                    ConversionFactor = @ConversionFactor,
+                    CIFCharge = @CIFCharge,
+                    ExchangeRateUsd = @ExchangeRateUsd,
+                    InsuranceRate = @InsuranceRate,
+                    BankCharge = @BankCharge,
+                    OceanLoss = @OceanLoss,
+                    CPACharge = @CPACharge,
+                    HandelingCharge = @HandelingCharge,
+                    LightCharge = @LightCharge,
+                    Survey = @Survey,
+                    CostLiterExImport = @CostLiterExImport,
+                    ExERLRate = @ExERLRate,
+                    DutyPerLiter = @DutyPerLiter,
+                    Refined = @Refined,
+                    Crude = @Crude,
+                    SDRate = @SDRate,
+                    DutyInTariff = @DutyInTariff,
+                    ATRate = @ATRate,
+                    VATRate = @VATRate,
+                    IsActive = @IsActive,
+                    LastModifiedBy = @LastModifiedBy,
+                    LastUpdateFrom = @LastUpdateFrom,
+                    LastModifiedOn = GETDATE()
         WHERE Id = @Id";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
+                    cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    //cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BankCharge", vm.BankCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@OceanLoss", vm.OceanLoss ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CPACharge", vm.CPACharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HandelingCharge", vm.HandelingCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LightCharge", vm.LightCharge ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Survey", vm.Survey ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CostLiterExImport", vm.CostLiterExImport ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ExERLRate", vm.ExERLRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DutyPerLiter", vm.DutyPerLiter ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Refined", vm.Refined ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Crude", vm.Crude ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@SDRate", vm.SDRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
-                    //cmd.Parameters.AddWithValue("@ImagePath", string.IsNullOrEmpty(vm.ImagePath) ? DBNull.Value : vm.ImagePath);
-
+                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
@@ -179,6 +238,110 @@ namespace ShampanBFRS.Repository.SetUp
                 
                 result.ExMessage = ex.Message;
                 result.Message = ex.Message;
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
+            SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+                SELECT
+                    ISNULL(M.Id, 0) AS Id,
+                    ISNULL(M.Code, '') AS Code,
+                    ISNULL(M.Name, '') AS Name,
+                    ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
+                    ISNULL(M.CIFCharge, 0) AS CIFCharge,
+                    ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+                    ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
+                    ISNULL(M.BankCharge, 0) AS BankCharge,
+                    ISNULL(M.OceanLoss, 0) AS OceanLoss,
+                    ISNULL(M.CPACharge, 0) AS CPACharge,
+                    ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
+                    ISNULL(M.LightCharge, 0) AS LightCharge,
+                    ISNULL(M.Survey, 0) AS Survey,
+                    ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
+                    ISNULL(M.ExERLRate, 0) AS ExERLRate,
+                    ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
+                    ISNULL(M.Refined, 0) AS Refined,
+                    ISNULL(M.Crude, 0) AS Crude,
+                    ISNULL(M.SDRate, 0) AS SDRate,
+                    ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
+                    ISNULL(M.ATRate, 0) AS ATRate,
+                    ISNULL(M.VATRate, 0) AS VATRate,
+                    ISNULL(M.IsActive, 0) AS IsActive,
+                    ISNULL(M.CreatedBy, '') AS CreatedBy,
+                    ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
+                    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+                    ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
+                FROM Products M
+WHERE 1 = 1
+
+ ";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                    query += " AND M.Id=@Id ";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                    adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+
+                adapter.Fill(dt);
+
+                var list = dt.AsEnumerable().Select(row => new ProductVM
+                {
+                    Id = row.Field<int>("Id"),
+                    Code = row.Field<string>("Code"),
+                    Name = row.Field<string>("Name"),
+                    ConversionFactor = row.Field<decimal>("ConversionFactor"),
+                    CIFCharge = row.Field<decimal>("CIFCharge"),
+                    ExchangeRateUsd = row.Field<decimal>("ExchangeRateUsd"),
+                    InsuranceRate = row.Field<decimal>("InsuranceRate"),
+                    BankCharge = row.Field<decimal>("BankCharge"),
+                    OceanLoss = row.Field<decimal>("OceanLoss"),
+                    CPACharge = row.Field<decimal>("CPACharge"),
+                    HandelingCharge = row.Field<decimal>("HandelingCharge"),
+                    LightCharge = row.Field<decimal>("LightCharge"),
+                    Survey = row.Field<decimal>("Survey"),
+                    CostLiterExImport = row.Field<decimal>("CostLiterExImport"),
+                    ExERLRate = row.Field<decimal>("ExERLRate"),
+                    DutyPerLiter = row.Field<decimal>("DutyPerLiter"),
+                    Refined = row.Field<decimal>("Refined"),
+                    Crude = row.Field<decimal>("Crude"),
+                    SDRate = row.Field<decimal>("SDRate"),
+                    DutyInTariff = row.Field<decimal>("DutyInTariff"),
+                    ATRate = row.Field<decimal>("ATRate"),
+                    VATRate = row.Field<decimal>("VATRate"),
+                    IsActive = row.Field<bool>("IsActive"),
+                    CreatedBy = row.Field<string>("CreatedBy"),
+                    LastUpdateBy = row.Field<string>("LastUpdateBy"),
+                    LastUpdateAt = row.Field<string>("LastUpdateAt")
+                }).ToList();
+
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
                 return result;
             }
         }
@@ -299,9 +462,9 @@ ORDER BY Name";
                 // Define your SQL query string
                 string sqlQuery = @"
             -- Count query
-            SELECT COUNT(DISTINCT H.Id) AS totalcount
-            FROM Products H
-            WHERE H.IsArchive != 1
+            SELECT COUNT(DISTINCT M.Id) AS totalcount
+            FROM Products M
+            WHERE M.IsArchive != 1
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductVM>.FilterCondition(options.filter) + ")" : "") + @"
 
@@ -309,20 +472,36 @@ ORDER BY Name";
             SELECT * 
             FROM (
                 SELECT 
-                ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "H.Id DESC ") + @") AS rowindex,
-                ISNULL(H.Id, 0) AS Id,
-                ISNULL(H.Code, '') AS Code,
-                ISNULL(H.Name, '') AS Name,
-                ISNULL(H.Description, '') AS Description,
-                ISNULL(H.IsArchive, 0) AS IsArchive,                
-                CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive' END AS Status,
-                ISNULL(H.CreatedBy, '') AS CreatedBy,
-                ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
-                ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS CreatedOn,
-                ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS LastModifiedOn
-
-            FROM Products H
-            WHERE H.IsArchive != 1
+                ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC ") + @") AS rowindex,
+                ISNULL(M.Id, 0) AS Id,
+                    ISNULL(M.Code, '') AS Code,
+                    ISNULL(M.Name, '') AS Name,
+                    ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
+                    ISNULL(M.CIFCharge, 0) AS CIFCharge,
+                    ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+                    ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
+                    ISNULL(M.BankCharge, 0) AS BankCharge,
+                    ISNULL(M.OceanLoss, 0) AS OceanLoss,
+                    ISNULL(M.CPACharge, 0) AS CPACharge,
+                    ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
+                    ISNULL(M.LightCharge, 0) AS LightCharge,
+                    ISNULL(M.Survey, 0) AS Survey,
+                    ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
+                    ISNULL(M.ExERLRate, 0) AS ExERLRate,
+                    ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
+                    ISNULL(M.Refined, 0) AS Refined,
+                    ISNULL(M.Crude, 0) AS Crude,
+                    ISNULL(M.SDRate, 0) AS SDRate,
+                    ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
+                    ISNULL(M.ATRate, 0) AS ATRate,
+                    ISNULL(M.VATRate, 0) AS VATRate,
+                    ISNULL(M.IsActive, 0) AS IsActive,
+                    ISNULL(M.CreatedBy, '') AS CreatedBy,
+                    ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
+                    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+                    ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
+                FROM Products M
+            WHERE M.IsArchive != 1
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductVM>.FilterCondition(options.filter) + ")" : "") + @"
 
@@ -330,7 +509,7 @@ ORDER BY Name";
             WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
         ";
 
-                data = KendoGrid<ProductVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
+                data = KendoGrid<ProductVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
 
                 result.Status = "Success";
                 result.Message = "Data retrieved successfully.";
@@ -409,95 +588,7 @@ ORDER BY Name";
             }
         }
 
-        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
-            SqlConnection conn = null, SqlTransaction transaction = null)
-        {
-            DataTable dt = new DataTable();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
-
-            try
-            {
-                if (conn == null) throw new Exception(MessageModel.DBConnFail);
-                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
-
-                string query = @"
-                SELECT
-     ISNULL(P.Id, 0) AS Id
-    ,ISNULL(P.Code, '') AS Code
-    ,ISNULL(P.Name, '') AS Name
-    ,ISNULL(P.ConversionFactor, 0) AS ConversionFactor
-    ,ISNULL(P.CIFCharge, 0) AS CIFCharge
-    ,ISNULL(P.CifUsdRate, 0) AS CifUsdRate
-    ,ISNULL(P.InsuranceRate, 0) AS InsuranceRate
-    ,ISNULL(P.BankCharge, 0) AS BankCharge
-    ,ISNULL(P.OceanLoss, 0) AS OceanLoss
-    ,ISNULL(P.CPACharge, 0) AS CPACharge
-    ,ISNULL(P.HandelingCharge, 0) AS HandelingCharge
-    ,ISNULL(P.LightCharge, 0) AS LightCharge
-    ,ISNULL(P.Survey, 0) AS Survey
-    ,ISNULL(P.ExERLRate, 0) AS ExERLRate
-    ,ISNULL(P.DutyPerLiter, 0) AS DutyPerLiter
-    ,ISNULL(P.SDRate, 0) AS SDRate
-    ,ISNULL(P.DutyInTariff, 0) AS DutyInTariff
-    ,ISNULL(P.ATRate, 0) AS ATRate
-    ,ISNULL(P.VATRate, 0) AS VATRate
-FROM Products P
-WHERE 1 = 1;
-
- ";
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                    query += " AND P.Id=@Id ";
-
-                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
-
-                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
-                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                    adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
-
-                adapter.Fill(dt);
-
-                var list = dt.AsEnumerable().Select(row => new ProductVM
-                {
-                    Id = row.Field<int>("Id"),
-                    Code = row.Field<string>("Code"),
-                    Name = row.Field<string>("Name"),
-
-                    ConversionFactor = row.Field<decimal?>("ConversionFactor") ?? 0,
-                    CIFCharge = row.Field<decimal?>("CIFCharge") ?? 0,
-                    ExchangeRateUsd = row.Field<decimal?>("ExchangeRateUsd") ?? 0,
-                    InsuranceRate = row.Field<decimal?>("InsuranceRate") ?? 0,
-                    BankCharge = row.Field<decimal?>("BankCharge") ?? 0,
-                    OceanLoss = row.Field<decimal?>("OceanLoss") ?? 0,
-                    CPACharge = row.Field<decimal?>("CPACharge") ?? 0,
-                    HandelingCharge = row.Field<decimal?>("HandelingCharge") ?? 0,
-                    LightCharge = row.Field<decimal?>("LightCharge") ?? 0,
-                    Survey = row.Field<decimal?>("Survey") ?? 0,
-                    ExERLRate = row.Field<decimal?>("ExERLRate") ?? 0,
-                    DutyPerLiter = row.Field<decimal?>("DutyPerLiter") ?? 0,
-                    SDRate = row.Field<decimal?>("SDRate") ?? 0,
-                    DutyInTariff = row.Field<decimal?>("DutyInTariff") ?? 0,
-                    ATRate = row.Field<decimal?>("ATRate") ?? 0,
-                    VATRate = row.Field<decimal?>("VATRate") ?? 0
-                }).ToList();
-
-
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
-                result.DataVM = list;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.Status = MessageModel.Fail;
-                result.Message = ex.Message;
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-        }
+        
 
 
 
