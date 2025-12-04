@@ -17,352 +17,352 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ShampanBFRS.Service.SetUp
 {
-    //public class SegmentService
-    //{
-    //    CommonRepository _commonRepo = new CommonRepository();
+    public class SegmentService
+    {
+        CommonRepository _commonRepo = new CommonRepository();
 
-    //    public async Task<ResultVM> Insert(SegmentVM segment)
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        _commonRepo = new CommonRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+        public async Task<ResultVM> Insert(SegmentVM segment)
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            _commonRepo = new CommonRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
-    //        string CodeGroup = "COAGroup";
-    //        string CodeName = "COAGroup";
-           
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
-    //            string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
-    //            segment.Code = code;
-    //            // sabre.Code = code;
-    //            //#region Check Exist Data
-    //            //string[] conditionField = { "LogInId" };
-    //            //string[] conditionValue = { examinee.LogInId.Trim() };
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+            string CodeGroup = "COAGroup";
+            string CodeName = "COAGroup";
 
-    //            //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+                string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
+                segment.Code = code;
+                // sabre.Code = code;
+                //#region Check Exist Data
+                //string[] conditionField = { "LogInId" };
+                //string[] conditionValue = { examinee.LogInId.Trim() };
 
-    //            //if (exist)
-    //            //{
-    //            //    result.Message = "Data Already Exists!";
-    //            //    throw new Exception("Data Already Exists!");
-    //            //}
-    //            //#endregion
+                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
 
-    //            result = await _repo.Insert(segment, conn, transaction);
+                //if (exist)
+                //{
+                //    result.Message = "Data Already Exists!";
+                //    throw new Exception("Data Already Exists!");
+                //}
+                //#endregion
 
-    //            if (isNewConnection && result.Status == "Success")
-    //            {
-    //                transaction.Commit();
-    //            }
-    //            else
-    //            {
-    //                throw new Exception(result.Message);
-    //            }
+                result = await _repo.Insert(segment, conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
 
-    //    public async Task<ResultVM> Update(SegmentVM segment)
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        _commonRepo = new CommonRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
+        public async Task<ResultVM> Update(SegmentVM segment)
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            _commonRepo = new CommonRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
 
-    //            //#region Check Exist Data
-    //            //string[] conditionField = { "Id not", "LogInId" };
-    //            //string[] conditionValue = { department.Id.ToString(), department.LogInId.Trim() };
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
 
-    //            //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
-    //            //if (exist)
-    //            //{
-    //            //    result.Message = "Data Already Exists!";
-    //            //    throw new Exception("Data Already Exists!");
-    //            //}
-    //            //#endregion
+                //#region Check Exist Data
+                //string[] conditionField = { "Id not", "LogInId" };
+                //string[] conditionValue = { department.Id.ToString(), department.LogInId.Trim() };
 
-    //            result = await _repo.Update(segment , conn, transaction);
+                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
+                //if (exist)
+                //{
+                //    result.Message = "Data Already Exists!";
+                //    throw new Exception("Data Already Exists!");
+                //}
+                //#endregion
 
-    //            if (isNewConnection && result.Status == "Success")
-    //                transaction.Commit();
-    //            else
-    //                throw new Exception(result.Message);
+                result = await _repo.Update(segment, conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
+                if (isNewConnection && result.Status == "Success")
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
 
-    //    public async Task<ResultVM> Delete(CommonVM vm)
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error", IDs = vm.IDs };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
+        public async Task<ResultVM> Delete(CommonVM vm)
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", IDs = vm.IDs };
 
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
 
-    //            result = await _repo.Delete(vm, conn, transaction);
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
 
-    //            if (isNewConnection && result.Status == "Success")
-    //                transaction.Commit();
-    //            else
-    //                throw new Exception(result.Message);
+                result = await _repo.Delete(vm, conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
+                if (isNewConnection && result.Status == "Success")
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
 
-    //    public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
 
-    //            result = await _repo.List(conditionalFields, conditionalValues, vm, conn, transaction);
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
 
-    //            if (isNewConnection && result.Status == "Success")
-    //                transaction.Commit();
-    //            else
-    //                throw new Exception(result.Message);
+                result = await _repo.List(conditionalFields, conditionalValues, vm, conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
+                if (isNewConnection && result.Status == "Success")
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
 
-    //    public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
+        public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
 
-    //            result = await _repo.ListAsDataTable(conditionalFields, conditionalValues, vm, conn, transaction);
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
 
-    //            if (isNewConnection && result.Status == "Success")
-    //                transaction.Commit();
-    //            else
-    //                throw new Exception(result.Message);
+                result = await _repo.ListAsDataTable(conditionalFields, conditionalValues, vm, conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
+                if (isNewConnection && result.Status == "Success")
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
 
-    //    public async Task<ResultVM> Dropdown()
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
+        public async Task<ResultVM> Dropdown()
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
 
-    //            result = await _repo.Dropdown(conn, transaction);
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
 
-    //            if (isNewConnection && result.Status == "Success")
-    //                transaction.Commit();
-    //            else
-    //                throw new Exception(result.Message);
+                result = await _repo.Dropdown(conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
+                if (isNewConnection && result.Status == "Success")
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
 
-    //    public async Task<ResultVM> GetGridData(GridOptions options)
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
+        public async Task<ResultVM> GetGridData(GridOptions options)
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
 
-    //            result = await _repo.GetGridData(options, conn, transaction);
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
 
-    //            if (isNewConnection && result.Status == "Success")
-    //                transaction.Commit();
-    //            else
-    //                throw new Exception(result.Message);
+                result = await _repo.GetGridData(options, conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
+                if (isNewConnection && result.Status == "Success")
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
 
-    //    public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-    //    {
-    //        SegmentRepository _repo = new SegmentRepository();
-    //        ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
-    //        bool isNewConnection = false;
-    //        SqlConnection conn = null;
-    //        SqlTransaction transaction = null;
+        public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+        {
+            SegmentRepository _repo = new SegmentRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
-    //        try
-    //        {
-    //            conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-    //            conn.Open();
-    //            isNewConnection = true;
-    //            transaction = conn.BeginTransaction();
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
 
-    //            //result = await _repo.ReportPreview(conditionalFields, conditionalValues, vm, conn, transaction);
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
 
-    //            if (result.Status == "Success" && result.DataVM is DataTable dataTable)
-    //            {
-    //                if (!dataTable.Columns.Contains("ReportType"))
-    //                {
-    //                    var ReportType = new DataColumn("ReportType") { DefaultValue = "Examinee" };
-    //                    dataTable.Columns.Add(ReportType);
-    //                }
-    //                result.DataVM = dataTable;
-    //            }
+                //result = await _repo.ReportPreview(conditionalFields, conditionalValues, vm, conn, transaction);
 
-    //            return result;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            if (transaction != null && isNewConnection) transaction.Rollback();
-    //            result.Message = ex.Message;
-    //            result.ExMessage = ex.ToString();
-    //            return result;
-    //        }
-    //        finally
-    //        {
-    //            if (isNewConnection && conn != null) conn.Close();
-    //        }
-    //    }
-    //}
+                if (result.Status == "Success" && result.DataVM is DataTable dataTable)
+                {
+                    if (!dataTable.Columns.Contains("ReportType"))
+                    {
+                        var ReportType = new DataColumn("ReportType") { DefaultValue = "Examinee" };
+                        dataTable.Columns.Add(ReportType);
+                    }
+                    result.DataVM = dataTable;
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
+    }
 }
