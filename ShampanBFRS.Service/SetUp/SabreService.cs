@@ -30,8 +30,7 @@ namespace ShampanBFRS.Service.SetUp
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
-            string CodeGroup = "Sabres";
-            string CodeName = "SabresVM";
+
 
             try
             {
@@ -39,9 +38,6 @@ namespace ShampanBFRS.Service.SetUp
                 conn.Open();
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
-
-                string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
-                sabre.Code = code;
 
                 result = await _repo.Insert(sabre, conn, transaction);
 

@@ -14,10 +14,10 @@ using ShampanBFRS.ViewModel.QuestionVM;
 
 namespace ShampanBFRS.Repository.SetUp
 {
-    public class COARepository : CommonRepository
+    public class SegmentRepository : CommonRepository
     {
         // Insert Method
-        public async Task<ResultVM> Insert(COAVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Insert(SegmentVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
 
@@ -27,79 +27,34 @@ namespace ShampanBFRS.Repository.SetUp
                 if (transaction == null) transaction = conn.BeginTransaction();
 
                 string query = @"
-        INSERT INTO COAs
+        INSERT INTO Segments
         (
- 
- PID
-,COASL
-,StructureId
-,COAGroupId
-,Code
-,Name
-,Nature
-,COAType
-,ReportType
-,Remarks
-,IsActive
-,IsArchive
-,IsRetainedEarning
-,IsNetProfit
-,IsDepreciation
-,CreatedBy
-,CreatedAt
-,CreatedFrom
+            Code, Name,Length,Remarks,
+            IsActive, IsArchive, CreatedBy,CreatedFrom,CreatedOn
         )
         VALUES
         (
- @PID
-,@COASL
-,@StructureId
-,@COAGroupId
-,@Code
-,@Name
-,@Nature
-,@COAType
-,@ReportType
-,@Remarks
-,@IsActive
-,@IsArchive
-,@IsRetainedEarning
-,@IsNetProfit
-,@IsDepreciation
-,@CreatedBy
-,@CreatedAt
-,@CreatedFrom
-);
+            @Code, @Name,@Length, @Remarks,
+            @IsActive, @IsArchive, @CreatedBy, @CreatedFrom,GETDATE()
+        );
         SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
-                {                  
-                    cmd.Parameters.AddWithValue("@PID", vm.PID ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@COASL", vm.COASL ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@StructureId", vm.StructureId);       
-                    cmd.Parameters.AddWithValue("@COAGroupId", vm.COAGroupId ?? (object)DBNull.Value);
+                {
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Nature", vm.Nature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@COAType", vm.COAType ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ReportType", vm.ReportType ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Length", vm.Length ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
-
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
-                    cmd.Parameters.AddWithValue("@IsRetainedEarning", vm.IsRetainedEarning );
-                    cmd.Parameters.AddWithValue("@IsNetProfit",vm.IsNetProfit );
-                    cmd.Parameters.AddWithValue("@IsDepreciation", vm.IsDepreciation );
-
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CreatedAt", vm.CreatedAt ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
 
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
                 }
 
                 result.Status = "Success";
-                result.Message = "COA inserted successfully.";
+                result.Message = "Segment inserted successfully.";
                 result.Id = vm.Id.ToString();
                 result.DataVM = vm;
             }
@@ -113,7 +68,7 @@ namespace ShampanBFRS.Repository.SetUp
         }
 
         // Update Method
-        public async Task<ResultVM> Update(COAVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Update(SegmentVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", Id = vm.Id.ToString(), DataVM = vm };
 
@@ -123,56 +78,32 @@ namespace ShampanBFRS.Repository.SetUp
                 if (transaction == null) transaction = conn.BeginTransaction();
 
                 string query = @"
-                UPDATE COAs
+                UPDATE Segments
                 SET 
-                 PID= @PID
-                ,COASL= @COASL
-                ,StructureId=@StructureId
-                ,COAGroupId= @COAGroupId
-                ,Code=@Code
-                ,Name= @Name
-                ,Nature= @Nature
-                ,COAType= @COAType
-                ,ReportType= @ReportType
-                ,Remarks= @Remarks
-                ,IsActive= @IsActive
-                ,IsRetainedEarning= @IsRetainedEarning
-                ,IsNetProfit= @IsNetProfit
-                ,IsDepreciation= @IsDepreciation
-                ,LastUpdateBy= @LastUpdateBy
-                ,LastUpdateAt= @LastUpdateAt
-                ,LastUpdateFrom= @LastUpdateFrom
+                    Name = @Name,
+                    Length =@Length,
+                    Remarks = @Remarks,
+                    IsActive = @IsActive,
+                    LastUpdateBy = @LastUpdateBy,
+                    LastUpdateFrom = @LastUpdateFrom,
+                    LastUpdateOn = GETDATE()
                 WHERE Id = @Id";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
-                    cmd.Parameters.AddWithValue("@PID", vm.PID ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@COASL", vm.COASL ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@StructureId", vm.StructureId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@COAGroupId", vm.COAGroupId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Length", vm.Length ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Nature", vm.Nature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@COAType", vm.COAType ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ReportType", vm.ReportType ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
-
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
-                    cmd.Parameters.AddWithValue("@IsRetainedEarning", vm.IsRetainedEarning);
-                    cmd.Parameters.AddWithValue("@IsNetProfit", vm.IsNetProfit );
-                    cmd.Parameters.AddWithValue("@IsDepreciation", vm.IsDepreciation);
-
                     cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LastUpdateAt", vm.LastUpdateAt ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
 
                     int rows = cmd.ExecuteNonQuery();
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "COA updated successfully.";
+                        result.Message = "Segment updated successfully.";
                     }
                     else
                     {
@@ -203,11 +134,11 @@ namespace ShampanBFRS.Repository.SetUp
                 string inClause = string.Join(", ", vm.IDs.Select((id, index) => $"@Id{index}"));
 
                 string query = $@"
-                UPDATE COAs
+                UPDATE Segments
                 SET IsArchive = 1, IsActive = 0,
                     LastUpdateBy = @LastUpdateBy,
                     LastUpdateFrom = @LastUpdateFrom,
-                    LastUpdateAt = GETDATE()
+                    LastUpdateOn = GETDATE()
                 WHERE Id IN ({inClause})";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
@@ -223,7 +154,7 @@ namespace ShampanBFRS.Repository.SetUp
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "COAGroup deleted successfully.";
+                        result.Message = "Segment deleted successfully.";
                     }
                     else
                     {
@@ -254,32 +185,22 @@ namespace ShampanBFRS.Repository.SetUp
 
                 string query = @"
                 SELECT 
-                     ISNULL(C.Id,0) Id
-                    ,ISNULL(C.PID,0) PID
-                    ,ISNULL(C.COASL,0) COASL
-                    ,ISNULL(C.StructureId,0) StructureId
-                    ,ISNULL(C.COAGroupId,0) COAGroupId
-                    ,ISNULL(C.Code,'') Code
-                    ,ISNULL(C.Name,'') Name
-                    ,ISNULL(C.Nature,'') Nature
-                    ,ISNULL(C.COAType,'') COAType
-                    ,ISNULL(C.ReportType,'') ReportType
-                    ,ISNULL(C.IsActive,0) IsActive
-                    ,ISNULL(C.IsArchive,0) IsArchive
-                    ,ISNULL(C.Remarks,'') Remarks
-                    ,ISNULL(C.IsRetainedEarning,0) IsRetainedEarning
-                    ,ISNULL(C.IsNetProfit,0) IsNetProfit
-                    ,ISNULL(C.IsDepreciation,0) IsDepreciation
-                    ,ISNULL(C.CreatedBy,'') CreatedBy
-                    ,Isnull(FORMAT(C.CreatedAt,'yyyy-MM-dd HH:mm:ss'),'1900-01-01')CreatedAt
-                    ,Isnull(FORMAT(C.LastUpdateAt,'yyyy-MM-dd HH:mm:ss'),'1900-01-01')LastUpdateAt
-                    ,ISNULL(C.LastUpdateBy,'') LastUpdateBy
-
-                     FROM COAs C
+                    ISNULL(M.Id,0) AS Id,
+                    ISNULL(M.Code, '') AS Code,
+                    ISNULL(M.Name, '') AS Name,
+                    ISNULL(M.Length, '') AS Length,
+                    ISNULL(M.Remarks, '') AS Remarks,                   
+                    ISNULL(M.IsActive, 0) AS IsActive,
+                    ISNULL(M.IsArchive, 0) AS IsArchive,
+                    ISNULL(M.CreatedBy, '') AS CreatedBy,
+                    ISNULL(FORMAT(M.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreaCreatedOntedAt,
+                    ISNULL(M.LastUpdateBy,'') AS LastUpdateBy,
+                    ISNULL(FORMAT(M.LastUpdateOn,'yyyy-MM-dd HH:mm'),'') AS LastUpdateOn
+                FROM Segments M
                 WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                    query += " AND C.Id=@Id ";
+                    query += " AND M.Id=@Id ";
 
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
@@ -291,32 +212,23 @@ namespace ShampanBFRS.Repository.SetUp
 
                 adapter.Fill(dt);
 
-                var list = dt.AsEnumerable().Select(row => new COAVM
+                var list = dt.AsEnumerable().Select(row => new SegmentVM
                 {
                     Id = row.Field<int>("Id"),
-                    PID = row.Field<int>("PID"),
-                    COASL = row.Field<int>("COASL"),
-                    StructureId = row.Field<int>("StructureId"),
-                    COAGroupId = row.Field<int>("COAGroupId"),
                     Code = row.Field<string>("Code"),
                     Name = row.Field<string>("Name"),
-                    Nature = row.Field<string>("Nature"),
-                    COAType = row.Field<string>("COAType"),
-                    ReportType = row.Field<string>("ReportType"),
+                    Length = row.Field<int>("Length"),
                     Remarks = row.Field<string>("Remarks"),
                     IsActive = row.Field<bool>("IsActive"),
                     IsArchive = row.Field<bool>("IsArchive"),
-                    IsRetainedEarning = row.Field<bool>("IsRetainedEarning"),
-                    IsNetProfit = row.Field<bool>("IsNetProfit"),
-                    IsDepreciation = row.Field<bool>("IsDepreciation"),
                     CreatedBy = row.Field<string>("CreatedBy"),
                     LastUpdateBy = row.Field<string>("LastUpdateBy"),
-                    LastUpdateAt = row.Field<string>("LastUpdateAt")
+                    LastUpdateOn = row.Field<string>("LastUpdateOn")
 
                 }).ToList();
 
                 result.Status = "Success";
-                result.Message = "Department retrieved successfully.";
+                result.Message = "Segment retrieved successfully.";
                 result.DataVM = list;
 
                 return result;
@@ -341,8 +253,8 @@ namespace ShampanBFRS.Repository.SetUp
                 if (conn == null) throw new Exception("Database connection failed!");
 
                 string query = @"
-                SELECT Id,PID,COASL,StructureId,COAGroupId,Code,Name,Nature,COAType,ReportType,Remarks,IsActive,IsArchive,IsRetainedEarning,IsNetProfit,IsDepreciation,CreatedBy,CreatedAt,CreatedFrom
-                FROM COAs
+                SELECT Id,Code,Name,Length, Remarks, IsActive, IsArchive, CreatedBy, CreatedOn, LastUpdateBy, LastUpdateOn
+                FROM Segments
                 WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
@@ -359,7 +271,7 @@ namespace ShampanBFRS.Repository.SetUp
                 adapter.Fill(dt);
 
                 result.Status = "Success";
-                result.Message = "Department DataTable retrieved successfully.";
+                result.Message = "Segment DataTable retrieved successfully.";
                 result.DataVM = dt;
                 return result;
             }
@@ -383,7 +295,7 @@ namespace ShampanBFRS.Repository.SetUp
 
                 string query = @"
                 SELECT Id, Name
-                FROM COAs
+                FROM Segments
                 WHERE IsActive = 1 AND IsArchive = 0
                 ORDER BY Name";
 
@@ -395,7 +307,7 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 result.Status = "Success";
-                result.Message = "COA dropdown data retrieved successfully.";
+                result.Message = "Segment dropdown data retrieved successfully.";
                 result.DataVM = dt;
                 return result;
             }
@@ -416,15 +328,15 @@ namespace ShampanBFRS.Repository.SetUp
             {
                 if (conn == null) throw new Exception("Database connection failed!");
 
-                var data = new GridEntity<COAVM>();
+                var data = new GridEntity<SegmentVM>();
 
                 string sqlQuery = @"
                 -- Count
-                SELECT COUNT(DISTINCT C.Id) AS totalcount
-                FROM COAs C
-                WHERE C.IsArchive != 1
+                SELECT COUNT(DISTINCT H.Id) AS totalcount
+                FROM Segments H
+                WHERE H.IsArchive != 1
                 " + (options.filter.Filters.Count > 0
-                        ? " AND (" + GridQueryBuilder<COAVM>.FilterCondition(options.filter) + ")"
+                        ? " AND (" + GridQueryBuilder<SegmentVM>.FilterCondition(options.filter) + ")"
                         : "") + @"
 
                 -- Data
@@ -432,39 +344,31 @@ namespace ShampanBFRS.Repository.SetUp
                 FROM (
                     SELECT ROW_NUMBER() OVER(ORDER BY " +
                         (options.sort.Count > 0
-                            ? "C." + options.sort[0].field + " " + options.sort[0].dir
-                            : "C.Id DESC") + @") AS rowindex,
-                             ISNULL(C.Id,0) Id
-                            ,ISNULL(C.PID,0) PID
-                            ,ISNULL(C.COASL,0) COASL
-                            ,ISNULL(C.StructureId,0) StructureId
-                            ,ISNULL(C.COAGroupId,0) COAGroupId
-		                    ,ISNULL(CG.Name,'') GroupName
-                            ,ISNULL(C.Code,'') Code
-                            ,ISNULL(C.Name,'') Name
-                            ,ISNULL(C.Nature,'') Nature
-                            ,ISNULL(C.COAType,'') COAType
-                            ,ISNULL(C.ReportType,'') ReportType
-                            ,ISNULL(C.Remarks,0) AS Remarks
-                            ,ISNULL(C.IsActive,0) AS IsActive
-                            ,CASE WHEN ISNULL(C.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status
-                            ,ISNULL(C.CreatedBy,'') AS CreatedBy
-                            ,ISNULL(FORMAT(C.CreatedAt,'yyyy-MM-dd HH:mm'),'') AS CreatedAt
-                            ,ISNULL(C.LastUpdateBy,'') AS LastUpdateBy
-                            ,ISNULL(FORMAT(C.LastUpdateAt,'yyyy-MM-dd HH:mm'),'') AS LastUpdateAt
-                            FROM COAs C
-                            LEFT OUTER JOIN COAGroups CG ON C.COAGroupId =CG.Id
-                    WHERE C.IsArchive != 1
+                            ? "H." + options.sort[0].field + " " + options.sort[0].dir
+                            : "H.Id DESC") + @") AS rowindex,
+                           ISNULL(H.Id,0) AS Id,
+                           ISNULL(H.Code,'') AS Code,
+                           ISNULL(H.Length,'') AS Length,
+                           ISNULL(H.Name,'') AS Name,
+                           ISNULL(H.Remarks,0) AS Remarks,
+                           ISNULL(H.IsActive,0) AS IsActive,
+                           CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
+                           ISNULL(H.CreatedBy,'') AS CreatedBy,
+                            ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn,
+                           ISNULL(H.LastUpdateBy,'') AS LastUpdateBy,
+                           ISNULL(FORMAT(H.LastUpdateOn,'yyyy-MM-dd HH:mm'),'') AS LastUpdateOn
+                    FROM Segments H
+                    WHERE H.IsArchive != 1
                     " + (options.filter.Filters.Count > 0
-                            ? " AND (" + GridQueryBuilder<COAVM>.FilterCondition(options.filter) + ")"
+                            ? " AND (" + GridQueryBuilder<SegmentVM>.FilterCondition(options.filter) + ")"
                             : "") + @"
                 ) AS a
                 WHERE rowindex > @skip AND (@take=0 OR rowindex <= @take)";
 
-                data = KendoGrid<COAVM>.GetGridDataQuestions_CMD(options, sqlQuery, "C.Id");
+                data = KendoGrid<SegmentVM>.GetGridDataQuestions_CMD(options, sqlQuery, "H.Id");
 
                 result.Status = "Success";
-                result.Message = "COA grid data retrieved successfully.";
+                result.Message = "Segment grid data retrieved successfully.";
                 result.DataVM = data;
 
                 return result;
