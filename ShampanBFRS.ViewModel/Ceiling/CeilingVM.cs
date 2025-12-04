@@ -22,6 +22,9 @@ namespace ShampanBFRS.ViewModel.Ceiling
         [Display(Name = "Fiscal Year")]
         public int GLFiscalYearId { get; set; }
 
+        [Display(Name = "Year Name")]
+        public string? YearName { get; set; }
+
         [Display(Name = "Budget Set")]
         public int BudgetSetNo { get; set; }
 
