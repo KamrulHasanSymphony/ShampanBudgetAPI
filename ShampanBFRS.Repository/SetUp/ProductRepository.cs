@@ -132,9 +132,9 @@ namespace ShampanBFRS.Repository.SetUp
                     ATRate = @ATRate,
                     VATRate = @VATRate,
                     IsActive = @IsActive,
-                    LastModifiedBy = @LastModifiedBy,
+                    LastUpdateBy = @LastUpdateBy,
                     LastUpdateFrom = @LastUpdateFrom,
-                    LastModifiedOn = GETDATE()
+                    LastUpdateAt = GETDATE()
         WHERE Id = @Id";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
@@ -162,7 +162,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
@@ -464,7 +464,7 @@ ORDER BY Name";
             -- Count query
             SELECT COUNT(DISTINCT M.Id) AS totalcount
             FROM Products M
-            WHERE M.IsArchive != 1
+            WHERE 1= 1
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductVM>.FilterCondition(options.filter) + ")" : "") + @"
 
@@ -501,7 +501,7 @@ ORDER BY Name";
                     ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
                     ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
                 FROM Products M
-            WHERE M.IsArchive != 1
+            WHERE 1= 1
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductVM>.FilterCondition(options.filter) + ")" : "") + @"
 
