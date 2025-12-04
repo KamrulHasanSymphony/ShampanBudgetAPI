@@ -366,17 +366,19 @@ namespace ShampanBFRS.Repository.SetUp
             FROM (
                 SELECT 
                     ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "H.Id DESC") + @") AS rowindex,
-                    ISNULL(H.Id, 0) AS Id,
-                    ISNULL(H.Code, '') AS Code,
-                    ISNULL(H.Name, '') AS Name,
-                    ISNULL(H.Remarks, '') AS Remarks,
-                    ISNULL(H.IsActive, 0) AS IsActive,
-                    ISNULL(H.IsArchive, 0) AS IsArchive,
-                    CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive' END AS Status,
-                    ISNULL(H.CreatedBy, '') AS CreatedBy,
-                    ISNULL(H.LastUpdateBy, '') AS LastUpdateBy,
-                    ISNULL(FORMAT(H.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS LastUpdateAt
-                FROM Sabres H
+                       ISNULL(H.Id, 0) AS Id,
+                        ISNULL(H.Code, '') AS Code,
+                        ISNULL(H.Name, '') AS Name,
+	                    ISNULL(C.Code, '') AS iBASCode,
+	                    ISNULL(C.Name, '') AS iBASName,
+                        ISNULL(H.Remarks, '') AS Remarks,
+                        ISNULL(H.IsActive, 0) AS IsActive,
+                        ISNULL(H.IsArchive, 0) AS IsArchive,
+                        ISNULL(H.CreatedBy, '') AS CreatedBy,
+                        ISNULL(H.LastUpdateBy, '') AS LastUpdateBy,
+                        ISNULL(FORMAT(H.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS LastUpdateAt
+                        FROM Sabres H
+                        LEFT OUTER JOIN COAs C ON H.Id =C.Id
                 WHERE 1 = 1";
 
                 // Apply any dynamic conditions

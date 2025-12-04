@@ -439,6 +439,7 @@ namespace ShampanBFRS.Repository.SetUp
                             ,ISNULL(C.COASL,0) COASL
                             ,ISNULL(C.StructureId,0) StructureId
                             ,ISNULL(C.COAGroupId,0) COAGroupId
+		                    ,ISNULL(CG.Name,'') GroupName
                             ,ISNULL(C.Code,'') Code
                             ,ISNULL(C.Name,'') Name
                             ,ISNULL(C.Nature,'') Nature
@@ -451,7 +452,8 @@ namespace ShampanBFRS.Repository.SetUp
                             ,ISNULL(FORMAT(C.CreatedAt,'yyyy-MM-dd HH:mm'),'') AS CreatedAt
                             ,ISNULL(C.LastUpdateBy,'') AS LastUpdateBy
                             ,ISNULL(FORMAT(C.LastUpdateAt,'yyyy-MM-dd HH:mm'),'') AS LastUpdateAt
-                    FROM COAs C
+                            FROM COAs C
+                            LEFT OUTER JOIN COAGroups CG ON C.COAGroupId =CG.Id
                     WHERE C.IsArchive != 1
                     " + (options.filter.Filters.Count > 0
                             ? " AND (" + GridQueryBuilder<COAVM>.FilterCondition(options.filter) + ")"

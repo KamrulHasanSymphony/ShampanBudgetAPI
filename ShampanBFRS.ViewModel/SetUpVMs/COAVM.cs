@@ -38,6 +38,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
 
         [Display(Name = "Remarks")]
         public string? Remarks { get; set; }
+        public string? GroupName { get; set; }
 
         [Display(Name = "Is Retained Earnings")]
         public bool IsRetainedEarning { get; set; }
