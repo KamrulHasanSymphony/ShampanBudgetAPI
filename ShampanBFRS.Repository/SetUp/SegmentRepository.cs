@@ -54,7 +54,7 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 result.Status = "Success";
-                result.Message = "COAGroup inserted successfully.";
+                result.Message = "Segment inserted successfully.";
                 result.Id = vm.Id.ToString();
                 result.DataVM = vm;
             }
@@ -86,7 +86,7 @@ namespace ShampanBFRS.Repository.SetUp
                     IsActive = @IsActive,
                     LastUpdateBy = @LastUpdateBy,
                     LastUpdateFrom = @LastUpdateFrom,
-                    LastUpdateAt = GETDATE()
+                    LastUpdateOn = GETDATE()
                 WHERE Id = @Id";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
@@ -103,7 +103,7 @@ namespace ShampanBFRS.Repository.SetUp
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "Department updated successfully.";
+                        result.Message = "Segment updated successfully.";
                     }
                     else
                     {
@@ -154,7 +154,7 @@ namespace ShampanBFRS.Repository.SetUp
                     if (rows > 0)
                     {
                         result.Status = "Success";
-                        result.Message = "COAGroup deleted successfully.";
+                        result.Message = "Segment deleted successfully.";
                     }
                     else
                     {
@@ -228,7 +228,7 @@ namespace ShampanBFRS.Repository.SetUp
                 }).ToList();
 
                 result.Status = "Success";
-                result.Message = "Department retrieved successfully.";
+                result.Message = "Segment retrieved successfully.";
                 result.DataVM = list;
 
                 return result;
@@ -271,7 +271,7 @@ namespace ShampanBFRS.Repository.SetUp
                 adapter.Fill(dt);
 
                 result.Status = "Success";
-                result.Message = "Department DataTable retrieved successfully.";
+                result.Message = "Segment DataTable retrieved successfully.";
                 result.DataVM = dt;
                 return result;
             }
@@ -307,7 +307,7 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 result.Status = "Success";
-                result.Message = "COAGroup dropdown data retrieved successfully.";
+                result.Message = "Segment dropdown data retrieved successfully.";
                 result.DataVM = dt;
                 return result;
             }

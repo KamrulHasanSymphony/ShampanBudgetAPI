@@ -30,8 +30,8 @@ namespace ShampanBFRS.Service.SetUp
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
-            string CodeGroup = "COAGroup";
-            string CodeName = "COAGroup";
+            string CodeGroup = "Segment";
+            string CodeName = "Segment";
 
             try
             {
