@@ -1,205 +1,84 @@
-﻿using ShampanBFRS.Repository.Common;
-using ShampanBFRS.Repository.SetUp;
-using ShampanBFRS.ViewModel.CommonVMs;
-using ShampanBFRS.ViewModel.Utility;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ShampanBFRS.Repository.Common;
+using ShampanBFRS.Repository.Question;
+using ShampanBFRS.ViewModel.CommonVMs;
+using ShampanBFRS.ViewModel.KendoCommon;
+using ShampanBFRS.ViewModel.QuestionVM;
+using ShampanBFRS.ViewModel.Utility;
+using ShampanBFRS.ViewModel.SetUpVMs;
+using ShampanBFRS.Repository.SetUp;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-namespace ShampanBFRS.Service.Common
+namespace ShampanBFRS.Service.SetUp
 {
-    public class CommonService
+    public class StructureService
     {
+        private readonly CommonRepository _commonRepo = new CommonRepository();
 
-        public async Task<ResultVM> SettingsValue(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+        public async Task<ResultVM> Insert(StructureVM vm)
         {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            string codeGroup = "Structure";
+            string codeName = "Structure";
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
+
             try
             {
                 conn = new SqlConnection(DatabaseHelper.GetConnectionString());
                 conn.Open();
                 isNewConnection = true;
-
                 transaction = conn.BeginTransaction();
 
-                result = await _repo.SettingsValue(conditionalFields, conditionalValues, vm, conn, transaction);
+                string code = _commonRepo.CodeGenerationNo(codeGroup, codeName, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
+                if (string.IsNullOrEmpty(code))
                 {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
+                    throw new Exception("Code generation failed!");
                 }
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
+                vm.Code = code;
 
-        public async Task<ResultVM> NextPrevious(string id, string status, string tableName, string type)
-        {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.NextPrevious(id, status, tableName, type, conn, transaction);
-
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
-
-        public async Task<ResultVM> EnumList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-        {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.EnumList(conditionalFields, conditionalValues, vm, conn, transaction);
-
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
-
-        public async Task<ResultVM> GetProductModalData(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-        {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.GetProductModalData(conditionalFields, conditionalValues, vm, conn, transaction);
+                result = await _repo.Insert(vm, conn, transaction);
 
                 if (result.Status.ToLower() == "success")
                 {
-                    var countResult = await _repo.GetProductModalCountData(conditionalFields, conditionalValues, vm, conn, transaction);
-
-                    if (countResult.Status.ToLower() == "success")
+                    foreach (var detail in vm.StructureDetails)
                     {
-                        result.Count = countResult.Count;
-                    }
-                }
+                        detail.StructureId = vm.Id;
 
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
+                        var resultDetail = await _repo.InsertDetails(detail, conn, transaction);
+
+                        if (resultDetail.Status.ToLower() != "success")
+                        {
+                            throw new Exception(resultDetail.Message);
+                        }
+                    }
                 }
                 else
                 {
                     throw new Exception(result.Message);
                 }
 
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
                 return result;
             }
             catch (Exception ex)
             {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Status = "Fail";
-                result.Message = ex.Message.ToString();
+                transaction?.Rollback();
+                result.Message = ex.Message;
                 result.ExMessage = ex.ToString();
                 return result;
             }
@@ -211,33 +90,104 @@ namespace ShampanBFRS.Service.Common
                 }
             }
         }
-         public async Task<ResultVM> GetSegmentData(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+
+        public async Task<ResultVM> Update(StructureVM vm)
         {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
+
             try
             {
                 conn = new SqlConnection(DatabaseHelper.GetConnectionString());
                 conn.Open();
                 isNewConnection = true;
-
                 transaction = conn.BeginTransaction();
 
-                result = await _repo.GetSegmentModalData(conditionalFields, conditionalValues, vm, conn, transaction);
+                // Ensure that the result has valid data
+                ResultVM rvm = await List(new[] { "M.Id" }, new[] { vm.Id.ToString() }, null);
+
+                if (rvm.DataVM == null || !(rvm.DataVM is List<StructureVM>))
+                {
+                    throw new Exception("No data found for the given ID.");
+                }
+
+                // Cast DataVM to List<MaintenanceRequisitionVM> and take the first item
+                List<StructureVM> mrvmList = (List<StructureVM>)rvm.DataVM;
+                StructureVM mrvm = mrvmList.FirstOrDefault();  // Get the first item if present
+
+                // Check if the data is already posted
+                //if (mrvm == null || mrvm.IsPost)
+                //{
+                //    throw new Exception("Data already posted.Updates not allowed.");
+                //}
+
+                _commonRepo.DetailsDelete("StructureDetails", new[] { "StructureId" }, new[] { vm.Id.ToString() }, conn, transaction);
+
+                result = await _repo.Update(vm, conn, transaction);
 
                 if (result.Status.ToLower() == "success")
                 {
-                    var countResult = await _repo.GetSegmentModalCountData(conditionalFields, conditionalValues, vm, conn, transaction);
-
-                    if (countResult.Status.ToLower() == "success")
+                    foreach (var detail in vm.StructureDetails)
                     {
-                        result.Count = countResult.Count;
+                        detail.StructureId = vm.Id;
+
+                        var resultDetail = await _repo.InsertDetails(detail, conn, transaction);
+
+                        if (resultDetail.Status.ToLower() != "success")
+                        {
+                            throw new Exception(resultDetail.Message);
+                        }
                     }
                 }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                transaction?.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+        public async Task<ResultVM> Delete(string[] Id)
+        {
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null};
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.Delete(Id, conn, transaction);
 
                 if (isNewConnection && result.Status == "Success")
                 {
@@ -256,9 +206,8 @@ namespace ShampanBFRS.Service.Common
                 {
                     transaction.Rollback();
                 }
-                result.Status = "Fail";
-                result.Message = ex.Message.ToString();
                 result.ExMessage = ex.ToString();
+                result.Message = ex.Message;
                 return result;
             }
             finally
@@ -269,34 +218,29 @@ namespace ShampanBFRS.Service.Common
                 }
             }
         }
-        
-        public async Task<ResultVM> AssingedBranchList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            UserBranchProfileRepository _repo = new UserBranchProfileRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
+
             try
             {
                 conn = new SqlConnection(DatabaseHelper.GetConnectionString());
                 conn.Open();
                 isNewConnection = true;
-
                 transaction = conn.BeginTransaction();
 
                 result = await _repo.List(conditionalFields, conditionalValues, vm, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
+                if (isNewConnection)
                 {
                     transaction.Commit();
                 }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
                 return result;
             }
             catch (Exception ex)
@@ -305,8 +249,8 @@ namespace ShampanBFRS.Service.Common
                 {
                     transaction.Rollback();
                 }
-                result.Message = ex.ToString();
                 result.ExMessage = ex.ToString();
+                result.Message = ex.Message;
                 return result;
             }
             finally
@@ -318,10 +262,10 @@ namespace ShampanBFRS.Service.Common
             }
         }
 
-        public async Task<ResultVM> GetFiscalYearComboBox(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+        public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -332,20 +276,14 @@ namespace ShampanBFRS.Service.Common
                 conn = new SqlConnection(DatabaseHelper.GetConnectionString());
                 conn.Open();
                 isNewConnection = true;
-
                 transaction = conn.BeginTransaction();
 
-                result = await _repo.GetFiscalYearComboBox(conditionalFields, conditionalValues, vm, conn, transaction);
+                result = await _repo.ListAsDataTable(conditionalFields, conditionalValues, vm, conn, transaction);
 
-                if (isNewConnection && result.Status == MessageModel.Success)
+                if (isNewConnection)
                 {
                     transaction.Commit();
                 }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
                 return result;
             }
             catch (Exception ex)
@@ -354,10 +292,8 @@ namespace ShampanBFRS.Service.Common
                 {
                     transaction.Rollback();
                 }
-
-                result.Status = MessageModel.Fail;
-                result.Message = ex.ToString();
                 result.ExMessage = ex.ToString();
+                result.Message = ex.Message;
                 return result;
             }
             finally
@@ -368,9 +304,148 @@ namespace ShampanBFRS.Service.Common
                 }
             }
         }
-        public async Task<ResultVM> COAList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+
+        public async Task<ResultVM> Dropdown()
         {
-            CommonRepository _repo = new CommonRepository();
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.Dropdown(conn, transaction);
+
+                if (isNewConnection)
+                {
+                    transaction.Commit();
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+                result.ExMessage = ex.ToString();
+                result.Message = ex.Message;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+        public async Task<ResultVM> MultiplePost(CommonVM vm)
+        {
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.MultiplePost(vm, conn, transaction);
+
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+                result.ExMessage = ex.ToString();
+                result.Message = ex.Message;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+        public async Task<ResultVM> GetGridData(GridOptions options)
+        {
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.GetGridData(options, conn, transaction);
+
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+                result.ExMessage = ex.ToString();
+                result.Message = ex.Message;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+        public async Task<ResultVM> GetStructureDetailDataById(GridOptions options, int masterId)
+        {
+
+            StructureRepository _repo = new StructureRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
@@ -384,7 +459,7 @@ namespace ShampanBFRS.Service.Common
 
                 transaction = conn.BeginTransaction();
 
-                result = await _repo.COAList(conditionalFields, conditionalValues, vm, conn, transaction);
+                result = await _repo.GetStructureDetailDataById(options, masterId, conn, transaction);
 
                 if (isNewConnection && result.Status == "Success")
                 {
@@ -403,7 +478,7 @@ namespace ShampanBFRS.Service.Common
                 {
                     transaction.Rollback();
                 }
-                result.Message = ex.ToString();
+                result.Message = ex.Message.ToString();
                 result.ExMessage = ex.ToString();
                 return result;
             }
@@ -416,33 +491,52 @@ namespace ShampanBFRS.Service.Common
             }
         }
 
-        public async Task<ResultVM> DepartmentList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+
+        public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            StructureRepository _repo = new StructureRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
+
             try
             {
                 conn = new SqlConnection(DatabaseHelper.GetConnectionString());
                 conn.Open();
                 isNewConnection = true;
-
                 transaction = conn.BeginTransaction();
 
-                result = await _repo.DepartmentList(conditionalFields, conditionalValues, vm, conn, transaction);
+                result = await _repo.ReportPreview(conditionalFields, conditionalValues, vm, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
+                var companyData = await new CompanyProfileRepository().List(new[] { "H.Id" }, new[] { vm.CompanyId }, null, conn, transaction);
+                string companyName = string.Empty;
+
+                if (companyData.Status == "Success" && companyData.DataVM is List<CompanyProfileVM> company)
+                {
+                    companyName = company.FirstOrDefault()?.CompanyName;
+                }
+
+                if (result.Status == "Success" && !string.IsNullOrEmpty(companyName) && result.DataVM is DataTable dataTable)
+                {
+                    if (!dataTable.Columns.Contains("CompanyName"))
+                    {
+                        var companyNameCol = new DataColumn("CompanyName") { DefaultValue = companyName };
+                        dataTable.Columns.Add(companyNameCol);
+                    }
+                    if (!dataTable.Columns.Contains("ReportType"))
+                    {
+                        var reportTypeCol = new DataColumn("ReportType") { DefaultValue = "Maintenance Requisition Invoice" };
+                        dataTable.Columns.Add(reportTypeCol);
+                    }
+                    result.DataVM = dataTable;
+                }
+
+                if (isNewConnection)
                 {
                     transaction.Commit();
                 }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
                 return result;
             }
             catch (Exception ex)
@@ -451,8 +545,8 @@ namespace ShampanBFRS.Service.Common
                 {
                     transaction.Rollback();
                 }
-                result.Message = ex.ToString();
                 result.ExMessage = ex.ToString();
+                result.Message = ex.Message;
                 return result;
             }
             finally
@@ -463,155 +557,5 @@ namespace ShampanBFRS.Service.Common
                 }
             }
         }
-
-        public async Task<ResultVM> SabreList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-        {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.SabreList(conditionalFields, conditionalValues, vm, conn, transaction);
-
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
-        public async Task<ResultVM> COAGroupList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-        {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.COAGroupList(conditionalFields, conditionalValues, vm, conn, transaction);
-
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
-        public async Task<ResultVM> StructureList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
-        {
-            CommonRepository _repo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.StructureList(conditionalFields, conditionalValues, vm, conn, transaction);
-
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
-
-
-
-
-
-
-
-
     }
 }
