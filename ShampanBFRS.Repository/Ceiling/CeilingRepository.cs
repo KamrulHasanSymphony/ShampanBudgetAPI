@@ -25,12 +25,20 @@ namespace ShampanBFRS.Repository.Ceiling
                 string sqlText = "";
                 int count = 0;
 
-                string checkQuery = "SELECT COUNT(Id) FROM Ceilings WHERE BranchId = @BranchId AND GLFiscalYearId = @GLFiscalYearId AND BudgetSetNo = @BudgetSetNo AND BudgetType = @BudgetType ";
+                string checkQuery = @"
+SELECT COUNT(Id) FROM Ceilings WHERE BranchId = @BranchId 
+AND GLFiscalYearId = @GLFiscalYearId 
+AND BudgetSetNo = @BudgetSetNo 
+AND BudgetType = @BudgetType 
+AND CreatedBy = @CreatedBy 
+
+";
                 SqlCommand checkCommand = new SqlCommand(checkQuery, conn, transaction);
                 checkCommand.Parameters.Add("@BranchId", SqlDbType.NVarChar).Value = objMaster.BranchId;
                 checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.GLFiscalYearId;
                 checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
                 checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType;
+                checkCommand.Parameters.Add("@CreatedBy", SqlDbType.NVarChar).Value = objMaster.CreatedBy;
                 count = Convert.ToInt32(checkCommand.ExecuteScalar());
 
                 if (count > 0)
@@ -88,10 +96,8 @@ namespace ShampanBFRS.Repository.Ceiling
                 command.Parameters.Add("@CreatedBy", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedBy) ? (object)DBNull.Value : objMaster.CreatedBy.Trim();
                 command.Parameters.Add("@CreatedFrom", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedFrom) ? (object)DBNull.Value : objMaster.CreatedFrom.Trim();
                 command.Parameters.Add("@CreatedOn", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedOn.ToString()) ? (object)DBNull.Value : objMaster.CreatedOn.ToString();
-
                 command.Parameters.Add("@BranchId", SqlDbType.Int).Value = objMaster.BranchId;
                 command.Parameters.Add("@CompanyId", SqlDbType.Int).Value = objMaster.CompanyId;
-
                 command.Parameters.Add("@IsPost", SqlDbType.NChar).Value = "N";
                 command.Parameters.Add("@TransactionType", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.TransactionType) ? (object)DBNull.Value : objMaster.TransactionType.Trim();
 
@@ -338,7 +344,6 @@ where  Id=@Id  ";
 
                 var data = new GridEntity<CeilingVM>();
 
-                // Define your SQL query string
                 string sqlQuery = $@"
                     -- Count query
                     SELECT COUNT(DISTINCT c.Id) AS totalcount
@@ -346,7 +351,6 @@ where  Id=@Id  ";
                 WHERE c.IsArchive != 1
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingVM>.FilterCondition(options.filter) + ")" : "");
 
-                // Apply additional conditions
                 sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
@@ -361,6 +365,7 @@ where  Id=@Id  ";
                            ,ISNULL(c.CompanyId,0) AS CompanyId
                            ,ISNULL(c.BranchId,0) AS BranchId
                            ,ISNULL(c.GLFiscalYearId,0) AS FiscalYearId
+                           ,ISNULL(fy.YearName,0) AS YearName
                            ,ISNULL(c.BudgetSetNo,0) AS BudgetSetNo
                            ,ISNULL(c.BudgetType,'') AS BudgetType
                            ,ISNULL(c.Code,0) AS Code
@@ -373,6 +378,7 @@ where  Id=@Id  ";
                            ,ISNULL(FORMAT(c.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn
                            ,ISNULL(c.TransactionType,'') AS TransactionType
                              FROM Ceilings c
+                            left outer join FiscalYears fy on fy.Id = c.GLFiscalYearId
                     WHERE c.IsArchive != 1
 
             -- Add the filter condition
