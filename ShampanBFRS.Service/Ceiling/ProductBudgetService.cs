@@ -81,9 +81,9 @@ namespace ShampanBFRS.Service.Ceiling
 
                 pbvm.CifUsdValue = pbvm.ReceiveQuantityBBL * pVM.CIFCharge;
 
-                pbvm.ExchangeRateUsd = pVM.ExchangeRateUsd;
+               // pbvm.ExchangeRateUsd = pVM.ExchangeRateUsd; ////
 
-                pbvm.CifBdt = pbvm.CifUsdValue * pVM.ExchangeRateUsd;
+                //pbvm.CifBdt = pbvm.CifUsdValue * pVM.ExchangeRateUsd;
 
                 pbvm.InsuranceRate = pVM.InsuranceRate;
 
@@ -93,10 +93,10 @@ namespace ShampanBFRS.Service.Ceiling
 
                 decimal difCharge = 1.15m; // How
 
-                pbvm.BankChargeValue = (pbvm.CifBdt * pVM.BankCharge) * difCharge;
+                //pbvm.BankChargeValue = (pbvm.CifBdt * pVM.BankCharge) * difCharge;
 
                 pbvm.OceanLoss = pVM.OceanLoss;
-                pbvm.OceanLossValue = (pbvm.CifBdt + pbvm.BankChargeValue) * pbvm.OceanLoss;
+               // pbvm.OceanLossValue = (pbvm.CifBdt + pbvm.BankChargeValue) * pbvm.OceanLoss;
 
                 pbvm.CPACharge = pVM.CPACharge;
                 pbvm.CPAChargeValue = pbvm.BLQuantityBBL * pVM.CPACharge;
@@ -105,10 +105,10 @@ namespace ShampanBFRS.Service.Ceiling
                 pbvm.HandelingChargeValue = pbvm.ReceiveQuantityMT * pVM.HandelingCharge * difCharge;
 
                 pbvm.LightCharge = pVM.LightCharge;
-                pbvm.LightChargeValue = 0;
+                //pbvm.LightChargeValue = 0;
 
                 pbvm.Survey = pVM.Survey;
-                pbvm.SurveyValue = pbvm.ReceiveQuantityMT * pVM.Survey;
+                //pbvm.SurveyValue = pbvm.ReceiveQuantityMT * pVM.Survey;
 
                 pbvm.TotalCost = pbvm.CifBdt + pbvm.InsuranceValue + pbvm.BankChargeValue + pbvm.OceanLossValue + pbvm.CPAChargeValue +
                     pbvm.HandelingChargeValue + pbvm.LightChargeValue + pbvm.SurveyValue;
