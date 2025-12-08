@@ -15,6 +15,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public int? GLFiscalYearId { get; set; }
         public int? BudgetSetNo { get; set; }
         public string BudgetType { get; set; }
+        public int ProductGroupId { get; set; }
         public int? ProductId { get; set; }
 
         public decimal? ConversionFactor { get; set; }
@@ -65,6 +66,8 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public decimal? TotalCostAfterDuties { get; set; }
         public decimal? VATExcludingExtraVAT { get; set; }
         public decimal? TotalCostVATExcluded { get; set; }
+        public string ProductCode { get; set; }
+        public string ProductName { get; set; }
 
     }
 }

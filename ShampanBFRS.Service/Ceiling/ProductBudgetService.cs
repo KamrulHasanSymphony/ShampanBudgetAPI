@@ -6,6 +6,8 @@ using ShampanBFRS.ViewModel.Utility;
 using System.Data.SqlClient;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.Repository.Ceiling;
+using ShampanBFRS.ViewModel.KendoCommon;
+using Microsoft.Extensions.Options;
 
 namespace ShampanBFRS.Service.Ceiling
 {
@@ -81,7 +83,7 @@ namespace ShampanBFRS.Service.Ceiling
 
                 pbvm.CifUsdValue = pbvm.ReceiveQuantityBBL * pVM.CIFCharge;
 
-               // pbvm.ExchangeRateUsd = pVM.ExchangeRateUsd; ////
+                // pbvm.ExchangeRateUsd = pVM.ExchangeRateUsd; ////
 
                 //pbvm.CifBdt = pbvm.CifUsdValue * pVM.ExchangeRateUsd;
 
@@ -96,7 +98,7 @@ namespace ShampanBFRS.Service.Ceiling
                 //pbvm.BankChargeValue = (pbvm.CifBdt * pVM.BankCharge) * difCharge;
 
                 pbvm.OceanLoss = pVM.OceanLoss;
-               // pbvm.OceanLossValue = (pbvm.CifBdt + pbvm.BankChargeValue) * pbvm.OceanLoss;
+                // pbvm.OceanLossValue = (pbvm.CifBdt + pbvm.BankChargeValue) * pbvm.OceanLoss;
 
                 pbvm.CPACharge = pVM.CPACharge;
                 pbvm.CPAChargeValue = pbvm.BLQuantityBBL * pVM.CPACharge;
@@ -163,6 +165,99 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
+        public async Task<ResultVM> GetProductBudgetDataForDetailsLoad(ProductBudgetVM model)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                #region Connection open
+
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                #endregion
+
+                string[] conditionalFields = new[] { "PB.GLFiscalYearId", "PB.BudgetType", "p.ProductGroupId", "PB.BranchId" };
+                string[] conditionalValues = new[] { model.GLFiscalYearId.ToString(), model.BudgetType, model.ProductGroupId.ToString(), model.BranchId.ToString() };
+
+                result = await new ProductBudgetRepository().ProductBudgetList(conditionalFields, conditionalValues,model, conn, transaction);
+
+
+                if (isNewConnection && result.Status == MessageModel.Success)
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
+                result.Status = MessageModel.Success;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw ex.InnerException;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
+
+        public async Task<ResultVM> GetProductBudgetDataForDetailsNew(ProductBudgetVM model)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                #region Connection open
+
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                #endregion
+
+                string[] conditionalFields = new[] { "p.ProductGroupId" };
+                string[] conditionalValues = new[] { model.ProductGroupId.ToString() };
+
+                result = await new ProductBudgetRepository().ProductBudgetListForNew(conditionalFields, conditionalValues, model, conn, transaction);
+
+
+                if (isNewConnection && result.Status == MessageModel.Success)
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
+                result.Status = MessageModel.Success;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw ex.InnerException;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
 
 

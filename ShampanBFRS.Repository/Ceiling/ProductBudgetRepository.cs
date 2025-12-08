@@ -10,8 +10,48 @@ namespace ShampanBFRS.Repository.Ceiling
     {
 
 
-        
-        public async Task<ResultVM> ProductBudgetList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
+        public async Task<ResultVM> ExitCheck(ProductBudgetVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                int count = 0;
+
+                string checkQuery = @"
+SELECT COUNT(Id) FROM ProductBudgets WHERE BranchId = @BranchId 
+AND GLFiscalYearId = @GLFiscalYearId 
+AND BudgetSetNo = @BudgetSetNo 
+AND BudgetType = @BudgetType 
+
+";
+                SqlCommand checkCommand = new SqlCommand(checkQuery, conn, transaction);
+                checkCommand.Parameters.Add("@BranchId", SqlDbType.NVarChar).Value = objMaster.BranchId;
+                checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.GLFiscalYearId;
+                checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
+                checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType;
+                count = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+                result.Count = count;
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.InsertSuccess;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> ProductBudgetList(string[] conditionalFields, string[] conditionalValues, ProductBudgetVM vm = null,
            SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
@@ -23,65 +63,70 @@ namespace ShampanBFRS.Repository.Ceiling
                 if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string query = @"
-                SELECT
-     ISNULL(PB.Id, 0) AS Id
-    ,ISNULL(PB.CompanyId, 0) AS CompanyId
-    ,ISNULL(PB.BranchId, 0) AS BranchId
-    ,ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId
-    ,ISNULL(PB.BudgetSetNo, 0) AS BudgetSetNo
-    ,ISNULL(PB.BudgetType, '') AS BudgetType
-    ,ISNULL(PB.ProductId, 0) AS ProductId
-    ,ISNULL(PB.ConversionFactor, 0) AS ConversionFactor
-    ,ISNULL(PB.BLQuantityMT, 0) AS BLQuantityMT
-    ,ISNULL(PB.BLQuantityBBL, 0) AS BLQuantityBBL
-    ,ISNULL(PB.ReceiveQuantityMT, 0) AS ReceiveQuantityMT
-    ,ISNULL(PB.ReceiveQuantityBBL, 0) AS ReceiveQuantityBBL
-    ,ISNULL(PB.CIFCharge, 0) AS CIFCharge
-    ,ISNULL(PB.CifBdt, 0) AS CifBdt
-    ,ISNULL(PB.CifUsdRate, 0) AS CifUsdRate
-    ,ISNULL(PB.CifUsdValue, 0) AS CifUsdValue
-    ,ISNULL(PB.InsuranceRate, 0) AS InsuranceRate
-    ,ISNULL(PB.InsuranceValue, 0) AS InsuranceValue
-    ,ISNULL(PB.BankCharge, 0) AS BankCharge
-    ,ISNULL(PB.BankChargeValue, 0) AS BankChargeValue
-    ,ISNULL(PB.OceanLoss, 0) AS OceanLoss
-    ,ISNULL(PB.OceanLossValue, 0) AS OceanLossValue
-    ,ISNULL(PB.CPACharge, 0) AS CPACharge
-    ,ISNULL(PB.CPAChargeValue, 0) AS CPAChargeValue
-    ,ISNULL(PB.HandelingCharge, 0) AS HandelingCharge
-    ,ISNULL(PB.HandelingChargeValue, 0) AS HandelingChargeValue
-    ,ISNULL(PB.LightCharge, 0) AS LightCharge
-    ,ISNULL(PB.LightChargeValue, 0) AS LightChargeValue
-    ,ISNULL(PB.Survey, 0) AS Survey
-    ,ISNULL(PB.SurveyValue, 0) AS SurveyValue
-    ,ISNULL(PB.TotalCost, 0) AS TotalCost
-    ,ISNULL(PB.CostBblExImport, 0) AS CostBblExImport
-    ,ISNULL(PB.CostLiterExImport, 0) AS CostLiterExImport
-    ,ISNULL(PB.CostLiterExErl, 0) AS CostLiterExErl
-    ,ISNULL(PB.ExERLRate, 0) AS ExERLRate
-    ,ISNULL(PB.DutyPerLiter, 0) AS DutyPerLiter
-    ,ISNULL(PB.DutyValue, 0) AS DutyValue
-    ,ISNULL(PB.SDRate, 0) AS SDRate
-    ,ISNULL(PB.SDValue, 0) AS SDValue
-    ,ISNULL(PB.DutyOnTariffValuePerLiter, 0) AS DutyOnTariffValuePerLiter
-    ,ISNULL(PB.DutyInTariff3, 0) AS DutyInTariff3
-    ,ISNULL(PB.DutyInTariff2, 0) AS DutyInTariff2
-    ,ISNULL(PB.DutyInTariff1, 0) AS DutyInTariff1
-    ,ISNULL(PB.DutyInTariff, 0) AS DutyInTariff
-    ,ISNULL(PB.ATRate, 0) AS ATRate
-    ,ISNULL(PB.ATValue, 0) AS ATValue
-    ,ISNULL(PB.VATRate, 0) AS VATRate
-    ,ISNULL(PB.VATValue, 0) AS VATValue
-    ,ISNULL(PB.VATPerLiterValue, 0) AS VATPerLiterValue
-    ,ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties
-    ,ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT
-    ,ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
-FROM ProductBudgets PB
-WHERE 1 = 1;
+ SELECT
+ ISNULL(PB.Id, 0) AS Id
+,ISNULL(PB.CompanyId, 0) AS CompanyId
+,ISNULL(PB.BranchId, 0) AS BranchId
+,ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId
+,ISNULL(PB.BudgetSetNo, 0) AS BudgetSetNo
+,ISNULL(PB.BudgetType, '') AS BudgetType
+,ISNULL(PB.ProductId, 0) AS ProductId
+,ISNULL(PB.ConversionFactor, 0) AS ConversionFactor
+,ISNULL(PB.BLQuantityMT, 0) AS BLQuantityMT
+,ISNULL(PB.BLQuantityBBL, 0) AS BLQuantityBBL
+,ISNULL(PB.ReceiveQuantityMT, 0) AS ReceiveQuantityMT
+,ISNULL(PB.ReceiveQuantityBBL, 0) AS ReceiveQuantityBBL
+,ISNULL(PB.CIFCharge, 0) AS CIFCharge
+,ISNULL(PB.CifBdt, 0) AS CifBdt
+,ISNULL(PB.CIFCharge, 0) AS CIFCharge
+,ISNULL(PB.CifUsdValue, 0) AS CifUsdValue
+,ISNULL(PB.InsuranceRate, 0) AS InsuranceRate
+,ISNULL(PB.InsuranceValue, 0) AS InsuranceValue
+,ISNULL(PB.BankCharge, 0) AS BankCharge
+,ISNULL(PB.BankChargeValue, 0) AS BankChargeValue
+,ISNULL(PB.OceanLoss, 0) AS OceanLoss
+,ISNULL(PB.OceanLossValue, 0) AS OceanLossValue
+,ISNULL(PB.CPACharge, 0) AS CPACharge
+,ISNULL(PB.CPAChargeValue, 0) AS CPAChargeValue
+,ISNULL(PB.HandelingCharge, 0) AS HandelingCharge
+,ISNULL(PB.HandelingChargeValue, 0) AS HandelingChargeValue
+,ISNULL(PB.LightCharge, 0) AS LightCharge
+,ISNULL(PB.LightChargeValue, 0) AS LightChargeValue
+,ISNULL(PB.Survey, 0) AS Survey
+,ISNULL(PB.SurveyValue, 0) AS SurveyValue
+,ISNULL(PB.TotalCost, 0) AS TotalCost
+,ISNULL(PB.CostBblExImport, 0) AS CostBblExImport
+,ISNULL(PB.CostLiterExImport, 0) AS CostLiterExImport
+,ISNULL(PB.CostLiterExErl, 0) AS CostLiterExErl
+,ISNULL(PB.ExERLRate, 0) AS ExERLRate
+,ISNULL(PB.DutyPerLiter, 0) AS DutyPerLiter
+,ISNULL(PB.DutyValue, 0) AS DutyValue
+,ISNULL(PB.SDRate, 0) AS SDRate
+,ISNULL(PB.SDValue, 0) AS SDValue
+,ISNULL(PB.DutyOnTariffValuePerLiter, 0) AS DutyOnTariffValuePerLiter
+,ISNULL(PB.DutyInTariff3, 0) AS DutyInTariff3
+,ISNULL(PB.DutyInTariff2, 0) AS DutyInTariff2
+,ISNULL(PB.DutyInTariff1, 0) AS DutyInTariff1
+,ISNULL(PB.DutyInTariff, 0) AS DutyInTariff
+,ISNULL(PB.ATRate, 0) AS ATRate
+,ISNULL(PB.ATValue, 0) AS ATValue
+,ISNULL(PB.VATRate, 0) AS VATRate
+,ISNULL(PB.VATValue, 0) AS VATValue
+,ISNULL(PB.VATPerLiterValue, 0) AS VATPerLiterValue
+,ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties
+,ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT
+,ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
+FROM ProductBudgets PB 
+left outer join Products p on p.Id = PB.ProductId
+left outer join ProductGroups pg on pg.Id = p.ProductGroupId
+
+WHERE 1 = 1
+
+;
 
  ";
 
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                if (vm.Id > 0)
                     query += " AND PB.Id=@Id ";
 
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
@@ -89,7 +134,7 @@ WHERE 1 = 1;
                 SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
                 adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
 
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                if (vm.Id > 0)
                     adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
 
                 adapter.Fill(dt);
@@ -167,6 +212,69 @@ WHERE 1 = 1;
             }
         }
 
+        public async Task<ResultVM> ProductBudgetListForNew(string[] conditionalFields, string[] conditionalValues, ProductBudgetVM vm = null,
+          SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+ SELECT
+ ISNULL(p.Id, 0) AS Id
+,ISNULL(p.Code, 0) AS Code
+,ISNULL(p.Name, 0) AS Name
+,0 AS BLQuantityMT
+
+FROM Products p  
+left outer join ProductGroups pg on pg.Id = p.ProductGroupId
+left outer join ProductBudgets PB on p.Id = PB.ProductId
+
+WHERE 1 = 1
+
+ ";
+
+                if (vm.Id > 0)
+                    query += " AND p.Id=@Id ";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                if (vm.Id > 0)
+                    adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+
+                adapter.Fill(dt);
+
+                var list = dt.AsEnumerable().Select(row => new ProductBudgetVM
+                {
+                    ProductId = row.Field<int>("Id"),
+                    ProductCode = row.Field<string>("Code"),
+                    ProductName = row.Field<string>("Name"),
+                    BLQuantityMT = row.Field<decimal?>("BLQuantityMT") ?? 0,
+
+                }).ToList();
+
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
 
 
     }
