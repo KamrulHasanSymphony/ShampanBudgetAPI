@@ -138,6 +138,31 @@ namespace ShampanBFRSAPI.Controllers.Common
                 };
             }
         }
+        // POST: api/Common/GetSegmentData
+        [HttpPost("GetSegmentData")]
+        public async Task<ResultVM> GetSegmentData(SegmentVM model)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                CommonService _commonService = new CommonService();
+                PeramModel vm = new PeramModel();
+
+
+                resultVM = await _commonService.GetSegmentData(new[] { "P.Code like", "P.Name like" }, new[] { model.Code, model.Name }, model.PeramModel);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = model
+                };
+            }
+        }
 
         [HttpPost("GetFiscalYearComboBox")]
         public async Task<ResultVM> GetFiscalYearComboBox(CommonVM Vm)

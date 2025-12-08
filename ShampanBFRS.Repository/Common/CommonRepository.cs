@@ -1194,6 +1194,68 @@ WHERE P.IsActive = 1 ";
                 result.Message = ex.Message;
                 return result;
             }
+        }// GetProductModalData Method
+        public async Task<ResultVM> GetSegmentModalData(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+
+                string query = @"
+SELECT 
+ISNULL(P.Id,0) Id , 
+ISNULL(P.Name,'') Name,
+ISNULL(P.Code,'') Code, 
+ISNULL(P.Remarks,'') Remarks, 
+CASE WHEN P.IsActive = 1 THEN 'Active' ELSE 'Inactive' END Status
+
+FROM Segments P
+
+WHERE P.IsActive = 1 ";
+
+                // Apply additional conditions
+                query = ApplyConditions(query, conditionalFields, conditionalValues, true);
+
+                // Apply additional conditions
+                query = ApplyConditions(query, conditionalFields, conditionalValues, true);
+                query += @"  ORDER BY " + vm.OrderName + "  " + vm.orderDir;
+                query += @" OFFSET  " + vm.startRec + @" ROWS FETCH NEXT " + vm.pageSize + " ROWS ONLY";
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+                objComm.Fill(dataTable);
+
+                var modelList = dataTable.AsEnumerable().Select(row => new SegmentVM
+                {
+                    Id = row.Field<int>("Id"),
+                    Name = row.Field<string>("Name"),
+                    Code = row.Field<string>("Code"),
+                    Remarks = row.Field<string>("Remarks"),
+                    Status = row.Field<string>("Status")
+
+                }).ToList();
+
+
+                result.Status = "Success";
+                result.Message = "Data retrieved successfully.";
+                result.DataVM = modelList;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
         }
 
         // GetProductModalCountData Method
@@ -1219,6 +1281,54 @@ SELECT
 ISNULL(COUNT(P.Id), 0) AS FilteredCount
 
 FROM Products P
+
+WHERE P.IsActive = 1 ";
+
+
+                // Apply additional conditions
+                query = ApplyConditions(query, conditionalFields, conditionalValues, true);
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+                objComm.Fill(dataTable);
+
+                result.Status = "Success";
+                result.Message = "Data retrieved successfully.";
+                result.Count = Convert.ToInt32(dataTable.Rows[0][0]);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+        }// GetProductModalCountData Method
+        public async Task<ResultVM> GetSegmentModalCountData(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction();
+                }
+
+                string query = @"
+SELECT
+
+ISNULL(COUNT(P.Id), 0) AS FilteredCount
+
+FROM Segments P
 
 WHERE P.IsActive = 1 ";
 
