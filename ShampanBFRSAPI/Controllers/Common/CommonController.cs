@@ -294,6 +294,28 @@ namespace ShampanBFRSAPI.Controllers.Common
                 };
             }
         }
+        [HttpPost("ProductGroupList")]
+        public async Task<ResultVM> ProductGroupList(CommonVM Vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                CommonService _commonService = new CommonService();
+                resultVM = await _commonService.ProductGroupList(new[] { "" }, new[] { "" }, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = "Data not fetched.",
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
 
 
 

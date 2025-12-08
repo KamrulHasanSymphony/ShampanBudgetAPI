@@ -29,14 +29,14 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
         INSERT INTO Products
         (
-           Code, Name, ConversionFactor, CIFCharge, ExchangeRateUsd, InsuranceRate, BankCharge, 
+           Code, Name,ProductGroupId, ConversionFactor, CIFCharge, ExchangeRateUsd, InsuranceRate, BankCharge, 
                     OceanLoss, CPACharge, HandelingCharge, LightCharge, Survey, CostLiterExImport, ExERLRate, 
                     DutyPerLiter, Refined, Crude, SDRate, DutyInTariff, ATRate, VATRate, IsActive, CreatedBy, 
                     CreatedFrom, CreatedAt
         )
         VALUES
         (
-            @Code, @Name, @ConversionFactor, @CIFCharge, @ExchangeRateUsd, @InsuranceRate, @BankCharge, 
+            @Code, @Name,@ProductGroupId, @ConversionFactor, @CIFCharge, @ExchangeRateUsd, @InsuranceRate, @BankCharge, 
                     @OceanLoss, @CPACharge, @HandelingCharge, @LightCharge, @Survey, @CostLiterExImport, @ExERLRate, 
                     @DutyPerLiter, @Refined, @Crude, @SDRate, @DutyInTariff, @ATRate, @VATRate, @IsActive, @CreatedBy, 
                     @CreatedFrom, GETDATE()
@@ -47,6 +47,7 @@ namespace ShampanBFRS.Repository.SetUp
                 {
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
@@ -112,6 +113,7 @@ namespace ShampanBFRS.Repository.SetUp
         SET
                     Code = @Code,
                     Name = @Name,
+                    ProductGroupId = @ProductGroupId,
                     ConversionFactor = @ConversionFactor,
                     CIFCharge = @CIFCharge,
                     ExchangeRateUsd = @ExchangeRateUsd,
@@ -142,6 +144,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
@@ -258,6 +261,7 @@ namespace ShampanBFRS.Repository.SetUp
                     ISNULL(M.Id, 0) AS Id,
                     ISNULL(M.Code, '') AS Code,
                     ISNULL(M.Name, '') AS Name,
+                    ISNULL(M.ProductGroupId, '') AS ProductGroupId,
                     ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
                     ISNULL(M.CIFCharge, 0) AS CIFCharge,
                     ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
@@ -305,6 +309,7 @@ WHERE 1 = 1
                     Id = row.Field<int>("Id"),
                     Code = row.Field<string>("Code"),
                     Name = row.Field<string>("Name"),
+                    ProductGroupId = row.Field<int>("ProductGroupId"),
                     ConversionFactor = row.Field<decimal>("ConversionFactor"),
                     CIFCharge = row.Field<decimal>("CIFCharge"),
                     ExchangeRateUsd = row.Field<decimal>("ExchangeRateUsd"),
