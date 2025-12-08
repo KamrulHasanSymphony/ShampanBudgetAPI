@@ -223,7 +223,7 @@ namespace ShampanBFRS.Repository.SetUp
                     IsArchive = row.Field<bool>("IsArchive"),
                     CreatedBy = row.Field<string>("CreatedBy"),
                     LastUpdateBy = row.Field<string>("LastUpdateBy"),
-                    LastUpdateOn = row.Field<string>("LastUpdateOn")
+                    LastUpdateAt = row.Field<string>("LastUpdateOn")
 
                 }).ToList();
 

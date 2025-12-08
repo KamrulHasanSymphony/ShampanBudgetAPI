@@ -187,6 +187,7 @@ namespace ShampanBFRS.Repository.SetUp
                 UPDATE Structures SET
                     Name = @Name,
                     Remarks = @Remarks,
+                    IsActive = @IsActive,
                     LastUpdateBy = @LastUpdateBy,
                     LastUpdateOn = GETDATE(),
                     LastUpdateFrom = @LastUpdateFrom
@@ -197,6 +198,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
                     cmd.Parameters.AddWithValue("@Name", vm.Name);
                     cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
 
@@ -624,13 +626,13 @@ WHERE Id IN ({inClause});";
         SELECT 
         ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
         
-              ISNULL(M.Id, 0) AS Id,
-             ISNULL(M.Code, '') AS Code,
-             ISNULL(M.Name, '') AS Name,
-             ISNULL(M.Remarks, '') AS Remarks
-           FROM Structures M
-  
-
+                  ISNULL(M.Id, 0) AS Id,
+                  ISNULL(M.Code, '') AS Code,
+                  ISNULL(M.Name, '') AS Name, 
+                  ISNULL(M.Remarks, '') AS Remarks,
+                  ISNULL(M.IsActive,0) AS IsActive,
+                  CASE WHEN ISNULL(M.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status
+                  FROM Structures M
 
             WHERE 1 = 1
 
