@@ -174,5 +174,28 @@ namespace ShampanBFRSAPI.Controllers.SetUp
                 };
             }
         }
+
+        [HttpPost("NewFiscalYear")]
+        public async Task<ResultVM> NewFiscalYear(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                FiscalYearService _fiscalYearService = new FiscalYearService();
+                resultVM = await _fiscalYearService.NewFiscalYear(null, null, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = "Data not fetched.",
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
     }
 }
