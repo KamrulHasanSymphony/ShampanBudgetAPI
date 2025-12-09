@@ -593,6 +593,72 @@ ORDER BY Name";
             return exists;
         }
 
+        public async Task<ResultVM> NewFiscalYear(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+
+            //    string query = @"
+            //SELECT
+            //ISNULL(M.Id, 0) AS Id,
+            //ISNULL(M.Year, 0) AS Year,
+            //ISNULL(FORMAT(M.YearStart, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearStart,
+            //ISNULL(FORMAT(M.YearEnd, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearEnd,
+            //ISNULL(M.YearLock, 0) AS YearLock,
+            //ISNULL(M.Remarks, '') AS Remarks,
+            //ISNULL(M.CreatedBy, '') AS CreatedBy,
+            //ISNULL(FORMAT(M.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') CreatedOn,           
+            //ISNULL(M.LastModifiedBy, '') AS LastModifiedBy,
+            //ISNULL(FORMAT(M.LastModifiedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') LastModifiedOn
+            //FROM FiscalYears M
+            //WHERE 1=1";
+
+            //    if (vm != null && !string.IsNullOrEmpty(vm.Id))
+            //    {
+            //        query += " AND M.Id = @Id ";
+            //    }
+
+            //    query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+            //    SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+            //    objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+            //    if (vm != null && !string.IsNullOrEmpty(vm.Id))
+            //    {
+            //        objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+            //    }
+
+            //    objComm.Fill(dataTable);
+
+                FiscalYearVM YearVM = new FiscalYearVM();
+
+                YearVM.Year = 2026;
+                YearVM.YearName = "2026-2027";
+                YearVM.YearStart = "2026-07-01";
+                YearVM.YearEnd = "2027-06-30";            
+                YearVM.YearLock = false;
+                YearVM.Remarks = "ok";
+ 
+                result.Status = "Success";
+                result.Message = "Data retrieved successfully.";
+                result.DataVM = YearVM;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = "Error in List.";
+                return result;
+            }
+        }
+
 
     }
 

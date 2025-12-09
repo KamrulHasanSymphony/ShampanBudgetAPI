@@ -379,6 +379,50 @@ namespace ShampanBFRS.Service.SetUp
             }
         }
 
+        public async Task<ResultVM> NewFiscalYear(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
+        {
+            FiscalYearRepository _repo = new FiscalYearRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                conn.Open();
+                isNewConnection = true;
+
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.NewFiscalYear(conditionalFields, conditionalValues, vm, conn, transaction);
+
+                if (isNewConnection)
+                {
+                    transaction.Commit();
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
 
     }
 
