@@ -767,6 +767,25 @@ namespace ShampanBFRS.ViewModel.KendoCommon
             }
         }
 
+        public static GridEntity<T> GetGridDataFromTable(DataTable dt)
+        {
+            try
+            {
+                totalCount = Convert.ToInt32(dt.Rows.Count);
+
+                var dataList = (List<T>)ListConversion.ConvertTo<T>(dt).ToList();
+
+                // Create result object
+                var result = new GridResult<T>().Data(dataList, totalCount);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
 
     }
 }

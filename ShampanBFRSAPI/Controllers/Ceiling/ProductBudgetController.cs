@@ -15,6 +15,37 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         ProductBudgetService _Service = new ProductBudgetService();
         CommonService _common = new CommonService();
 
+        [HttpPost("Insert")]
+        public async Task<ResultVM> Insert(ProductBudgetMasterVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            try
+            {
+                _Service = new ProductBudgetService();
+                resultVM = await _Service.Insert(vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
+            }
+        }
+
+        [HttpPost("Update")]
+        public async Task<ResultVM> Update(ProductBudgetVM VM)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            try
+            {
+                _Service = new ProductBudgetService();
+                resultVM = await _Service.Update(VM);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = VM };
+            }
+        }
 
         [HttpPost("GetProductBudgetDataForDetailsLoad")]
         public async Task<ResultVM> GetProductBudgetDataForDetailsLoad(ProductBudgetVM model)

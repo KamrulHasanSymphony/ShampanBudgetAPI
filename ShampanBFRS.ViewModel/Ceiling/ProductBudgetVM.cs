@@ -9,6 +9,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
     public class ProductBudgetVM
     {
 
+        public string? Serial { get; set; }
         public int? Id { get; set; }
         public int? CompanyId { get; set; }
         public int? BranchId { get; set; }
