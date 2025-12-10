@@ -549,7 +549,7 @@ WHERE 1=1 ";
             }
         }
 
-        public async Task<ResultVM> xxxxBudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues,
+        public async Task<ResultVM> xxxxxxBudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues,
              SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
@@ -650,7 +650,7 @@ ORDER BY s.Code;"
             }
         }
 
-        public async Task<ResultVM> BudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> xxxxBudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
@@ -686,6 +686,7 @@ SELECT
     SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS [Approved(' + @CurrentYearName + ')],
     SUM(CASE WHEN FY.[Year] = ' + CAST(@Year - 1 AS NVARCHAR) + ' AND c.BudgetType = ''Actual_Audited'' THEN cd.Amount ELSE 0 END) AS [Actual Audited(' + @PrevYearName + ')],
     SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''1st_6months_actual'' THEN cd.Amount ELSE 0 END) AS [1st 6 Months Actual(' + @CurrentYearName + ')]
+   ,SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''2nd_6months_actual'' THEN cd.Amount ELSE 0 END) AS [2nd 6 Months Actual(' + @CurrentYearName + ')]
 
 	 -- Ratios based on Approved
     ,CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0 
@@ -718,6 +719,13 @@ END AS [Actual Audited %] --[Actual Audited(' + @PrevYearName + ')%]
          / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
      , 2)
 END AS [1st 6 Months Actual %]
+,CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0 
+     THEN 0
+     ELSE ROUND(
+         CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''2nd_6months_actual'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
+         / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100
+     , 2)
+END AS [2nd 6 Months Actual %]
 
 FROM Ceilings c
 INNER JOIN CeilingDetails cd ON c.Id = cd.GLCeilingId
@@ -748,6 +756,193 @@ EXEC sp_executesql @SQL;
 
                 adapter.Fill(dt);
 
+                // Conditional column removal based on ReportType
+                if (vm.ReportType == "1st_6months_actual")
+                {
+                    // Remove columns related to the 2nd 6 months
+                    dt.Columns.Remove("2nd 6 Months Actual(" + vm.YearId + ")");
+                    dt.Columns.Remove("2nd 6 Months Actual %");
+                }
+                else if (vm.ReportType == "2nd_6months_actual")
+                {
+                    // Remove columns related to the 1st 6 months
+                    dt.Columns.Remove("1st 6 Months Actual(" + vm.YearId + ")");
+                    dt.Columns.Remove("1st 6 Months Actual %");
+                }
+
+                var list = new List<Dictionary<string, object>>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    var dict = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        dict[col.ColumnName] = row[col];
+                    }
+                    list.Add(dict);
+                }
+
+                //if (vm.ShowFirstSixMonths)
+                //{
+                //    // Delete columns related to the 2nd 6 months
+                //    dt.Columns.Remove("2nd 6 Months Actual(" + @CurrentYearName + ")");
+                //    dt.Columns.Remove("2nd 6 Months Actual %");
+                //}
+                //else if (vm.ShowSecondSixMonths)
+                //{
+                //    // Delete columns related to the 1st 6 months
+                //    dt.Columns.Remove("1st 6 Months Actual(" + @CurrentYearName + ")");
+                //    dt.Columns.Remove("1st 6 Months Actual %");
+                //}
+
+                //var list = new List<Dictionary<string, object>>();
+
+                //foreach (DataRow row in dt.Rows)
+                //{
+                //    var dict = new Dictionary<string, object>();
+                //    foreach (DataColumn col in dt.Columns)
+                //    {
+                //        dict[col.ColumnName] = row[col];
+                //    }
+                //    list.Add(dict);
+                //}
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> BudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+
+
+DECLARE @BranchId INT=@BId;
+DECLARE @Year INT;
+DECLARE @CurrentYearName NVARCHAR(50);
+DECLARE @PrevYearName NVARCHAR(50);
+DECLARE @NextYearName NVARCHAR(50);
+DECLARE @SQL NVARCHAR(MAX);
+DECLARE @ReportType NVARCHAR(50) = @RType;
+
+-- Get fiscal year info
+SELECT @Year = [Year] FROM FiscalYears WHERE Id = 7;
+
+SELECT @CurrentYearName = YearName FROM FiscalYears WHERE [Year] = @Year;
+SELECT @PrevYearName = YearName FROM FiscalYears WHERE [Year] = @Year - 1;
+SELECT @NextYearName = YearName FROM FiscalYears WHERE [Year] = @Year + 1;
+
+-- Start building dynamic SQL
+SET @SQL = N'SELECT
+    COA.Code AS [iBAS Code],
+    COA.Name AS [iBAS Name],
+    s.Code AS [Sabre Code],
+    s.Name AS [Sabre Name],
+
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year + 1 AS NVARCHAR) + ' AND c.BudgetType = ''Estimated'' THEN cd.Amount ELSE 0 END) AS [Estimated(' + @NextYearName + ')],
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Revised'' THEN cd.Amount ELSE 0 END) AS [Revised(' + @CurrentYearName + ')],
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS [Approved(' + @CurrentYearName + ')],
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year - 1 AS NVARCHAR) + ' AND c.BudgetType = ''Actual_Audited'' THEN cd.Amount ELSE 0 END) AS [Actual Audited(' + @PrevYearName + ')]';
+
+-- Conditionally add 1st or 2nd 6 months columns
+IF @ReportType <> '2nd_6months_actual'
+    SET @SQL = @SQL + ',
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''1st_6months_actual'' THEN cd.Amount ELSE 0 END) AS [1st 6 Months Actual(' + @CurrentYearName + ')]';
+
+IF @ReportType <> '1st_6months_actual'
+    SET @SQL = @SQL + ',
+    SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''2nd_6months_actual'' THEN cd.Amount ELSE 0 END) AS [2nd 6 Months Actual(' + @CurrentYearName + ')]';
+
+-- Add ratios based on Approved
+SET @SQL = @SQL + ',
+CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END)=0 THEN 0
+ELSE ROUND(
+    CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year + 1 AS NVARCHAR) + ' AND c.BudgetType = ''Estimated'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
+    / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100,2)
+END AS [Estimated %],
+
+CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END)=0 THEN 0
+ELSE ROUND(
+    CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Revised'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
+    / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100,2)
+END AS [Revised %],
+
+CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END)=0 THEN 0
+ELSE ROUND(
+    CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year - 1 AS NVARCHAR) + ' AND c.BudgetType = ''Actual_Audited'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) 
+    / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100,2)
+END AS [Actual Audited %]';
+
+-- Conditionally add 1st or 2nd 6 months %
+IF @ReportType <> '2nd_6months_actual'
+    SET @SQL = @SQL + ',
+CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END)=0 THEN 0
+ELSE ROUND(
+    CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''1st_6months_actual'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+    / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100,2)
+END AS [1st 6 Months Actual %]';
+
+IF @ReportType <> '1st_6months_actual'
+    SET @SQL = @SQL + ',
+CASE WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END)=0 THEN 0
+ELSE ROUND(
+    CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''2nd_6months_actual'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+    / CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@Year AS NVARCHAR) + ' AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2)) * 100,2)
+END AS [2nd 6 Months Actual %]';
+
+-- FROM, JOINs, WHERE
+SET @SQL = @SQL + '
+FROM Ceilings c
+INNER JOIN CeilingDetails cd ON c.Id = cd.GLCeilingId
+INNER JOIN FiscalYears FY ON c.GLFiscalYearId = FY.Id
+INNER JOIN Sabres s ON cd.AccountId = s.Id
+INNER JOIN COAs COA ON COA.Id = s.COAId
+WHERE c.BudgetType IN (''Revised'',''1st_6months_actual'',''2nd_6months_actual'',''Approved'',''Actual_Audited'',''Estimated'')
+  AND FY.[Year] IN (' + CAST(@Year - 1 AS NVARCHAR) + ',' + CAST(@Year AS NVARCHAR) + ',' + CAST(@Year + 1 AS NVARCHAR) + ')';
+
+-- BranchId filter
+IF (@BranchId IS NOT NULL)
+    SET @SQL = @SQL + ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR);
+
+-- GROUP BY, ORDER BY
+SET @SQL = @SQL + '
+GROUP BY s.Code, s.Name, COA.Code, COA.Name
+ORDER BY s.Code;';
+
+-- Execute
+EXEC sp_executesql @SQL;
+
+
+";
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand.Parameters.AddWithValue("@FYId", vm.YearId);
+
+                if (!string.IsNullOrEmpty(vm.BranchId))
+                    adapter.SelectCommand.Parameters.AddWithValue("@BId", vm.BranchId);
+
+                if (!string.IsNullOrEmpty(vm.ReportType))
+                    adapter.SelectCommand.Parameters.AddWithValue("@RType", vm.ReportType);
+
+                adapter.Fill(dt);
 
                 var list = new List<Dictionary<string, object>>();
 
