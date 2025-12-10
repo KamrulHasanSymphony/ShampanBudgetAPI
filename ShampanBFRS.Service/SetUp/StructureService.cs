@@ -26,7 +26,7 @@ namespace ShampanBFRS.Service.SetUp
             string codeGroup = "Structure";
             string codeName = "Structure";
             StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -94,7 +94,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Update(StructureVM vm)
         {
             StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -174,7 +174,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Delete(string[] Id)
         {
             StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null};
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null};
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -265,7 +265,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -398,7 +398,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -446,7 +446,7 @@ namespace ShampanBFRS.Service.SetUp
         {
 
             StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -495,7 +495,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

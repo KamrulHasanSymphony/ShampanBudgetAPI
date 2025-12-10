@@ -13,7 +13,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Insert Method
          public async Task<ResultVM> Insert(UserBranchMapVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -35,7 +35,7 @@ namespace ShampanBFRS.Repository.SetUp
                 int count = Convert.ToInt32(selectCommand.ExecuteScalar());
                 if (count > 0)
                 {
-                    result.Message = "Data Already Exist!";
+                    result.Message =MessageModel.AlreadyExists;
                     return result;
                 }
 
@@ -71,8 +71,8 @@ SELECT SCOPE_IDENTITY();";
 
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
                 }
@@ -91,7 +91,7 @@ SELECT SCOPE_IDENTITY();";
         // Update Method
          public async Task<ResultVM> Update(UserBranchMapVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
             try
             {
@@ -114,7 +114,7 @@ SELECT SCOPE_IDENTITY();";
                 int count = Convert.ToInt32(selectCommand.ExecuteScalar());
                 if (count > 0)
                 {
-                    result.Message = "Data Already Exist!";
+                    result.Message = MessageModel.AlreadyExists;
                     return result;
                 }
 
@@ -240,8 +240,8 @@ WHERE UM.UserId IS NOT NULL
                     LastUpdateFrom = row["LastUpdateFrom"].ToString(),                   
                 }).ToList();
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = modelList;
 
                 return result;
@@ -258,7 +258,7 @@ WHERE UM.UserId IS NOT NULL
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -301,8 +301,8 @@ WHERE UM.UserId IS NOT NULL
 
                 objComm.Fill(dataTable);
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
 
                 return result;
@@ -318,7 +318,7 @@ WHERE UM.UserId IS NOT NULL
         // Dropdown Method
         public async Task<ResultVM> Dropdown(SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -343,8 +343,8 @@ WHERE UM.UserId IS NOT NULL
                     adapter.Fill(dropdownData);
                 }
 
-                result.Status = "Success";
-                result.Message = "Dropdown data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dropdownData;
 
                 return result;
@@ -361,7 +361,7 @@ WHERE UM.UserId IS NOT NULL
         public async Task<ResultVM> GetGridData(GridOptions options, string userId, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -420,8 +420,8 @@ WHERE UM.UserId IS NOT NULL
                 // Now you can pass options without the SqlParameter
                 data = KendoGrid<UserBranchMapVM>.GetGridData_CMD(options, sqlQuery, "UM.Id");
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;

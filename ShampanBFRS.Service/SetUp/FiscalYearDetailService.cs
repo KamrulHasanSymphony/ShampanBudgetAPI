@@ -16,7 +16,7 @@ namespace ShampanBFRS.Service.SetUp
             CommonRepository _commonRepo = new CommonRepository();
             FiscalYearDetailRepository _repo = new FiscalYearDetailRepository();
 
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -60,7 +60,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Update(FiscalYearDetailVM fiscalYearDetail)
         {
             FiscalYearDetailRepository _repo = new FiscalYearDetailRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -104,7 +104,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Delete(string[] IDs)
         {
             FiscalYearDetailRepository _repo = new FiscalYearDetailRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = IDs, DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -148,7 +148,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             FiscalYearDetailRepository _repo = new FiscalYearDetailRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -192,7 +192,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             FiscalYearDetailRepository _repo = new FiscalYearDetailRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -236,7 +236,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             FiscalYearDetailRepository _repo = new FiscalYearDetailRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

@@ -13,7 +13,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Insert Method
         public async Task<ResultVM> Insert(FiscalYearVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -98,7 +98,7 @@ namespace ShampanBFRS.Repository.SetUp
             catch (Exception ex)
             {
                 result.ExMessage = ex.Message;
-                result.Message = "Error in Insert.";
+                result.Message = MessageModel.InsertFail;
                 return result;
             }
         }
@@ -106,7 +106,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Update Method
         public async Task<ResultVM> Update(FiscalYearVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
             try
             {
@@ -155,12 +155,12 @@ namespace ShampanBFRS.Repository.SetUp
 
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = "Data updated successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.UpdateSuccess;
                     }
                     else
                     {
-                        result.Message = "No rows were updated.";
+                        result.Message = MessageModel.UpdateFail;
                     }
                 }
 
@@ -169,7 +169,7 @@ namespace ShampanBFRS.Repository.SetUp
             catch (Exception ex)
             {
                 result.ExMessage = ex.Message;
-                result.Message = "Error in Update.";
+                result.Message = MessageModel.UpdateFail;
                 return result;
             }
         }
@@ -177,7 +177,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Delete Method
         public async Task<ResultVM> Delete(CommonVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
 
             try
             {
@@ -233,8 +233,8 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 // Set result status to success
-                result.Status = "Success";
-                result.Message = $"Data deleted successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.DeleteSuccess;
 
                 return result;
             }
@@ -243,7 +243,7 @@ namespace ShampanBFRS.Repository.SetUp
                 
                 // Capture exception details
                 result.ExMessage = ex.Message;
-                result.Message = "Error in Delete.";
+                result.Message = MessageModel.DeleteFail;
                 return result;
             }
         }
@@ -252,7 +252,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, DataVM = null };
 
             try
             {
@@ -320,8 +320,8 @@ namespace ShampanBFRS.Repository.SetUp
                     model.FirstOrDefault().fiscalYearDetails = details;
                 }
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = model;
                 return result;
             }
@@ -336,7 +336,7 @@ namespace ShampanBFRS.Repository.SetUp
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -371,8 +371,8 @@ SELECT
                     adapter.Fill(dataTable);
                 }
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status =MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
                 return result;
             }
@@ -387,7 +387,7 @@ SELECT
         // Dropdown Method
         public async Task<ResultVM> Dropdown(SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -412,15 +412,15 @@ ORDER BY Name";
                     adapter.Fill(dropdownData);
                 }
 
-                result.Status = "Success";
-                result.Message = "Dropdown data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dropdownData;
                 return result;
             }
             catch (Exception ex)
             {
                 result.ExMessage = ex.Message;
-                result.Message = "Error in Dropdown.";
+                result.Message = MessageModel.Fail;
                 return result;
             }
         }
@@ -495,7 +495,7 @@ ORDER BY Name";
         public ResultVM DetailsList(string[] conditionalFields, string[] conditionalValue, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -538,8 +538,8 @@ ORDER BY Name";
 
                 objComm.Fill(dataTable);
 
-                result.Status = "Success";
-                result.Message = "Details Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
 
                 return result;
@@ -596,7 +596,7 @@ ORDER BY Name";
         public async Task<ResultVM> NewFiscalYear(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, DataVM = null };
 
             try
             {
@@ -646,8 +646,8 @@ ORDER BY Name";
                 YearVM.YearLock = false;
                 YearVM.Remarks = "ok";
  
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = YearVM;
                 return result;
             }

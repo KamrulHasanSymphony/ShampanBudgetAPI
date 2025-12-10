@@ -264,7 +264,7 @@ WHERE 1 = 1";
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -301,8 +301,8 @@ WHERE 1 = 1";
                     adapter.Fill(dataTable);
                 }
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
                 return result;
             }
@@ -317,7 +317,7 @@ WHERE 1 = 1";
         // Dropdown Method
         public async Task<ResultVM> Dropdown(SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -342,8 +342,8 @@ ORDER BY Name";
                     adapter.Fill(dropdownData);
                 }
 
-                result.Status = "Success";
-                result.Message = "Dropdown data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dropdownData;
                 return result;
             }

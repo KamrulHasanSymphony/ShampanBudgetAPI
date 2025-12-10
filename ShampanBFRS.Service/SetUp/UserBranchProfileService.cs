@@ -12,7 +12,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Insert(UserBranchMapVM vm)
         {
             UserBranchProfileRepository _repo = new UserBranchProfileRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -60,7 +60,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Update(UserBranchMapVM vm)
         {
             UserBranchProfileRepository _repo = new UserBranchProfileRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -108,7 +108,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             UserBranchProfileRepository _repo = new UserBranchProfileRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -156,7 +156,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             UserBranchProfileRepository _repo = new UserBranchProfileRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -204,7 +204,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             UserBranchProfileRepository _repo = new UserBranchProfileRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -252,7 +252,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options, string userId)
         {
             UserBranchProfileRepository _repo = new UserBranchProfileRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

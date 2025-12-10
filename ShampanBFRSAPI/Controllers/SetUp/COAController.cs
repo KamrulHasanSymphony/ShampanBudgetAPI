@@ -27,7 +27,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Insert")]
         public async Task<ResultVM> Insert(COAVM coa)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _coaService = new COAService();
@@ -36,7 +36,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = "Fail", Message = ex.Message, ExMessage = ex.Message, DataVM = coa };
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = coa };
             }
         }
 
@@ -44,7 +44,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Update")]
         public async Task<ResultVM> Update(COAVM coa)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _coaService = new COAService();
@@ -61,7 +61,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Delete")]
         public async Task<ResultVM> Delete(CommonVM vm)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail , Message = "Error" };
             try
             {
                 _coaService = new COAService();
@@ -70,7 +70,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = "Fail", Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
             }
         }
 
@@ -78,7 +78,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("List")]
         public async Task<ResultVM> List(CommonVM vm)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _coaService = new COAService();
@@ -87,7 +87,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = "Fail", Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
             }
         }
 
@@ -95,7 +95,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpGet("ListAsDataTable")]
         public async Task<ResultVM> ListAsDataTable(COAVM coa)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _coaService = new COAService();
@@ -104,7 +104,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = "Fail", Message = ex.Message, ExMessage = ex.Message, DataVM = coa };
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = coa };
             }
         }
 
@@ -112,7 +112,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpGet("Dropdown")]
         public async Task<ResultVM> Dropdown()
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _coaService = new COAService();
@@ -121,7 +121,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = "Fail", Message = ex.Message, ExMessage = ex.Message };
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
             }
         }
 
@@ -129,7 +129,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("GetGridData")]
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _coaService = new COAService();
@@ -138,7 +138,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = "Fail", Message = ex.Message, ExMessage = ex.Message };
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
             }
         }
 
@@ -147,7 +147,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         public async Task<FileStreamResult> ReportPreview(CommonVM vm)
         {
             _common = new CommonService();
-            ResultVM settingResult = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM settingResult = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             try
             {

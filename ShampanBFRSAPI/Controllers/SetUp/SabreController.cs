@@ -25,7 +25,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = ex.Message,
                     ExMessage = ex.ToString(),
                     DataVM = vm
@@ -45,7 +45,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = ex.Message,
                     ExMessage = ex.ToString(),
                     DataVM = vm
@@ -65,7 +65,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = ex.Message,
                     ExMessage = ex.ToString(),
                     DataVM = vm
@@ -87,7 +87,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = "Data not fetched.",
                     ExMessage = ex.Message,
                     DataVM = vm
@@ -127,7 +127,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = ex.Message,
                     ExMessage = ex.ToString(),
                     DataVM = null
@@ -139,7 +139,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("GetGridData")]
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 List<string> conditionFields = new List<string>

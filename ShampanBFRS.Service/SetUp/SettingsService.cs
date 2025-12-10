@@ -13,7 +13,7 @@ namespace ShampanBFRS.Service.SetUp
             SettingsRepository _repo = new SettingsRepository();
             CommonRepository _commonRepo = new CommonRepository();
 
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -73,7 +73,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Update(SettingVM vm)
         {
             SettingsRepository _repo = new SettingsRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -121,7 +121,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Delete(CommonVM vm)
         {
             SettingsRepository _repo = new SettingsRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -169,7 +169,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             SettingsRepository _repo = new SettingsRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -217,7 +217,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             SettingsRepository _repo = new SettingsRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -265,7 +265,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             SettingsRepository _repo = new SettingsRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -315,7 +315,7 @@ namespace ShampanBFRS.Service.SetUp
             SettingsRepository _repo = new SettingsRepository();
             CommonRepository _commonRepo = new CommonRepository();
 
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -526,7 +526,7 @@ CREATE TABLE [dbo].[UserMenu](
                 {
                     transaction.Rollback();
                 }
-                result.Status = "Fail";
+                result.Status = MessageModel.Fail;
                 result.Message = ex.Message.ToString();
                 result.ExMessage = ex.ToString();
                 return result;

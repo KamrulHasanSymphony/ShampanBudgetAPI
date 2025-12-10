@@ -12,7 +12,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Insert Method
         public async Task<ResultVM> Insert(EnumTypeVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -66,7 +66,7 @@ SELECT SCOPE_IDENTITY();";
         // Update Method
         public async Task<ResultVM> Update(EnumTypeVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
             try
             {
@@ -126,7 +126,7 @@ WHERE Id = @Id";
         // Delete Method
         public async Task<ResultVM> Delete(string[] IDs, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = IDs, DataVM = null };
 
             try
             {
@@ -172,7 +172,7 @@ WHERE Id = @Id";
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, DataVM = null };
 
             try
             {
@@ -233,7 +233,7 @@ WHERE 1 = 1";
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -285,7 +285,7 @@ WHERE 1 = 1";
         // Dropdown Method
         public async Task<ResultVM> Dropdown(SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -310,7 +310,7 @@ ORDER BY Name";
                     adapter.Fill(dropdownData);
                 }
 
-                result.Status = "Success";
+                result.Status = MessageModel.Success;
                 result.Message = "Dropdown data retrieved successfully.";
                 result.DataVM = dropdownData;
                 return result;

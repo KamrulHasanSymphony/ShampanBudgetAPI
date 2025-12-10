@@ -10,7 +10,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Insert Method
         public async Task<ResultVM> Insert(SettingVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -69,8 +69,8 @@ VALUES
 
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message =MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
                 }
@@ -89,7 +89,7 @@ VALUES
         // Update Method
         public async Task<ResultVM> Update(SettingVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
             try
             {
@@ -124,8 +124,8 @@ VALUES
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = "Data updated successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.RetrievedSuccess;
                     }
                     else
                     {
@@ -147,7 +147,7 @@ VALUES
         // Delete Method
         public async Task<ResultVM> Delete(CommonVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
 
             try
             {
@@ -179,8 +179,8 @@ VALUES
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = $"Data deleted successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.DeleteSuccess;
                     }
                     else
                     {
@@ -204,7 +204,7 @@ VALUES
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValue, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -273,8 +273,8 @@ WHERE 1=1 ";
                     });
                 }
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = model;
 
                 return result;
@@ -290,7 +290,7 @@ WHERE 1=1 ";
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValue, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -330,8 +330,8 @@ WHERE 1=1 ";
 
                 objComm.Fill(dataTable);
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
 
                 return result;
@@ -347,7 +347,7 @@ WHERE 1=1 ";
         // Dropdown Method
         public async Task<ResultVM> Dropdown(SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -372,8 +372,8 @@ WHERE 1=1 ";
                     adapter.Fill(dropdownData);
                 }
 
-                result.Status = "Success";
-                result.Message = "Dropdown data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dropdownData;
 
                 return result;
@@ -390,7 +390,7 @@ WHERE 1=1 ";
         // CodesDataInsert Method
         public async Task<ResultVM> CodesDataInsert(CommonVM vm, string CodeGroup, string CodeName, string prefix, string Lenth, string ActiveStatus, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -413,8 +413,8 @@ WHERE 1=1 ";
                 int count = Convert.ToInt32(checkCommand.ExecuteScalar());
                 if (count > 0)
                 {
-                    result.Status = "Success";
-                    result.Message = "Data Already Exist!";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.AlreadyExists;
                     return result;
                 }
 
@@ -465,8 +465,8 @@ VALUES
 
                     var newId = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    result.Status = "Success";
-                    result.Message = "Data Updated Successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.UpdateSuccess;
                     result.Id = newId.ToString();
                     result.DataVM = vm;
                 }
@@ -485,7 +485,7 @@ VALUES
         // SettingsDataInsert Method
         public async Task<ResultVM> SettingsDataInsert(CommonVM vm,string SettingGroup, string SettingName, string SettingValue, string SettingType, bool IsActive, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -507,8 +507,8 @@ VALUES
                 int count = Convert.ToInt32(checkCommand.ExecuteScalar());
                 if (count > 0)
                 {
-                    result.Status = "Success";
-                    result.Message = "Data Already Exist!";
+                    result.Status = MessageModel.Success;
+                    result.Message =MessageModel.AlreadyExists;
                     return result;
                 }
 
@@ -562,8 +562,8 @@ VALUES
 
                     var newId = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    result.Status = "Success";
-                    result.Message = "Data Updated Successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.UpdateSuccess;
                     result.Id = newId.ToString();
                     result.DataVM = vm;
                 }
@@ -582,7 +582,7 @@ VALUES
         // NewTableAdd Method
         public async Task<ResultVM> NewTableAdd(string tableName, string query, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 if (conn == null)
@@ -610,8 +610,8 @@ VALUES
 
                 command.ExecuteNonQuery();               
 
-                result.Status = "Success";
-                result.Message = "Data Updated Successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.UpdateSuccess ;
             }
             catch (Exception ex)
             {
@@ -625,7 +625,7 @@ VALUES
         // DBTableFieldAdd Method
         public async Task<ResultVM> DBTableFieldAdd(string tableName, string fieldName, string dataType, bool allowNull, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 if (conn == null)
@@ -657,8 +657,8 @@ VALUES
 
                 command.ExecuteNonQuery();
 
-                result.Status = "Success";
-                result.Message = "Data Updated Successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.UpdateSuccess;
             }
             catch (Exception ex)
             {
@@ -672,7 +672,7 @@ VALUES
         // DBTableFieldAlter Method
         public async Task<ResultVM> DBTableFieldAlter(string tableName, string fieldName, string dataType, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 if (conn == null)
@@ -693,8 +693,8 @@ VALUES
 
                 command.ExecuteNonQuery();
 
-                result.Status = "Success";
-                result.Message = "Data Updated Successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.UpdateSuccess;
             }
             catch (Exception ex)
             {

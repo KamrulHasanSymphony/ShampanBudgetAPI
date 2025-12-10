@@ -19,7 +19,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Insert Method
         public async Task<ResultVM> Insert(ProductGroupVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             try
             {
@@ -50,8 +50,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 }
 
-                result.Status = "Success";
-                result.Message = "Product Group inserted successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.InsertSuccess;
                 result.Id = vm.Id.ToString();
                 result.DataVM = vm;
 
@@ -68,7 +68,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Update Method
         public async Task<ResultVM> Update(ProductGroupVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", Id = vm.Id.ToString(), DataVM = vm };
 
             try
             {
@@ -98,8 +98,8 @@ namespace ShampanBFRS.Repository.SetUp
                     int rows = cmd.ExecuteNonQuery();
                     if (rows > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = "Product Group updated successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.RetrievedSuccess;
                     }
                     else
                     {
@@ -173,7 +173,7 @@ namespace ShampanBFRS.Repository.SetUp
             SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             try
             {
@@ -219,8 +219,8 @@ namespace ShampanBFRS.Repository.SetUp
                     LastUpdateAt = row.Field<string>("LastUpdateAt")
                 }).ToList();
 
-                result.Status = "Success";
-                result.Message = "Product Group retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = list;
 
                 return result;
@@ -237,7 +237,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
             SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             DataTable dt = new DataTable();
 
             try
@@ -262,8 +262,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 adapter.Fill(dt);
 
-                result.Status = "Success";
-                result.Message = "Department DataTable retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dt;
                 return result;
             }
@@ -278,7 +278,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Dropdown Method
         public async Task<ResultVM> Dropdown(SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             DataTable dt = new DataTable();
 
             try
@@ -298,8 +298,8 @@ namespace ShampanBFRS.Repository.SetUp
                     adapter.Fill(dt);
                 }
 
-                result.Status = "Success";
-                result.Message = "Product Group dropdown data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dt;
                 return result;
             }
@@ -314,7 +314,7 @@ namespace ShampanBFRS.Repository.SetUp
         // GetGridData Method
         public async Task<ResultVM> GetGridData(GridOptions options, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             try
             {
@@ -357,8 +357,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 data = KendoGrid<ProductGroupVM>.GetGridDataQuestions_CMD(options, sqlQuery, "H.Id");
 
-                result.Status = "Success";
-                result.Message = "ProductGroup grid data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;
