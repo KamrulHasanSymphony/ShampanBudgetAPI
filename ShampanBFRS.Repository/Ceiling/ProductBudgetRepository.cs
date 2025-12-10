@@ -66,6 +66,7 @@ INSERT INTO #ProductBudgetTemp (
 ,@GLFiscalYearId
 ,@ProductId
 ,@BLQuantityMT
+,@BudgetSetNo
 ,@BudgetType
 --,@TransactionType
  )
