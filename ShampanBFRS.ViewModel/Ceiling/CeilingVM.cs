@@ -25,8 +25,12 @@ namespace ShampanBFRS.ViewModel.Ceiling
         [Display(Name = "Year Name")]
         public string? YearName { get; set; }
 
+
         [Display(Name = "Budget Set")]
         public int BudgetSetNo { get; set; }
+
+        [Display(Name = "Report Type")]
+        public string? ReportType { get; set; }
 
         [Display(Name = "Budget Type")]
         public string BudgetType { get; set; }

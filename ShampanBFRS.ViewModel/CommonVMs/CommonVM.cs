@@ -1,4 +1,6 @@
-﻿namespace ShampanBFRS.ViewModel.CommonVMs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ShampanBFRS.ViewModel.CommonVMs
 {
     public class CommonVM
     {
@@ -29,6 +31,7 @@
         public string? BudgetType { get; set; }
         public string? TransactionType { get; set; }
 
+        public string? ReportType { get; set; }
     }
 
 
