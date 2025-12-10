@@ -47,21 +47,6 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        [HttpPost("GetProductBudgetDataForDetailsLoad")]
-        public async Task<ResultVM> GetProductBudgetDataForDetailsLoad(ProductBudgetVM model)
-        {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
-            try
-            {
-                _Service = new ProductBudgetService();
-                resultVM = await _Service.GetProductBudgetDataForDetailsLoad(model);
-                return resultVM;
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
-            }
-        }
 
         [HttpPost("GetProductBudgetDataForDetailsNew")]
         public async Task<ResultVM> GetProductBudgetDataForDetailsNew(ProductBudgetVM model)
@@ -71,6 +56,54 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             {
                 _Service = new ProductBudgetService();
                 resultVM = await _Service.GetProductBudgetDataForDetailsNew(model);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
+            }
+        }
+
+        [HttpPost("ProductBudgetList")]
+        public async Task<ResultVM> ProductBudgetList(ProductBudgetMasterVM model)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            try
+            {
+                _Service = new ProductBudgetService();
+                resultVM = await _Service.ProductBudgetList(model);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
+            }
+        }
+
+        [HttpPost("ProductBudgeDistincttList")]
+        public async Task<ResultVM> ProductBudgeDistincttList(ProductBudgetMasterVM model)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            try
+            {
+                _Service = new ProductBudgetService();
+                resultVM = await _Service.ProductBudgeDistincttList(model);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
+            }
+        }
+
+        [HttpPost("GetGridData")]
+        public async Task<ResultVM> GetGridData(GridOptions options)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            try
+            {
+                _Service = new ProductBudgetService();
+                resultVM = await _Service.GetGridData(options);
                 return resultVM;
             }
             catch (Exception ex)

@@ -390,7 +390,7 @@ AND BudgetType = @BudgetType
             }
         }
 
-        public async Task<ResultVM> ProductBudgetList(string[] conditionalFields, string[] conditionalValues, ProductBudgetVM vm = null,
+        public async Task<ResultVM> ProductBudgetList(string[] conditionalFields, string[] conditionalValues, ProductBudgetMasterVM vm = null,
            SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
@@ -660,6 +660,165 @@ WHERE 1 = 1
                 result.Message = ex.Message;
                 result.ExMessage = ex.ToString();
                 return result;
+            }
+        }
+
+        public async Task<ResultVM> ProductBudgeDistincttList(string[] conditionalFields, string[] conditionalValues, ProductBudgetMasterVM vm = null,
+           SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+ SELECT DISTINCT
+ ISNULL(PB.Id, 0) AS Id
+,ISNULL(PB.CompanyId, 0) AS CompanyId
+,ISNULL(PB.BranchId, 0) AS BranchId
+,ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId
+,ISNULL(fy.YearName, 0) AS YearName
+,ISNULL(PB.BudgetSetNo, 0) AS BudgetSetNo
+,ISNULL(PB.BudgetType, '') AS BudgetType
+,ISNULL(p.ProductGroupId, '') AS ProductGroupId
+,ISNULL(pg.Name, '') AS ProductGroupName
+
+FROM ProductBudgets PB 
+left outer join FiscalYears fy on fy.Id = PB.GLFiscalYearId
+left outer join Products p on p.Id = PB.ProductId
+left outer join ProductGroups pg on pg.Id = p.ProductGroupId
+
+WHERE 1 = 1
+
+ ";
+
+                if (vm.Id > 0)
+                    query += " AND PB.Id=@Id ";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                if (vm.Id > 0)
+                    adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+
+                adapter.Fill(dt);
+
+                var list = dt.AsEnumerable().Select(row => new ProductBudgetMasterVM
+                {
+                    Id = row.Field<int>("Id"),
+                    CompanyId = row.Field<int?>("CompanyId"),
+                    BranchId = row.Field<int?>("BranchId"),
+                    GLFiscalYearId = row.Field<int?>("GLFiscalYearId"),
+                    ProductGroupId = row.Field<int?>("ProductGroupId"),
+                    BudgetSetNo = row.Field<int?>("BudgetSetNo"),
+                    BudgetType = row.Field<string>("BudgetType"),
+                    YearName = row.Field<string>("YearName"),
+                    ProductGroupName = row.Field<string>("ProductGroupName"),
+                   
+                }).ToList();
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
+        {
+            bool isNewConnection = false;
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                var data = new GridEntity<ProductBudgetMasterVM>();
+
+                string sqlQuery = $@"
+                    
+                    SELECT COUNT(DISTINCT PB.BudgetType) AS totalcount
+                FROM ProductBudgets PB 
+                WHERE 1=1
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductBudgetMasterVM>.FilterCondition(options.filter) + ")" : "");
+
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                sqlQuery += @"
+
+            SELECT *
+FROM (
+    SELECT ROW_NUMBER() OVER(ORDER BY " +
+        (options.sort.Count > 0
+            ? "t." + options.sort[0].field + " " + options.sort[0].dir
+            : "t.GLFiscalYearId DESC") + @") AS rowindex,
+        t.CompanyId,
+        t.BranchId,
+        t.GLFiscalYearId,
+        t.YearName,
+        t.BudgetSetNo,
+        t.BudgetType,
+        t.ProductGroupId,
+        t.ProductGroupName
+    FROM (
+        SELECT DISTINCT
+            ISNULL(PB.CompanyId,0) AS CompanyId,
+            ISNULL(PB.BranchId,0) AS BranchId,
+            ISNULL(PB.GLFiscalYearId,0) AS GLFiscalYearId,
+            ISNULL(fy.YearName,'') AS YearName,
+            ISNULL(PB.BudgetSetNo,0) AS BudgetSetNo,
+            ISNULL(PB.BudgetType,'') AS BudgetType,
+            ISNULL(p.ProductGroupId,'') AS ProductGroupId,
+            ISNULL(pg.Name,'') AS ProductGroupName
+        FROM ProductBudgets PB
+        LEFT JOIN FiscalYears fy ON fy.Id = PB.GLFiscalYearId
+        LEFT JOIN Products p ON p.Id = PB.ProductId
+        LEFT JOIN ProductGroups pg ON pg.Id = p.ProductGroupId
+        WHERE 1=1
+        " + (options.filter.Filters.Count > 0
+               ? " AND (" + GridQueryBuilder<ProductBudgetMasterVM>.FilterCondition(options.filter) + ")"
+               : "") + @"
+        " + ApplyConditions("", conditionalFields, conditionalValues, false) + @"
+    ) t
+) a
+WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+        ";
+
+                data = KendoGrid<ProductBudgetMasterVM>.GetTransactionalGridData_CMD(options, sqlQuery, "PB.BudgetType", conditionalFields, conditionalValues);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = data;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
             }
         }
 

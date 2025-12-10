@@ -9,6 +9,10 @@ namespace ShampanBFRS.ViewModel.Ceiling
 {
     public class ProductBudgetMasterVM : AuditVM
     {
+        public int? Id { get; set; }
+        public string? ProductGroupName { get; set; }
+        public string? YearName { get; set; }
+
         public int? CompanyId { get; set; }
         public int? BranchId { get; set; }
         public int? GLFiscalYearId { get; set; }
