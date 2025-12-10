@@ -19,7 +19,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Insert Method
         public async Task<ResultVM> Insert(COAVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             try
             {
@@ -98,8 +98,8 @@ namespace ShampanBFRS.Repository.SetUp
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
                 }
 
-                result.Status = "Success";
-                result.Message = "COA inserted successfully.";
+                result.Status = MessageModel.Success;
+                result.Message =MessageModel.InsertSuccess;
                 result.Id = vm.Id.ToString();
                 result.DataVM = vm;
             }

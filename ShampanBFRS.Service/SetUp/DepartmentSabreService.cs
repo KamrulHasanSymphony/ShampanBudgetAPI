@@ -24,7 +24,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             DepartmentSabreRepository _repo = new DepartmentSabreRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status =MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -60,8 +60,8 @@ namespace ShampanBFRS.Service.SetUp
                 if (isNewConnection && allDetailsSuccess)
                 {
                     transaction.Commit();
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
 
                     result.Id = lastDetailResult.Id;
                     result.DataVM = lastDetailResult.DataVM;
@@ -91,7 +91,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             DepartmentSabreRepository _repo = new DepartmentSabreRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -148,8 +148,8 @@ namespace ShampanBFRS.Service.SetUp
                 if (isNewConnection && allDetailsSuccess)
                 {
                     transaction.Commit();
-                    result.Status = "Success";
-                    result.Message = "Data updated successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.UpdateSuccess;
 
                     result.Id = lastDetailResult.Id;
                     result.DataVM = lastDetailResult.DataVM;
@@ -253,7 +253,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             DepartmentSabreRepository _repo = new DepartmentSabreRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -291,7 +291,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             DepartmentSabreRepository _repo = new DepartmentSabreRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -329,7 +329,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             DepartmentSabreRepository _repo = new DepartmentSabreRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -367,7 +367,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             DepartmentSabreRepository _repo = new DepartmentSabreRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status =MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

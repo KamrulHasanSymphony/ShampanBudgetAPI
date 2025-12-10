@@ -25,7 +25,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             COAGroupRepository _repo = new COAGroupRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status =MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -85,7 +85,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             COAGroupRepository _repo = new COAGroupRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -135,7 +135,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Delete(CommonVM vm)
         {
             COAGroupRepository _repo = new COAGroupRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", IDs = vm.IDs };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", IDs = vm.IDs };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -173,7 +173,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             COAGroupRepository _repo = new COAGroupRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -211,7 +211,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             COAGroupRepository _repo = new COAGroupRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -249,7 +249,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             COAGroupRepository _repo = new COAGroupRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -287,7 +287,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             COAGroupRepository _repo = new COAGroupRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -325,7 +325,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             COAGroupRepository _repo = new COAGroupRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

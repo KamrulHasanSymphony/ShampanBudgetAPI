@@ -20,7 +20,7 @@ namespace ShampanBFRS.Service.SetUp
             
             ProductRepository _repo = new ProductRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -41,7 +41,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 if (exist)
                 {
-                    result.Message = "Data Already Exist!";
+                    result.Message = MessageModel.AlreadyExists;
                     throw new Exception("Data Already Exist!");
                 }
                 #endregion
@@ -93,7 +93,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             ProductRepository _repo = new ProductRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -114,7 +114,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 if (exist)
                 {
-                    result.Message = "Data Already Exist!";
+                    result.Message = MessageModel.AlreadyExists;
                     throw new Exception("Data Already Exist!");
                 }
                 #endregion
@@ -154,7 +154,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Delete(CommonVM vm)
         {
             ProductRepository _repo = new ProductRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -202,7 +202,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             ProductRepository _repo = new ProductRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -250,7 +250,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             ProductRepository _repo = new ProductRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -298,7 +298,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             ProductRepository _repo = new ProductRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -346,7 +346,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             ProductRepository _repo = new ProductRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status =MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -394,7 +394,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             ProductRepository _repo = new ProductRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

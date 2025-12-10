@@ -18,7 +18,7 @@ namespace ShampanBFRS.Service.SetUp
             CommonRepository _commonRepo = new CommonRepository();
             FiscalYearRepository _repo = new FiscalYearRepository();
 
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -41,8 +41,8 @@ namespace ShampanBFRS.Service.SetUp
                     transaction.Rollback();
 
                     // Set result as failure, indicating fiscal year exists
-                    result.Status = "Fail";
-                    result.Message = "Fiscal Year already exists.";
+                    result.Status = MessageModel.Fail;
+                    result.Message = MessageModel.AlreadyExists;
                     result.Id = fiscalYear.Id.ToString();
                     return result;
                 }
@@ -73,7 +73,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 // Capture exception details in the result
                 result.ExMessage = ex.ToString();
-                result.Message = "Error in inserting fiscal year.";
+                result.Message = MessageModel.InsertFail;
                 return result;
             }
             finally
@@ -89,7 +89,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Update(FiscalYearVM fiscalYear)
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -142,7 +142,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 // Set the exception message in the result and return it
                 result.ExMessage = ex.ToString();
-                result.Message = "Error in updating fiscal year.";
+                result.Message = MessageModel.UpdateFail;
                 return result;
             }
             finally
@@ -158,7 +158,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Delete(CommonVM vm)
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.DeleteFail, Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -202,7 +202,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -246,7 +246,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -290,7 +290,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -334,7 +334,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = MessageModel.Fail, ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -382,7 +382,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> NewFiscalYear(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             FiscalYearRepository _repo = new FiscalYearRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

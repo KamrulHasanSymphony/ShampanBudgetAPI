@@ -25,7 +25,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             COARepository _repo = new COARepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status =MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -81,7 +81,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             COARepository _repo = new COARepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -131,7 +131,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Delete(CommonVM vm)
         {
             COARepository _repo = new COARepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", IDs = vm.IDs };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", IDs = vm.IDs };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -169,7 +169,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             COARepository _repo = new COARepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };           
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -207,7 +207,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             COARepository _repo = new COARepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status =MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -245,7 +245,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             COARepository _repo = new COARepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -283,7 +283,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             COARepository _repo = new COARepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -321,7 +321,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             COARepository _repo = new COARepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

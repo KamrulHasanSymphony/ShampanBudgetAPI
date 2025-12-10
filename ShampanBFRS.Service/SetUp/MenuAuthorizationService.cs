@@ -18,7 +18,7 @@ namespace ShampanBFRS.Service.SetUp
             CommonRepository _commonRepo = new CommonRepository();
             MenuAuthorizationRepository _repo = new MenuAuthorizationRepository();
 
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -79,7 +79,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Update(UserRoleVM urm)
         {
             MenuAuthorizationRepository _repo = new MenuAuthorizationRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -138,7 +138,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetRoleIndexData(GridOptions options)
         {
             MenuAuthorizationRepository _repo = new MenuAuthorizationRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -189,7 +189,7 @@ namespace ShampanBFRS.Service.SetUp
             CommonRepository _commonRepo = new CommonRepository();
             MenuAuthorizationRepository _repo = new MenuAuthorizationRepository();
 
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

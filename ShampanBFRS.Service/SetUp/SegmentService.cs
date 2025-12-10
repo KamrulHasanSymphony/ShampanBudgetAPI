@@ -25,7 +25,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             SegmentRepository _repo = new SegmentRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -85,7 +85,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             SegmentRepository _repo = new SegmentRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -173,7 +173,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             SegmentRepository _repo = new SegmentRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -211,7 +211,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             SegmentRepository _repo = new SegmentRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -249,7 +249,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> Dropdown()
         {
             SegmentRepository _repo = new SegmentRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -287,7 +287,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
             SegmentRepository _repo = new SegmentRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -325,7 +325,7 @@ namespace ShampanBFRS.Service.SetUp
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             SegmentRepository _repo = new SegmentRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;

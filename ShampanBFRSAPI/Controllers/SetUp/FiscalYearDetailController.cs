@@ -13,7 +13,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Insert")]
         public async Task<ResultVM> Insert(FiscalYearDetailVM fiscalYearDetail)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             FiscalYearDetailService _fiscalYearDetailService = new FiscalYearDetailService();
 
             try
@@ -25,7 +25,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = "Data not created.",
                     ExMessage = ex.Message,
                     DataVM = fiscalYearDetail
@@ -37,7 +37,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Update")]
         public async Task<ResultVM> Update(FiscalYearDetailVM fiscalYearDetail)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 FiscalYearDetailService _fiscalYearDetailService = new FiscalYearDetailService();
@@ -48,7 +48,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = "Data not updated.",
                     ExMessage = ex.Message,
                     DataVM = fiscalYearDetail
@@ -60,7 +60,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Delete")]
         public async Task<ResultVM> Delete(FiscalYearDetailVM fiscalYearDetail)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = null, DataVM = null };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = null, DataVM = null };
             try
             {
                 FiscalYearDetailService _fiscalYearDetailService = new FiscalYearDetailService();
@@ -75,7 +75,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = "Data not deleted.",
                     ExMessage = ex.Message,
                     DataVM = fiscalYearDetail
@@ -87,7 +87,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("List")]
         public async Task<ResultVM> List(FiscalYearDetailVM fiscalYearDetail)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 FiscalYearDetailService _fiscalYearDetailService = new FiscalYearDetailService();
@@ -98,7 +98,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = "Data not fetched.",
                     ExMessage = ex.Message,
                     DataVM = null
@@ -110,7 +110,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpGet("ListAsDataTable")]
         public async Task<ResultVM> ListAsDataTable(FiscalYearDetailVM fiscalYearDetail)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 FiscalYearDetailService _fiscalYearDetailService = new FiscalYearDetailService();
@@ -121,7 +121,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = "Data not fetched.",
                     ExMessage = ex.Message,
                     DataVM = null
@@ -133,7 +133,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpGet("Dropdown")]
         public async Task<ResultVM> Dropdown()
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
                 FiscalYearDetailService _fiscalYearDetailService = new FiscalYearDetailService();
@@ -144,7 +144,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = "Data not fetched.",
                     ExMessage = ex.Message,
                     DataVM = null

@@ -25,7 +25,7 @@ namespace ShampanBFRS.Service.SetUp
         {
             SabreRepository _repo = new SabreRepository();
             _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -68,7 +68,7 @@ namespace ShampanBFRS.Service.SetUp
         // Update method
         public async Task<ResultVM> Update(SabresVM vm)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
@@ -116,7 +116,7 @@ namespace ShampanBFRS.Service.SetUp
         // Delete method
         public async Task<ResultVM> Delete(CommonVM vm)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = vm.IDs, DataVM = null };
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
@@ -160,7 +160,7 @@ namespace ShampanBFRS.Service.SetUp
         // List method
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
@@ -208,7 +208,7 @@ namespace ShampanBFRS.Service.SetUp
         // ListAsDataTable method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
@@ -252,7 +252,7 @@ namespace ShampanBFRS.Service.SetUp
         // Dropdown method
         public async Task<ResultVM> Dropdown()
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;
@@ -296,7 +296,7 @@ namespace ShampanBFRS.Service.SetUp
         // GetGridData method
         public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -344,7 +344,7 @@ namespace ShampanBFRS.Service.SetUp
         // ReportPreview method
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             bool isNewConnection = false;
             SqlConnection conn = null;
             SqlTransaction transaction = null;

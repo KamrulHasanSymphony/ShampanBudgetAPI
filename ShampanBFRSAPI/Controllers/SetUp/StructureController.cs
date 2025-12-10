@@ -27,7 +27,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Insert")]
         public async Task<ResultVM> Insert(StructureVM vm)
         {
-            ResultVM result = new ResultVM { Status = "Fail" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail };
             try
             {
                 result = await _service.Insert(vm);
@@ -35,7 +35,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                result.Message = "Insert failed.";
+                result.Message =MessageModel.InsertFail;
                 result.ExMessage = ex.Message;
                 result.DataVM = vm;
                 return result;
@@ -46,7 +46,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Update")]
         public async Task<ResultVM> Update(StructureVM vm)
         {
-            ResultVM result = new ResultVM { Status = "Fail" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail };
             try
             {
                 result = await _service.Update(vm);
@@ -54,7 +54,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                result.Message = "Update failed.";
+                result.Message = MessageModel.UpdateFail;
                 result.ExMessage = ex.Message;
                 result.DataVM = vm;
                 return result;
@@ -65,7 +65,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("List")]
         public async Task<ResultVM> List(CommonVM vm)
         {
-            ResultVM result = new ResultVM { Status = "Fail" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail };
             try
             {
                 result = await _service.List(new[] { "M.Id" }, new[] { vm.Id }, null);
@@ -73,7 +73,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                result.Message = "List failed.";
+                result.Message = MessageModel.Fail;
                 result.ExMessage = ex.Message;
                 result.DataVM = vm;
                 return result;
@@ -83,7 +83,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("Delete")]
         public async Task<ResultVM> Delete(StructureVM vm)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = null, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = null, DataVM = null };
             try
             {
                 _service = new StructureService();
@@ -108,7 +108,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpGet("ListAsDataTable")]
         public async Task<ResultVM> ListAsDataTable()
         {
-            ResultVM result = new ResultVM { Status = "Fail" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail };
             try
             {
                 result = await _service.ListAsDataTable(new[] { "" }, new[] { "" });
@@ -116,7 +116,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                result.Message = "ListAsDataTable failed.";
+                result.Message =MessageModel.Fail;
                 result.ExMessage = ex.Message;
                 return result;
             }
@@ -126,7 +126,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("GetStructureDetailDataById")]
         public async Task<ResultVM> GetStructureDetailDataById(GridOptions options, int masterId)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
 
@@ -137,7 +137,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status = "Fail",
+                    Status = MessageModel.Fail,
                     Message = ex.Message,
                     ExMessage = ex.Message,
                     DataVM = null
@@ -150,7 +150,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("MultiplePost")]
         public async Task<ResultVM> MultiplePost(CommonVM vm)
         {
-            ResultVM result = new ResultVM { Status = "Fail" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail };
             try
             {
                 result = await _service.MultiplePost(vm);
@@ -158,7 +158,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                result.Message = "MultiplePost failed.";
+                result.Message = MessageModel.Fail;
                 result.ExMessage = ex.Message;
                 result.DataVM = vm;
                 return result;
@@ -169,7 +169,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         [HttpPost("GetGridData")]
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -197,7 +197,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
             catch (Exception ex)
             {
-                result.Message = "GetGridData failed.";
+                result.Message = MessageModel.Fail;
                 result.ExMessage = ex.Message;
                 return result;
             }

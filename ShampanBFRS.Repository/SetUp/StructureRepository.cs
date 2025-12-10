@@ -20,7 +20,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> Insert(StructureVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             bool isNewConnection = false;
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -62,8 +62,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                     vm.Id = Convert.ToInt32(newId);
 
-                    result.Status = "Success";
-                    result.Message = "Data Save Successfully";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
                 }
@@ -82,7 +82,7 @@ namespace ShampanBFRS.Repository.SetUp
                     transaction.Rollback();
                 }
                 result.ExMessage = ex.Message;
-                result.Message = "Failed to insert requisition.";
+                result.Message = MessageModel.InsertFail;
                 return result;
             }
             //finally
@@ -97,7 +97,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> InsertDetails(StructureDetailsVM detail, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             bool isNewConnection = false;
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -133,8 +133,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                     detail.Id = Convert.ToInt32(newId);
 
-                    result.Status = "Success";
-                    result.Message = "Detail inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = detail.Id.ToString();
                     result.DataVM = detail;
                 }
@@ -153,7 +153,7 @@ namespace ShampanBFRS.Repository.SetUp
                     transaction.Rollback();
                 }
                 result.ExMessage = ex.Message;
-                result.Message = "Failed to insert requisition detail.";
+                result.Message = MessageModel.InsertFail;
                 return result;
             }
             finally
@@ -168,7 +168,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> Update(StructureVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             bool isNewConnection = false;
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
             try
             {
@@ -206,8 +206,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = "Updated successfully";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.UpdateSuccess;
                     }
                     else
                     {
@@ -243,7 +243,7 @@ namespace ShampanBFRS.Repository.SetUp
         }
         public async Task<ResultVM> Delete(string?[] IDs, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = IDs, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, IDs = IDs, DataVM = null };
 
             try
             {
@@ -266,8 +266,8 @@ namespace ShampanBFRS.Repository.SetUp
                     int rowsAffected = await cmd.ExecuteNonQueryAsync();
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = "Data deleted successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.DeleteSuccess;
                     }
                     else
                     {
@@ -287,7 +287,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, DataVM = null };
 
             try
             {
@@ -368,22 +368,22 @@ namespace ShampanBFRS.Repository.SetUp
 
                 }
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = model;
                 return result;
             }
             catch (Exception ex)
             {
                 result.ExMessage = ex.Message;
-                result.Message = "Error in List.";
+                result.Message = MessageModel.Fail;
                 return result;
             }
         }
         public ResultVM DetailsList(string[] conditionalFields, string[] conditionalValue, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -423,8 +423,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 objComm.Fill(dataTable);
 
-                result.Status = "Success";
-                result.Message = "Details Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
 
                 return result;
@@ -439,7 +439,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> Dropdown(SqlConnection conn = null, SqlTransaction transaction = null)
         {
             bool isNewConnection = false;
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -462,8 +462,8 @@ namespace ShampanBFRS.Repository.SetUp
                     adapter.Fill(dt);
                 }
 
-                result.Status = "Success";
-                result.Message = "Dropdown data retrieved successfully.";
+                result.Status =MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dt;
                 return result;
             }
@@ -483,7 +483,7 @@ namespace ShampanBFRS.Repository.SetUp
         }
         public async Task<ResultVM> ListAsDataTable(string[] fields, string[] values, PeramModel vm, SqlConnection conn, SqlTransaction transaction)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
             try
             {
                 string query = "SELECT * FROM Structures WHERE 1=1";
@@ -495,8 +495,8 @@ namespace ShampanBFRS.Repository.SetUp
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
 
-                result.Status = "Success";
-                result.Message = "Loaded successfully";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dt;
                 return result;
             }
@@ -510,7 +510,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             bool isNewConnection = false;
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
 
             try
             {
@@ -548,8 +548,8 @@ WHERE Id IN ({inClause});";
                     int rowsAffected = await cmd.ExecuteNonQueryAsync();
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = "Posted successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.PostSuccess;
                     }
                     else
                     {
@@ -593,7 +593,7 @@ WHERE Id IN ({inClause});";
 
             bool isNewConnection = false;
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -650,8 +650,8 @@ WHERE Id IN ({inClause});";
                 //data = KendoGrid<SaleOrderVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
                 data = KendoGrid<StructureVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;
@@ -676,7 +676,7 @@ WHERE Id IN ({inClause});";
         public async Task<ResultVM> GetStructureDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -725,8 +725,8 @@ WHERE Id IN ({inClause});";
 
                 data = KendoGrid<StructureDetailsVM>.GetGridData_CMD(options, sqlQuery, "H.ID");
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;
@@ -745,7 +745,7 @@ WHERE Id IN ({inClause});";
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             bool isNewConnection = false;
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
             DataTable dt = new DataTable();
 
             try
@@ -784,8 +784,8 @@ WHERE Id IN ({inClause});";
                 }
                 adapter.Fill(dt);
 
-                result.Status = "Success";
-                result.Message = "Report data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dt;
                 return result;
             }
