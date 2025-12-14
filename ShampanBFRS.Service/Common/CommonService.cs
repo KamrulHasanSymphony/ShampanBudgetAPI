@@ -269,7 +269,7 @@ namespace ShampanBFRS.Service.Common
                 }
             }
         }
-        
+
         public async Task<ResultVM> AssingedBranchList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             UserBranchProfileRepository _repo = new UserBranchProfileRepository();
