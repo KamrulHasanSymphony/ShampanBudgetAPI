@@ -49,24 +49,24 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BankCharge", vm.BankCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@OceanLoss", vm.OceanLoss ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CPACharge", vm.CPACharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@HandelingCharge", vm.HandelingCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LightCharge", vm.LightCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Survey", vm.Survey ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CostLiterExImport", vm.CostLiterExImport ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ExERLRate", vm.ExERLRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@DutyPerLiter", vm.DutyPerLiter ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Refined", vm.Refined ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Crude", vm.Crude ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@SDRate", vm.SDRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@BankCharge", vm.BankCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@OceanLoss", vm.OceanLoss ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@CPACharge", vm.CPACharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@HandelingCharge", vm.HandelingCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@LightCharge", vm.LightCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Survey", vm.Survey ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@CostLiterExImport", vm.CostLiterExImport ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@ExERLRate", vm.ExERLRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@DutyPerLiter", vm.DutyPerLiter ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Refined", vm.Refined ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Crude", vm.Crude ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@SDRate", vm.SDRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -115,24 +115,24 @@ namespace ShampanBFRS.Repository.SetUp
                     Name = @Name,
                     ProductGroupId = @ProductGroupId,
                     ConversionFactor = @ConversionFactor,
-                    CIFCharge = @CIFCharge,
-                    ExchangeRateUsd = @ExchangeRateUsd,
-                    InsuranceRate = @InsuranceRate,
-                    BankCharge = @BankCharge,
-                    OceanLoss = @OceanLoss,
-                    CPACharge = @CPACharge,
-                    HandelingCharge = @HandelingCharge,
-                    LightCharge = @LightCharge,
-                    Survey = @Survey,
-                    CostLiterExImport = @CostLiterExImport,
-                    ExERLRate = @ExERLRate,
-                    DutyPerLiter = @DutyPerLiter,
-                    Refined = @Refined,
-                    Crude = @Crude,
-                    SDRate = @SDRate,
-                    DutyInTariff = @DutyInTariff,
-                    ATRate = @ATRate,
-                    VATRate = @VATRate,
+                    //CIFCharge = @CIFCharge,
+                    //ExchangeRateUsd = @ExchangeRateUsd,
+                    //InsuranceRate = @InsuranceRate,
+                    //BankCharge = @BankCharge,
+                    //OceanLoss = @OceanLoss,
+                    //CPACharge = @CPACharge,
+                    //HandelingCharge = @HandelingCharge,
+                    //LightCharge = @LightCharge,
+                    //Survey = @Survey,
+                    //CostLiterExImport = @CostLiterExImport,
+                    //ExERLRate = @ExERLRate,
+                    //DutyPerLiter = @DutyPerLiter,
+                    //Refined = @Refined,
+                    //Crude = @Crude,
+                    //SDRate = @SDRate,
+                    //DutyInTariff = @DutyInTariff,
+                    //ATRate = @ATRate,
+                    //VATRate = @VATRate,
                     IsActive = @IsActive,
                     LastUpdateBy = @LastUpdateBy,
                     LastUpdateFrom = @LastUpdateFrom,
@@ -146,24 +146,24 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BankCharge", vm.BankCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@OceanLoss", vm.OceanLoss ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CPACharge", vm.CPACharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@HandelingCharge", vm.HandelingCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LightCharge", vm.LightCharge ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Survey", vm.Survey ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CostLiterExImport", vm.CostLiterExImport ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ExERLRate", vm.ExERLRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@DutyPerLiter", vm.DutyPerLiter ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Refined", vm.Refined ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Crude", vm.Crude ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@SDRate", vm.SDRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@BankCharge", vm.BankCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@OceanLoss", vm.OceanLoss ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@CPACharge", vm.CPACharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@HandelingCharge", vm.HandelingCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@LightCharge", vm.LightCharge ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Survey", vm.Survey ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@CostLiterExImport", vm.CostLiterExImport ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@ExERLRate", vm.ExERLRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@DutyPerLiter", vm.DutyPerLiter ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Refined", vm.Refined ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@Crude", vm.Crude ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@SDRate", vm.SDRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
@@ -259,34 +259,33 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
                 SELECT
                     ISNULL(M.Id, 0) AS Id,
-                    ISNULL(M.Code, '') AS Code,
-                    ISNULL(M.Name, '') AS Name,
-                    ISNULL(M.ProductGroupId, '') AS ProductGroupId,
-                    ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
-                    ISNULL(M.CIFCharge, 0) AS CIFCharge,
-                    ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
-                    ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
-                    ISNULL(M.BankCharge, 0) AS BankCharge,
-                    ISNULL(M.OceanLoss, 0) AS OceanLoss,
-                    ISNULL(M.CPACharge, 0) AS CPACharge,
-                    ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
-                    ISNULL(M.LightCharge, 0) AS LightCharge,
-                    ISNULL(M.Survey, 0) AS Survey,
-                    ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
-                    ISNULL(M.ExERLRate, 0) AS ExERLRate,
-                    ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
-                    ISNULL(M.Refined, 0) AS Refined,
-                    ISNULL(M.Crude, 0) AS Crude,
-                    ISNULL(M.SDRate, 0) AS SDRate,
-                    ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
-                    ISNULL(M.ATRate, 0) AS ATRate,
-                    ISNULL(M.VATRate, 0) AS VATRate,
-                    ISNULL(M.IsActive, 0) AS IsActive,
-                    ISNULL(M.CreatedBy, '') AS CreatedBy,
-                    ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
-                    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-                    ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
-                FROM Products M
+             ISNULL(M.Code, '') AS Code,
+             ISNULL(M.Name, '') AS Name,
+             ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
+             --ISNULL(M.CIFCharge, 0) AS CIFCharge,
+             --ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+             --ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
+             --ISNULL(M.BankCharge, 0) AS BankCharge,
+             --ISNULL(M.OceanLoss, 0) AS OceanLoss,
+             --ISNULL(M.CPACharge, 0) AS CPACharge,
+             --ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
+             --ISNULL(M.LightCharge, 0) AS LightCharge,
+             --ISNULL(M.Survey, 0) AS Survey,
+             --ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
+             --ISNULL(M.ExERLRate, 0) AS ExERLRate,
+             --ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
+             --ISNULL(M.Refined, 0) AS Refined,
+             --ISNULL(M.Crude, 0) AS Crude,
+             --ISNULL(M.SDRate, 0) AS SDRate,
+             --ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
+             --ISNULL(M.ATRate, 0) AS ATRate,
+             --ISNULL(M.VATRate, 0) AS VATRate,
+             ISNULL(M.IsActive, 0) AS IsActive,
+             ISNULL(M.CreatedBy, '') AS CreatedBy,
+             ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
+             ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+             ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
+         FROM Products M
 WHERE 1 = 1
 
  ";
@@ -309,26 +308,26 @@ WHERE 1 = 1
                     Id = row.Field<int>("Id"),
                     Code = row.Field<string>("Code"),
                     Name = row.Field<string>("Name"),
-                    ProductGroupId = row.Field<int>("ProductGroupId"),
+                    //ProductGroupId = row.Field<int>("ProductGroupId"),
                     ConversionFactor = row.Field<decimal>("ConversionFactor"),
-                    CIFCharge = row.Field<decimal>("CIFCharge"),
-                    ExchangeRateUsd = row.Field<decimal>("ExchangeRateUsd"),
-                    InsuranceRate = row.Field<decimal>("InsuranceRate"),
-                    BankCharge = row.Field<decimal>("BankCharge"),
-                    OceanLoss = row.Field<decimal>("OceanLoss"),
-                    CPACharge = row.Field<decimal>("CPACharge"),
-                    HandelingCharge = row.Field<decimal>("HandelingCharge"),
-                    LightCharge = row.Field<decimal>("LightCharge"),
-                    Survey = row.Field<decimal>("Survey"),
-                    CostLiterExImport = row.Field<decimal>("CostLiterExImport"),
-                    ExERLRate = row.Field<decimal>("ExERLRate"),
-                    DutyPerLiter = row.Field<decimal>("DutyPerLiter"),
-                    Refined = row.Field<decimal>("Refined"),
-                    Crude = row.Field<decimal>("Crude"),
-                    SDRate = row.Field<decimal>("SDRate"),
-                    DutyInTariff = row.Field<decimal>("DutyInTariff"),
-                    ATRate = row.Field<decimal>("ATRate"),
-                    VATRate = row.Field<decimal>("VATRate"),
+                    //CIFCharge = row.Field<decimal>("CIFCharge"),
+                    //ExchangeRateUsd = row.Field<decimal>("ExchangeRateUsd"),
+                    //InsuranceRate = row.Field<decimal>("InsuranceRate"),
+                    //BankCharge = row.Field<decimal>("BankCharge"),
+                    //OceanLoss = row.Field<decimal>("OceanLoss"),
+                    //CPACharge = row.Field<decimal>("CPACharge"),
+                    //HandelingCharge = row.Field<decimal>("HandelingCharge"),
+                    //LightCharge = row.Field<decimal>("LightCharge"),
+                    //Survey = row.Field<decimal>("Survey"),
+                    //CostLiterExImport = row.Field<decimal>("CostLiterExImport"),
+                    //ExERLRate = row.Field<decimal>("ExERLRate"),
+                    //DutyPerLiter = row.Field<decimal>("DutyPerLiter"),
+                    //Refined = row.Field<decimal>("Refined"),
+                    //Crude = row.Field<decimal>("Crude"),
+                    //SDRate = row.Field<decimal>("SDRate"),
+                    //DutyInTariff = row.Field<decimal>("DutyInTariff"),
+                    //ATRate = row.Field<decimal>("ATRate"),
+                    //VATRate = row.Field<decimal>("VATRate"),
                     IsActive = row.Field<bool>("IsActive"),
                     CreatedBy = row.Field<string>("CreatedBy"),
                     LastUpdateBy = row.Field<string>("LastUpdateBy"),
@@ -478,34 +477,34 @@ ORDER BY Name";
             FROM (
                 SELECT 
                 ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC ") + @") AS rowindex,
-                ISNULL(M.Id, 0) AS Id,
-                    ISNULL(M.Code, '') AS Code,
-                    ISNULL(M.Name, '') AS Name,
-                    ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
-                    ISNULL(M.CIFCharge, 0) AS CIFCharge,
-                    ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
-                    ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
-                    ISNULL(M.BankCharge, 0) AS BankCharge,
-                    ISNULL(M.OceanLoss, 0) AS OceanLoss,
-                    ISNULL(M.CPACharge, 0) AS CPACharge,
-                    ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
-                    ISNULL(M.LightCharge, 0) AS LightCharge,
-                    ISNULL(M.Survey, 0) AS Survey,
-                    ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
-                    ISNULL(M.ExERLRate, 0) AS ExERLRate,
-                    ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
-                    ISNULL(M.Refined, 0) AS Refined,
-                    ISNULL(M.Crude, 0) AS Crude,
-                    ISNULL(M.SDRate, 0) AS SDRate,
-                    ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
-                    ISNULL(M.ATRate, 0) AS ATRate,
-                    ISNULL(M.VATRate, 0) AS VATRate,
-                    ISNULL(M.IsActive, 0) AS IsActive,
-                    ISNULL(M.CreatedBy, '') AS CreatedBy,
-                    ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
-                    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-                    ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
-                FROM Products M
+             ISNULL(M.Id, 0) AS Id,
+             ISNULL(M.Code, '') AS Code,
+             ISNULL(M.Name, '') AS Name,
+             ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
+             --ISNULL(M.CIFCharge, 0) AS CIFCharge,
+             --ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+             --ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
+             --ISNULL(M.BankCharge, 0) AS BankCharge,
+             --ISNULL(M.OceanLoss, 0) AS OceanLoss,
+             --ISNULL(M.CPACharge, 0) AS CPACharge,
+             --ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
+             --ISNULL(M.LightCharge, 0) AS LightCharge,
+             --ISNULL(M.Survey, 0) AS Survey,
+             --ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
+             --ISNULL(M.ExERLRate, 0) AS ExERLRate,
+             --ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
+             --ISNULL(M.Refined, 0) AS Refined,
+             --ISNULL(M.Crude, 0) AS Crude,
+             --ISNULL(M.SDRate, 0) AS SDRate,
+             --ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
+             --ISNULL(M.ATRate, 0) AS ATRate,
+             --ISNULL(M.VATRate, 0) AS VATRate,
+             ISNULL(M.IsActive, 0) AS IsActive,
+             ISNULL(M.CreatedBy, '') AS CreatedBy,
+             ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
+             ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+             ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
+         FROM Products M
             WHERE 1= 1
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductVM>.FilterCondition(options.filter) + ")" : "") + @"
