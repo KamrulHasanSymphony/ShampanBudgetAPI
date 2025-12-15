@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Ceiling;
 using ShampanBFRS.Service.Common;
 using ShampanBFRS.Service.Question;
+using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
@@ -131,7 +132,27 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         }
 
 
+        //[HttpPost("GetCeilingDetailDataById")]
+        //public async Task<ResultVM> GetCeilingDetailDataById(GridOptions options, int masterId)
+        //{
+        //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+        //    try
+        //    {
 
+        //        resultVM = await _CeilingService.GetCeilingDetailDataById(options, masterId);
+        //        return resultVM;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResultVM
+        //        {
+        //            Status = "Fail",
+        //            Message = ex.Message,
+        //            ExMessage = ex.Message,
+        //            DataVM = null
+        //        };
+        //    }
+        //}
 
 
     }

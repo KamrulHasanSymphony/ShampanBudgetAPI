@@ -24,8 +24,6 @@ namespace ShampanBFRSAPI.Controllers.SetUp
         ChargeHeaderService _chargeHeaderService = new ChargeHeaderService();
         CommonService _commonService = new CommonService();
 
-
-
         // POST: api/ChargeHeader/Insert
         [HttpPost("Insert")]
         public async Task<ResultVM> Insert(ChargeHeaderVM vm)

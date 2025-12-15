@@ -452,6 +452,80 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
+        //public async Task<ResultVM> GetCeilingDetailDataById(GridOptions options, int masterId, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
+        //{
+        //    CeilingRepository _repo = new CeilingRepository();
+        //    ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = null, DataVM = null };
+
+        //    SqlConnection conn = null;
+        //    SqlTransaction transaction = null;
+
+        //    try
+        //    {
+        //        #region open connection and transaction
+        //        if (VcurrConn != null)
+        //        {
+        //            conn = VcurrConn;
+        //        }
+        //        if (Vtransaction != null)
+        //        {
+        //            transaction = Vtransaction;
+        //        }
+        //        if (conn == null)
+        //        {
+        //            conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+        //            if (conn.State != ConnectionState.Open)
+        //            {
+        //                conn.Open();
+        //            }
+        //        }
+        //        if (transaction == null)
+        //        {
+        //            transaction = conn.BeginTransaction("");
+        //        }
+        //        #endregion open connection and transaction
+
+        //        result = await _repo.GetCeilingDetailDataById(options, masterId, conn, transaction);
+
+        //        #region Commit
+        //        if (Vtransaction == null && transaction != null)
+        //        {
+        //            if (result.Status == "Success")
+        //            {
+        //                transaction.Commit();
+        //            }
+        //            else
+        //            {
+        //                throw new Exception(result.Message);
+        //            }
+        //        }
+        //        #endregion Commit
+        //    }
+        //    #region Catch & Finally
+        //    catch (Exception ex)
+        //    {
+        //        if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
+
+        //        result.Message = ex.Message.ToString();
+        //        result.ExMessage = ex.ToString();
+        //    }
+        //    finally
+        //    {
+        //        if (VcurrConn == null)
+        //        {
+        //            if (conn != null)
+        //            {
+        //                if (conn.State == ConnectionState.Open)
+        //                {
+        //                    conn.Close();
+        //                }
+        //            }
+        //        }
+        //    }
+        //    #endregion Catch & Finally
+        //    return result;
+        //}
+
 
     }
 }

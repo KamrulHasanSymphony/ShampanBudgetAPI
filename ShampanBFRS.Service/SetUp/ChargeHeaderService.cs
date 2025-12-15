@@ -24,8 +24,6 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> Insert(ChargeHeaderVM chargeHeader, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
         {
-            string CodeGroup = "FM_FeedPurchaseHeaders";
-            string CodeName = "FM_FeedPurchaseHeaders";
 
             ChargeHeaderRepository _repo = new ChargeHeaderRepository();
             _commonRepo = new CommonRepository();
@@ -45,13 +43,18 @@ namespace ShampanBFRS.Service.SetUp
 
                 if (transaction == null) transaction = conn.BeginTransaction();
                 #endregion open connection and transaction
+                // check
+
+                string[] conditionField = { "ChargeGroup"};
+                string[] conditionValue = { chargeHeader.ChargeGroup ?? string.Empty };
+
+                bool exists = _commonRepo.CheckExists("ChargeHeaders", conditionField, conditionValue, conn, transaction);
+                if (exists)
+                    throw new System.Exception("Group Name Already Exist!");
 
 
-                //string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
-                //if (!string.IsNullOrEmpty(code))
-                //{
-                    result = await _repo.Insert(chargeHeader, conn, transaction);
+                result = await _repo.Insert(chargeHeader, conn, transaction);
                     chargeHeader.Id = Convert.ToInt32(result.Id);
 
                     if (result.Status.ToLower() == "success")
@@ -77,12 +80,7 @@ namespace ShampanBFRS.Service.SetUp
                     {
                         throw new Exception(result.Message);
                     }
-                //}
-                //else
-                //{
-                //    throw new Exception("Code Generation Failed!");
-                //}
-
+               
                 #region Commit
                 if (Vtransaction == null && transaction != null)
                 {
@@ -158,18 +156,6 @@ namespace ShampanBFRS.Service.SetUp
                 }
                 #endregion open connection and transaction
 
-                //#region Check Exist Data
-                //string[] conditionField = { "Id !", "Code" };
-                //string[] conditionValue = { chargeHeader.Id.ToString()};
-
-                //bool exist = _commonRepo.CheckExists("ChargeHeaders", conditionField, conditionValue, conn, transaction);
-
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exist!";
-                //    throw new Exception("Data Already Exist!");
-                //}
-                //#endregion Check Exist Data
 
 
                 var record = _commonRepo.DetailsDelete("ChargeDetails", new[] { "ChargeHeaderId" }, new[] { chargeHeader.Id.ToString() }, conn, transaction);
