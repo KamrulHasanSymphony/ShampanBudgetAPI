@@ -122,31 +122,6 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
         }
 
-        // POST: api/MaintenanceRecord/GetMaintenanceRecordDetailDataById
-        [HttpPost("GetStructureDetailDataById")]
-        public async Task<ResultVM> GetStructureDetailDataById(GridOptions options, int masterId)
-        {
-            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-            try
-            {
-
-                resultVM = await _service.GetStructureDetailDataById(options, masterId);
-                return resultVM;
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM
-                {
-                    Status = MessageModel.Fail,
-                    Message = ex.Message,
-                    ExMessage = ex.Message,
-                    DataVM = null
-                };
-            }
-        }
-
-
-        // POST: api/Structure/MultiplePost
         [HttpPost("MultiplePost")]
         public async Task<ResultVM> MultiplePost(CommonVM vm)
         {
