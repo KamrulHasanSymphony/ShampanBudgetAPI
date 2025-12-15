@@ -38,7 +38,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         [HttpPost("Update")]
         public async Task<ResultVM> Update(CeilingVM VM)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _CeilingService = new CeilingService();
@@ -54,7 +54,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         [HttpPost("GetGridData")]
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _CeilingService = new CeilingService();
@@ -70,7 +70,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         [HttpPost("GetAllSabreDataForDetails")]
         public async Task<ResultVM> GetAllSabreDataForDetails(GridOptions options)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
             {
                 _CeilingService = new CeilingService();
@@ -132,27 +132,27 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         }
 
 
-        //[HttpPost("GetCeilingDetailDataById")]
-        //public async Task<ResultVM> GetCeilingDetailDataById(GridOptions options, int masterId)
-        //{
-        //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-        //    try
-        //    {
+        [HttpPost("GetCeilingDetailDataById")]
+        public async Task<ResultVM> GetCeilingDetailDataById(GridOptions options, int masterId)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
 
-        //        resultVM = await _CeilingService.GetCeilingDetailDataById(options, masterId);
-        //        return resultVM;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResultVM
-        //        {
-        //            Status = "Fail",
-        //            Message = ex.Message,
-        //            ExMessage = ex.Message,
-        //            DataVM = null
-        //        };
-        //    }
-        //}
+                resultVM = await _CeilingService.GetCeilingDetailDataById(options, masterId);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
 
 
     }
