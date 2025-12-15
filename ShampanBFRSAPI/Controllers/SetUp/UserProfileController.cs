@@ -3,6 +3,7 @@ using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.AccountVMs;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
+using ShampanBFRS.ViewModel.SetUpVMs;
 
 namespace ShampanBFRSAPI.Controllers.SetUp
 {
