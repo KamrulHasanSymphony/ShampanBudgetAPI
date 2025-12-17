@@ -442,56 +442,6 @@ namespace ShampanBFRS.Service.SetUp
             }
         }
 
-        public async Task<ResultVM> GetStructureDetailDataById(GridOptions options, int masterId)
-        {
-
-            StructureRepository _repo = new StructureRepository();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.GetStructureDetailDataById(options, masterId, conn, transaction);
-
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.Message.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
-
-
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null)
         {
             StructureRepository _repo = new StructureRepository();

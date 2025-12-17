@@ -1121,69 +1121,45 @@ EXEC sp_executesql @SQL;
             }
         }
 
-        public async Task<ResultVM> GetChargeDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
+        public async Task<ResultVM> GetCeilingDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
         {
             DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
-                var data = new GridEntity<ChargeDetailVM>();
+                var data = new GridEntity<CeilingDetailVM>();
 
                 string sqlQuery = @"
                 -- Count query
-                SELECT COUNT(DISTINCT D.Id) AS totalcount
-        FROM ChargeDetails D
+                SELECT COUNT(DISTINCT D.AccountId) AS totalcount
+        FROM CeilingDetails D
      
-        WHERE D.ChargeHeaderId = @masterId
+        WHERE D.GLCeilingId = @masterId
                 -- Add the filter condition
-                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ChargeDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
 
                 -- Data query with pagination and sorting
-                SELECT *
+                SELECT s.Code AccountCode,s.Name AccountName,AccountId,InputTotal
                 FROM (
                     SELECT
-                        ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "D.Id DESC ") + @") AS rowindex,
-                                ISNULL(D.Id, 0) AS Id,
-                                ISNULL(D.ChargeHeaderId, 0) AS ChargeHeaderId,
-                                ISNULL(D.ProductId, 0) AS ProductId,
-                                ISNULL(P.Name, 0) AS ProductName,
-                                ISNULL(D.CIFCharge, 0) AS CIFCharge,
-                                ISNULL(D.ExchangeRateUsd, 0) AS ExchangeRateUsd,
-                                ISNULL(D.InsuranceRate, 0) AS InsuranceRate,
-                                ISNULL(D.BankCharge, 0) AS BankCharge,
-                                ISNULL(D.OceanLoss, 0) AS OceanLoss,
-                                ISNULL(D.CPACharge, 0) AS CPACharge,
-                                ISNULL(D.HandelingCharge, 0) AS HandelingCharge,
-                                ISNULL(D.LightCharge, 0) AS LightCharge,
-                                ISNULL(D.Survey, 0) AS Survey,
-                                ISNULL(D.CostLiterExImport, 0) AS CostLiterExImport,
-                                ISNULL(D.ExERLRate, 0) AS ExERLRate,
-                                ISNULL(D.DutyPerLiter, 0) AS DutyPerLiter,
-                                ISNULL(D.Refined, 0) AS Refined,
-                                ISNULL(D.Crude, 0) AS Crude,
-                                ISNULL(D.SDRate, 0) AS SDRate,
-                                ISNULL(D.DutyInTariff, 0) AS DutyInTariff,
-                                ISNULL(D.ATRate, 0) AS ATRate,
-                                ISNULL(D.AITRate, 0) AS AITRate,
-                                ISNULL(D.VATRate, 0) AS VATRate,
-                                ISNULL(D.ConversionFactorFixedValue, 0) AS ConversionFactorFixedValue,
-                                ISNULL(D.VATRateFixed, 0) AS VATRateFixed,
-                                ISNULL(D.RiverDues, 0) AS RiverDues
-                                FROM ChargeDetails D
-                                Where D.ChargeHeaderId = @masterId
-
-
+                                ROW_NUMBER() OVER (ORDER BY MAX(D.Id) DESC) AS rowindex,
+                                ISNULL(D.AccountId, 0) AS AccountId,
+                                SUM(ISNULL(D.Amount, 0)) AS InputTotal
+                                FROM CeilingDetails D
+                                Where D.GLCeilingId = @masterId
+                                GROUP BY D.AccountId
                     -- Add the filter condition
-                    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ChargeDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+                    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
                 ) AS a
+                left outer join Sabres s on s.Id=a.AccountId
                 WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
                 ";
                 sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
-                data = KendoGrid<ChargeDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
+                data = KendoGrid<CeilingDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;

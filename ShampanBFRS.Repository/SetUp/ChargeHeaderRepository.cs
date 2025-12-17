@@ -40,8 +40,8 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@ChargeGroup", vm.ChargeGroup ?? (object)DBNull.Value);
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
+                    result.Status =MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
                 }
@@ -77,8 +77,8 @@ namespace ShampanBFRS.Repository.SetUp
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = "Data updated successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.UpdateSuccess;
                     }
                     else
                     {
@@ -120,8 +120,8 @@ namespace ShampanBFRS.Repository.SetUp
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = $"Data deleted successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.DeleteSuccess;
                     }
                     else
                     {
@@ -183,8 +183,8 @@ namespace ShampanBFRS.Repository.SetUp
                     ChargeGroup = row.Field<string>("ChargeGroup")         
                 }).ToList();
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = modelList;
                 return result;
             }
@@ -233,8 +233,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 objComm.Fill(dataTable);
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
                 return result;
             }
@@ -269,8 +269,8 @@ namespace ShampanBFRS.Repository.SetUp
                     adapter.Fill(dropdownData);
                 }
 
-                result.Status = "Success";
-                result.Message = "Dropdown data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dropdownData;
                 return result;
             }
@@ -339,8 +339,8 @@ namespace ShampanBFRS.Repository.SetUp
                 // Execute the query and get data
                 data = KendoGrid<ChargeHeaderVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;
@@ -395,8 +395,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 objComm.Fill(dataTable);
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
                 return result;
             }
@@ -432,8 +432,8 @@ namespace ShampanBFRS.Repository.SetUp
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
-                        result.Status = "Success";
-                        result.Message = $"Data Posted successfully.";
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.RetrievedSuccess;
                     }
                     else
                     {
@@ -454,7 +454,7 @@ namespace ShampanBFRS.Repository.SetUp
         {
             ResultVM result = new ResultVM
             {
-                Status = "Fail",
+                Status = MessageModel.Fail,
                 Message = "Error",
                 ExMessage = null,
                 Id = "0",
@@ -552,8 +552,8 @@ namespace ShampanBFRS.Repository.SetUp
                     object newId = await cmd.ExecuteScalarAsync();
                     details.Id = Convert.ToInt32(newId);
 
-                    result.Status = "Success";
-                    result.Message = "Charge details inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = newId.ToString();
                     result.DataVM = details;
                 }
@@ -574,7 +574,7 @@ namespace ShampanBFRS.Repository.SetUp
         {
             bool isNewConnection = false;
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -639,8 +639,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 objComm.Fill(dataTable);
 
-                result.Status = "Success";
-                result.Message = "Details Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
 
                 return result;
@@ -663,7 +663,7 @@ namespace ShampanBFRS.Repository.SetUp
         public async Task<ResultVM> GetChargeDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -710,7 +710,7 @@ namespace ShampanBFRS.Repository.SetUp
                                 ISNULL(D.VATRateFixed, 0) AS VATRateFixed,
                                 ISNULL(D.RiverDues, 0) AS RiverDues
                                 FROM ChargeDetails D
-                               LEFT OUTER JOIN Products P ON D.ProductId =P.Id
+                                LEFT OUTER JOIN Products P ON D.ProductId =P.Id
                                 Where D.ChargeHeaderId = @masterId
 
 
@@ -722,8 +722,8 @@ namespace ShampanBFRS.Repository.SetUp
                 sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
                 data = KendoGrid<ChargeDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;
@@ -744,7 +744,7 @@ namespace ShampanBFRS.Repository.SetUp
         {
             bool isNewConnection = false;
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -817,8 +817,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 data = KendoGrid<ChargeDetailVM>.GetTransactionalGridData_CMD(options, sqlQuery, "H.Id", conditionalFields, conditionalValues);
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;

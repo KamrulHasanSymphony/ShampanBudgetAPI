@@ -584,9 +584,6 @@ WHERE Id IN ({inClause});";
             }
         }
 
-
-
-        // GetGridData Method
         public async Task<ResultVM> GetGridData(GridOptions options, SqlConnection conn, SqlTransaction transaction)
         {
 
@@ -671,76 +668,6 @@ WHERE Id IN ({inClause});";
             }
 
         }
-
-
-        public async Task<ResultVM> GetStructureDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
-        {
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            try
-            {
-                if (conn == null)
-                {
-                    throw new Exception("Database connection fail!");
-                }
-
-                var data = new GridEntity<StructureDetailsVM>();
-
-                // Define your SQL query string
-                string sqlQuery = @"
-    -- Count query
-
-            SELECT COUNT(DISTINCT D.Id) AS totalcount
-             FROM StructureDetails D  
-            LEFT OUTER JOIN Segments T ON D.StructureId = T.Id       
-
-    -- Add the filter condition
-    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<StructureDetailsVM>.FilterCondition(options.filter) + ")" : "") + @"
-
-    -- Data query with pagination and sorting
-    SELECT * 
-    FROM (
-        SELECT 
-        ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "D.ID DESC") + @") AS rowindex,
-        
-            ISNULL(D.Id, 0) AS Id,
-            ISNULL(T.Name, '') AS SegmentName,
-            ISNULL(T.Code, '') AS SegmentCode,
-            ISNULL(D.StructureId, 0) AS StructureId,
-            ISNULL(D.SegmentId, 0) AS SegmentId,
-            ISNULL(D.Remarks, '') AS Remarks
-            FROM StructureDetails D
-
-            LEFT OUTER JOIN Segments T ON D.StructureId = T.Id
-            WHERE D.StructureId = @masterId
-
-    -- Add the filter condition
-    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<StructureDetailsVM>.FilterCondition(options.filter) + ")" : "") + @"
-
-    ) AS a
-    WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-";
-                sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
-
-                data = KendoGrid<StructureDetailsVM>.GetGridData_CMD(options, sqlQuery, "H.ID");
-
-                result.Status = MessageModel.Success;
-                result.Message =MessageModel.RetrievedSuccess;
-                result.DataVM = data;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.ExMessage = ex.Message;
-                result.Message = ex.Message;
-                return result;
-            }
-        }
-
-
-
 
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {

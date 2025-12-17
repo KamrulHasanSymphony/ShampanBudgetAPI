@@ -2,6 +2,7 @@
 using ShampanBFRS.ViewModel.AccountVMs;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
+using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using System.Data;
 using System.Data.SqlClient;
