@@ -562,6 +562,7 @@ WHERE 1 = 1
 
                 string query = @"
  
+ 
  SELECT
 ROW_NUMBER() OVER (ORDER BY p.Id) AS Serial
 ,ISNULL(PB.Id, 0) AS Id
@@ -623,7 +624,9 @@ ROW_NUMBER() OVER (ORDER BY p.Id) AS Serial
 ,ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties
 ,ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT
 ,ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
-FROM Products p  
+FROM ChargeHeaders ch
+left outer join ChargeDetails cd  on ch.Id= cd.ChargeHeaderId
+left outer join Products p  on cd.ProductId= p.Id
 left outer join ProductGroups pg on pg.Id = p.ProductGroupId
 left outer join ProductBudgets PB on p.Id = PB.ProductId
 
@@ -632,7 +635,7 @@ WHERE 1 = 1
  ";
 
                 if (vm.Id > 0)
-                    query += " AND p.Id=@Id ";
+                query += " AND p.Id=@Id ";
 
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
