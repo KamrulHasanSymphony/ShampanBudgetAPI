@@ -22,7 +22,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
 
         public PeramModel PeramModel { get; set; }
         public string? TransactionType { get; set; }
-        public int? ChargeGroup { get; set; }
+        public string? ChargeGroup { get; set; }
 
         public List<ProductBudgetVM> DetailList { set; get; }
         public ProductBudgetMasterVM()

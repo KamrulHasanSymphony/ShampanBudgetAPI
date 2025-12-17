@@ -29,6 +29,7 @@ SELECT COUNT(Id) FROM ProductBudgets WHERE BranchId = @BranchId
 AND GLFiscalYearId = @GLFiscalYearId 
 AND BudgetSetNo = @BudgetSetNo 
 AND BudgetType = @BudgetType 
+AND ChargeGroup = @ChargeGroup 
 
 ";
                 SqlCommand checkCommand = new SqlCommand(checkQuery, conn, transaction);
@@ -36,6 +37,7 @@ AND BudgetType = @BudgetType
                 checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.GLFiscalYearId;
                 checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
                 checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType;
+                checkCommand.Parameters.Add("@ChargeGroup", SqlDbType.NVarChar).Value = objMaster.ChargeGroup;
                 count = Convert.ToInt32(checkCommand.ExecuteScalar());
 
                 if (count > 0)
@@ -43,12 +45,15 @@ AND BudgetType = @BudgetType
                     throw new Exception("Already Exists!");
                 }
 
-                sqlText = @" 
-
+                string TempTable = @"
 SELECT TOP 0 *
 INTO #ProductBudgetTemp
 FROM ProductBudgets;
+";
 
+                #region TempInsert
+
+                string TempInsert = @"
 INSERT INTO #ProductBudgetTemp (
 
  CompanyId
@@ -58,6 +63,7 @@ INSERT INTO #ProductBudgetTemp (
 ,BLQuantityMT
 ,BudgetSetNo
 ,BudgetType
+,ChargeGroup
 --,TransactionType            
 ) VALUES 
 (
@@ -68,16 +74,23 @@ INSERT INTO #ProductBudgetTemp (
 ,@BLQuantityMT
 ,@BudgetSetNo
 ,@BudgetType
+,@ChargeGroup
 --,@TransactionType
  )
+";
 
+                #endregion
 
+                #region Process
+
+                sqlText = @" 
 update #ProductBudgetTemp set 
  BLQuantityBBL = 0
 ,ReceiveQuantityMT = 0
 ,ReceiveQuantityBBL = 0
 ,CifUsdValue = 0
 ,CifBdt=0
+,CifPriceValue=0
 ,InsuranceValue=0
 ,BankChargeValue = 0
 ,BankChargeValue_R20 = 0
@@ -99,32 +112,54 @@ update #ProductBudgetTemp set
 ,TotalCostAfterDuties = 0
 ,VATExcludingExtraVAT = 0
 ,TotalCostVATExcluded = 0
+,DutyInTariff3 = 0
+,DutyInTariff2 = 0
+,DutyInTariff1 = 0
+,AITValue = 0
+,ArrearDuty = 0
+,RiverDuesValue = 0
+,CostBblValue = 0
+,CostLiterValue = 0
 ;
 
 UPDATE T
 SET 
-    T.ConversionFactor      = P.ConversionFactor,
-    T.CIFCharge             = P.CIFCharge,
-    T.ExchangeRateUsd       = P.ExchangeRateUsd,
-    T.InsuranceRate         = P.InsuranceRate,
-    T.BankCharge            = P.BankCharge,
-    T.OceanLoss             = P.OceanLoss,
-    T.CPACharge             = P.CPACharge,
-    T.HandelingCharge       = P.HandelingCharge,
-    T.LightCharge           = P.LightCharge,
-    T.Survey                = P.Survey,
-    T.CostLiterExImport     = P.CostLiterExImport,
-    T.ExERLRate             = P.ExERLRate,
-    T.DutyPerLiter          = P.DutyPerLiter,
-	T.Refined               = P.Refined,
-    T.Crude                 = P.Crude,
-    T.SDRate                = P.SDRate,
-    T.DutyInTariff          = P.DutyInTariff,
-    T.ATRate                = P.ATRate,
-    T.VATRate               = P.VATRate
+T.ConversionFactor               = P.ConversionFactor,
+T.CIFCharge                      = cd.CIFCharge,
+T.ExchangeRateUsd                = cd.ExchangeRateUsd,
+T.InsuranceRate                  = cd.InsuranceRate,
+T.BankCharge                     = cd.BankCharge,
+T.OceanLoss                      = cd.OceanLoss,
+T.CPACharge                      = cd.CPACharge,
+T.HandelingCharge                = cd.HandelingCharge,
+T.LightCharge                    = cd.LightCharge,
+T.Survey                         = cd.Survey,
+T.CostLiterExImport              = cd.CostLiterExImport,
+T.ExERLRate                      = cd.ExERLRate,
+T.DutyPerLiter                   = cd.DutyPerLiter,
+T.Refined                        = cd.Refined,
+T.Crude                          = cd.Crude,
+T.SDRate                         = cd.SDRate,
+T.DutyInTariff                   = cd.DutyInTariff,
+T.ATRate                         = cd.ATRate,
+T.AITRate                        = cd.AITRate,
+T.VATRateFixed                   = cd.VATRateFixed,
+T.ConversionFactorFixedValue     = cd.ConversionFactorFixedValue,
+T.VATRate                        = cd.VATRate,
+T.RiverDues                      = cd.RiverDues
 FROM #ProductBudgetTemp T
-INNER JOIN Products P ON P.Id = T.ProductId;
+INNER JOIN Products P ON P.Id = T.ProductId
+INNER JOIN ChargeDetails cd ON P.Id = cd.ProductId
+INNER JOIN ChargeHeaders ch ON ch.Id = cd.ChargeHeaderId and ch.ChargeGroup=T.ChargeGroup
+;
 
+";
+
+                if (objMaster.ChargeGroup.ToLower() == "importedrefined")
+                {
+                    #region Calculations    
+
+                    sqlText += @"
 
 update #ProductBudgetTemp set 
  BLQuantityBBL = BLQuantityMT * ConversionFactor
@@ -138,61 +173,105 @@ update #ProductBudgetTemp set
 ,CifBdt=(ReceiveQuantityBBL * CIFCharge) * ExchangeRateUsd
 ,InsuranceValue=0
 where BLQuantityMT>0
+ ;
 
+update #ProductBudgetTemp set 
+ DutyValue = CifBdt * (DutyPerLiter / 100)
+where BLQuantityMT>0
  ;
 
  update #ProductBudgetTemp set 
- BankChargeValue = CifBdt * (BankCharge / 100) * 1.15
-,BankChargeValue_R20 = (CifBdt * BankCharge) * (100+0)/100
+ VATValue = (CifBdt + DutyValue)*(VATRate/100)
+,ATValue = (CifBdt + DutyValue)*(ATRate/100)
+,AITValue = CifBdt *(AITRate/100)
+,ArrearDuty = 1 * ReceiveQuantityBBL * ConversionFactorFixedValue
+,HandelingChargeValue= HandelingCharge * ReceiveQuantityMT *  VATRateFixed
+,RiverDuesValue= RiverDues * ExchangeRateUsd * ReceiveQuantityMT *  VATRateFixed
+,SurveyValue= Survey * ReceiveQuantityBBL *  ConversionFactorFixedValue
+,OceanLossValue= CifBdt * (OceanLoss/100)
+,BankChargeValue = CifBdt * (BankCharge / 100) * VATRateFixed
 where BLQuantityMT>0
-
-;
-
- 
-update #ProductBudgetTemp set 
- OceanLossValue = (CifBdt + BankChargeValue) * (OceanLoss/100)
-,CPAChargeValue = BLQuantityMT * CPACharge
-,HandelingChargeValue= ReceiveQuantityMT * HandelingCharge * 1.15
-,LightChargeValue = 0
-,SurveyValue= ReceiveQuantityMT * Survey
-where BLQuantityMT>0
-
-;
+ ;
 
 update #ProductBudgetTemp set 
- TotalCost = CifBdt + InsuranceValue + BankChargeValue + OceanLossValue 
- + CPAChargeValue + HandelingChargeValue + LightChargeValue + SurveyValue
+ TotalCost = CifBdt + DutyValue + VATValue + ATValue +  AITValue + ArrearDuty + HandelingChargeValue + RiverDuesValue + SurveyValue
+ + OceanLossValue + BankChargeValue 
 where BLQuantityMT>0
 ;
 
 update #ProductBudgetTemp set 
- CostBblExImport = TotalCost / ReceiveQuantityBBL
-,CostLiterExImportValue = (TotalCost / ReceiveQuantityBBL) / CostLiterExImport
-,CostLiterExErl = 91.84 -- need to clear
-,DutyValue = Refined * ExchangeRateUsd * (DutyPerLiter / 100) * (11.00 / 100)
-where BLQuantityMT>0
-
-;
-
-update #ProductBudgetTemp set 
- DutyOnTariffValuePerLiter= ReceiveQuantityBBL * DutyValue * 159
-,SDValue = BLQuantityBBL * SDRate * 159	-- need to clear
-,ATValue = (ReceiveQuantityBBL * 159) * ( ExchangeRateUsd * Refined + DutyValue) * ATRate
-,VATValue = (ReceiveQuantityBBL * 159) * ( ExchangeRateUsd * Refined + DutyValue) * VATRate
-,VATPerLiterValue = (ExchangeRateUsd * Refined) * 1.1 * VATRate * (11.00/100)
+ CostBblValue = TotalCost / ReceiveQuantityBBL
 where BLQuantityMT>0
 ;
 
 update #ProductBudgetTemp set 
- TotalCostAfterDuties = TotalCost + DutyOnTariffValuePerLiter + SDValue + ATValue + VATValue
-,VATExcludingExtraVAT = VATValue
+ CostLiterValue = CostBblValue / ConversionFactorFixedValue
+where BLQuantityMT>0
+;
+
+";
+
+                    #endregion
+                }
+                else if (objMaster.ChargeGroup.ToLower() == "localrefined")
+                {
+                    #region Calculations    
+
+                    sqlText += @"
+
+
+update #ProductBudgetTemp set 
+ BLQuantityBBL = BLQuantityMT * ConversionFactor
+,ReceiveQuantityMT = BLQuantityMT
+,ReceiveQuantityBBL = (BLQuantityMT * ConversionFactor)
 where BLQuantityMT>0
 ;
 
 update #ProductBudgetTemp set 
-TotalCostVATExcluded = TotalCostAfterDuties - VATExcludingExtraVAT
+CifPriceValue=CIFCharge / ExchangeRateUsd * ConversionFactorFixedValue
+where BLQuantityMT>0
+ ;
+
+ update #ProductBudgetTemp set 
+ CifUsdValue = ReceiveQuantityBBL * CifPriceValue
+,CifBdt= CIFCharge * ReceiveQuantityBBL * ConversionFactorFixedValue
+where BLQuantityMT>0
+ ;
+
+update #ProductBudgetTemp set 
+ VATValue = CifBdt*(VATRate/(100+VATRate))
+,ArrearDuty = 1 * ReceiveQuantityBBL * ConversionFactorFixedValue
+,HandelingChargeValue= HandelingCharge * ReceiveQuantityBBL *  ConversionFactorFixedValue
+,SurveyValue= Survey * ReceiveQuantityBBL *  ConversionFactorFixedValue
+where BLQuantityMT>0
+ ;
+
+update #ProductBudgetTemp set 
+ TotalCost = CifBdt + VATValue + ArrearDuty + HandelingChargeValue + SurveyValue
 where BLQuantityMT>0
 ;
+
+update #ProductBudgetTemp set 
+ CostBblValue = TotalCost / ReceiveQuantityBBL
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ CostLiterValue = CostBblValue / ConversionFactorFixedValue
+where BLQuantityMT>0
+;
+
+";
+
+                    #endregion
+                }
+
+
+
+                #region insert ProductBudgets
+
+                sqlText += @"
+
 
 insert into ProductBudgets(
  [CompanyId]
@@ -200,6 +279,7 @@ insert into ProductBudgets(
 ,[GLFiscalYearId]
 ,[BudgetSetNo]
 ,[BudgetType]
+,ChargeGroup
 ,[ProductId]
 ,[ConversionFactor]
 ,[CIFCharge]
@@ -244,12 +324,23 @@ insert into ProductBudgets(
 ,[DutyInTariff]
 ,[ATRate]
 ,[ATValue]
+,[AITRate]
+,[AITValue]
 ,[VATRate]
 ,[VATValue]
 ,[VATPerLiterValue]
 ,[TotalCostAfterDuties]
 ,[VATExcludingExtraVAT]
-,[TotalCostVATExcluded])
+,[TotalCostVATExcluded]
+,[ConversionFactorFixedValue]
+,[ArrearDuty]
+,[VATRateFixed]
+,[RiverDues]
+,[RiverDuesValue]
+,[CostBblValue]
+,[CostLiterValue]
+,CifPriceValue
+)
 
 SELECT 
  [CompanyId]
@@ -257,6 +348,7 @@ SELECT
 ,[GLFiscalYearId]
 ,[BudgetSetNo]
 ,[BudgetType]
+,ChargeGroup
 ,[ProductId]
 ,[ConversionFactor]
 ,[CIFCharge]
@@ -301,26 +393,44 @@ SELECT
 ,[DutyInTariff]
 ,[ATRate]
 ,[ATValue]
+,[AITRate]
+,[AITValue]
 ,[VATRate]
 ,[VATValue]
 ,[VATPerLiterValue]
 ,[TotalCostAfterDuties]
 ,[VATExcludingExtraVAT]
 ,[TotalCostVATExcluded]
+,[ConversionFactorFixedValue]
+,[ArrearDuty]
+,[VATRateFixed]
+,[RiverDues]
+,[RiverDuesValue]
+,[CostBblValue]
+,[CostLiterValue]
+,CifPriceValue
 FROM #ProductBudgetTemp
 
 drop table #ProductBudgetTemp
 
 ";
 
+                #endregion
+
+                #endregion
+
                 SqlCommand command = new SqlCommand();
+
+                command = new SqlCommand(TempTable, conn, transaction);
+                command.ExecuteNonQuery();
 
                 foreach (var item in objMaster.DetailList)
                 {
-                    command = new SqlCommand(sqlText, conn, transaction);
+                    command = new SqlCommand(TempInsert, conn, transaction);
                     command.Parameters.Add("@GLFiscalYearId", SqlDbType.NChar).Value = objMaster.GLFiscalYearId;
                     command.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
                     command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.BudgetType) ? (object)DBNull.Value : objMaster.BudgetType.Trim();
+                    command.Parameters.Add("@ChargeGroup", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.ChargeGroup) ? (object)DBNull.Value : objMaster.ChargeGroup.Trim();
                     command.Parameters.Add("@BranchId", SqlDbType.Int).Value = objMaster.BranchId;
                     command.Parameters.Add("@CompanyId", SqlDbType.Int).Value = objMaster.CompanyId;
                     command.Parameters.Add("@ProductId", SqlDbType.Int).Value = item.ProductId;
@@ -329,6 +439,9 @@ drop table #ProductBudgetTemp
 
                     command.ExecuteNonQuery();
                 }
+
+                command = new SqlCommand(sqlText, conn, transaction);
+                command.ExecuteNonQuery();
 
                 //objMaster.Id = Convert.ToInt32(command.ExecuteScalar());
 
@@ -564,83 +677,88 @@ WHERE 1 = 1
  
  
  SELECT
-ROW_NUMBER() OVER (ORDER BY p.Id) AS Serial
-,ISNULL(PB.Id, 0) AS Id
-,ISNULL(PB.CompanyId, 0) AS CompanyId
-,ISNULL(PB.BranchId, 0) AS BranchId
-,ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId
-,ISNULL(PB.BudgetSetNo, 0) AS BudgetSetNo
-,ISNULL(PB.BudgetType, '') AS BudgetType
-,ISNULL(p.Code, 0) AS ProductCode
-,ISNULL(p.Name, 0) AS ProductName
-,ISNULL(P.ProductGroupId, 0) AS ProductGroupId
-,ISNULL(P.Id, 0) AS ProductId
-,ISNULL(PB.ConversionFactor, 0) AS ConversionFactor
-,ISNULL(PB.BLQuantityMT, 0) AS BLQuantityMT
-,ISNULL(PB.BLQuantityBBL, 0) AS BLQuantityBBL
-,ISNULL(PB.ReceiveQuantityMT, 0) AS ReceiveQuantityMT
-,ISNULL(PB.ReceiveQuantityBBL, 0) AS ReceiveQuantityBBL
-,ISNULL(PB.CIFCharge, 0) AS CIFCharge
-,ISNULL(PB.CifBdt, 0) AS CifBdt
-,ISNULL(PB.CIFCharge, 0) AS CIFCharge
-,ISNULL(PB.CifUsdValue, 0) AS CifUsdValue
-,ISNULL(PB.InsuranceRate, 0) AS InsuranceRate
-,ISNULL(PB.InsuranceValue, 0) AS InsuranceValue
-,ISNULL(PB.BankCharge, 0) AS BankCharge
-,ISNULL(PB.BankChargeValue, 0) AS BankChargeValue
-,ISNULL(PB.OceanLoss, 0) AS OceanLoss
-,ISNULL(PB.OceanLossValue, 0) AS OceanLossValue
-,ISNULL(PB.CPACharge, 0) AS CPACharge
-,ISNULL(PB.CPAChargeValue, 0) AS CPAChargeValue
-,ISNULL(PB.HandelingCharge, 0) AS HandelingCharge
-,ISNULL(PB.HandelingChargeValue, 0) AS HandelingChargeValue
-,ISNULL(PB.LightCharge, 0) AS LightCharge
-,ISNULL(PB.LightChargeValue, 0) AS LightChargeValue
-,ISNULL(PB.Survey, 0) AS Survey
-,ISNULL(PB.SurveyValue, 0) AS SurveyValue
-,ISNULL(PB.TotalCost, 0) AS TotalCost
-,ISNULL(PB.CostBblExImport, 0) AS CostBblExImport
-,ISNULL(PB.CostLiterExImport, 0) AS CostLiterExImport
-,ISNULL(PB.CostLiterExImportValue, 0) AS CostLiterExImportValue
-,ISNULL(PB.Crude, 0) AS Crude
-,ISNULL(PB.Refined, 0) AS Refined
-,ISNULL(PB.ExchangeRateUsd, 0) AS ExchangeRateUsd
-,ISNULL(PB.CostLiterExErl, 0) AS CostLiterExErl
-,ISNULL(PB.ExERLRate, 0) AS ExERLRate
-,ISNULL(PB.DutyPerLiter, 0) AS DutyPerLiter
-,ISNULL(PB.DutyValue, 0) AS DutyValue
-,ISNULL(PB.SDRate, 0) AS SDRate
-,ISNULL(PB.SDValue, 0) AS SDValue
-,ISNULL(PB.DutyOnTariffValuePerLiter, 0) AS DutyOnTariffValuePerLiter
-,ISNULL(PB.DutyInTariff3, 0) AS DutyInTariff3
-,ISNULL(PB.DutyInTariff2, 0) AS DutyInTariff2
-,ISNULL(PB.DutyInTariff1, 0) AS DutyInTariff1
-,ISNULL(PB.DutyInTariff, 0) AS DutyInTariff
-,ISNULL(PB.ATRate, 0) AS ATRate
-,ISNULL(PB.ATValue, 0) AS ATValue
-,ISNULL(PB.VATRate, 0) AS VATRate
-,ISNULL(PB.VATValue, 0) AS VATValue
-,ISNULL(PB.VATPerLiterValue, 0) AS VATPerLiterValue
-,ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties
-,ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT
-,ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
+ROW_NUMBER() OVER (ORDER BY p.Id) AS Serial,
+ISNULL(PB.Id, 0) AS Id,
+ISNULL(PB.CompanyId, 0) AS CompanyId,
+ISNULL(PB.BranchId, 0) AS BranchId,
+ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId,
+ISNULL(PB.BudgetSetNo, 0) AS BudgetSetNo,
+ISNULL(PB.BudgetType, '') AS BudgetType,
+ISNULL(p.Code, '') AS ProductCode,
+ISNULL(p.Name, '') AS ProductName,
+ISNULL(p.ProductGroupId, 0) AS ProductGroupId,
+ISNULL(p.Id, 0) AS ProductId,
+ISNULL(PB.ConversionFactor, 0) AS ConversionFactor,
+ISNULL(PB.BLQuantityMT, 0) AS BLQuantityMT,
+ISNULL(PB.BLQuantityBBL, 0) AS BLQuantityBBL,
+ISNULL(PB.ReceiveQuantityMT, 0) AS ReceiveQuantityMT,
+ISNULL(PB.ReceiveQuantityBBL, 0) AS ReceiveQuantityBBL,
+ISNULL(PB.CIFCharge, 0) AS CIFCharge,
+ISNULL(PB.CifUsdValue, 0) AS CifUsdValue,
+ISNULL(PB.CifBdt, 0) AS CifBdt,
+ISNULL(PB.InsuranceRate, 0) AS InsuranceRate,
+ISNULL(PB.InsuranceValue, 0) AS InsuranceValue,
+ISNULL(PB.BankCharge, 0) AS BankCharge,
+ISNULL(PB.BankChargeValue, 0) AS BankChargeValue,
+ISNULL(PB.OceanLoss, 0) AS OceanLoss,
+ISNULL(PB.OceanLossValue, 0) AS OceanLossValue,
+ISNULL(PB.CPACharge, 0) AS CPACharge,
+ISNULL(PB.CPAChargeValue, 0) AS CPAChargeValue,
+ISNULL(PB.HandelingCharge, 0) AS HandelingCharge,
+ISNULL(PB.HandelingChargeValue, 0) AS HandelingChargeValue,
+ISNULL(PB.LightCharge, 0) AS LightCharge,
+ISNULL(PB.LightChargeValue, 0) AS LightChargeValue,
+ISNULL(PB.Survey, 0) AS Survey,
+ISNULL(PB.SurveyValue, 0) AS SurveyValue,
+ISNULL(PB.TotalCost, 0) AS TotalCost,
+ISNULL(PB.CostBblExImport, 0) AS CostBblExImport,
+ISNULL(PB.CostLiterExImport, 0) AS CostLiterExImport,
+ISNULL(PB.CostLiterExImportValue, 0) AS CostLiterExImportValue,
+ISNULL(PB.Crude, 0) AS Crude,
+ISNULL(PB.Refined, 0) AS Refined,
+ISNULL(PB.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+ISNULL(PB.CostLiterExErl, 0) AS CostLiterExErl,
+ISNULL(PB.ExERLRate, 0) AS ExERLRate,
+ISNULL(PB.DutyPerLiter, 0) AS DutyPerLiter,
+ISNULL(PB.DutyValue, 0) AS DutyValue,
+ISNULL(PB.SDRate, 0) AS SDRate,
+ISNULL(PB.SDValue, 0) AS SDValue,
+ISNULL(PB.DutyOnTariffValuePerLiter, 0) AS DutyOnTariffValuePerLiter,
+ISNULL(PB.DutyInTariff3, 0) AS DutyInTariff3,
+ISNULL(PB.DutyInTariff2, 0) AS DutyInTariff2,
+ISNULL(PB.DutyInTariff1, 0) AS DutyInTariff1,
+ISNULL(PB.DutyInTariff, 0) AS DutyInTariff,
+ISNULL(PB.ATRate, 0) AS ATRate,
+ISNULL(PB.ATValue, 0) AS ATValue,
+ISNULL(PB.VATRate, 0) AS VATRate,
+ISNULL(PB.VATValue, 0) AS VATValue,
+ISNULL(PB.VATPerLiterValue, 0) AS VATPerLiterValue,
+ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties,
+ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT,
+ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
 FROM ChargeHeaders ch
-left outer join ChargeDetails cd  on ch.Id= cd.ChargeHeaderId
-left outer join Products p  on cd.ProductId= p.Id
-left outer join ProductGroups pg on pg.Id = p.ProductGroupId
-left outer join ProductBudgets PB on p.Id = PB.ProductId
+LEFT JOIN ChargeDetails cd ON ch.Id = cd.ChargeHeaderId
+LEFT JOIN Products p ON cd.ProductId = p.Id
+LEFT JOIN ProductGroups pg ON pg.Id = p.ProductGroupId
+LEFT JOIN ProductBudgets PB ON p.Id = PB.ProductId 
+       AND PB.GLFiscalYearId = @GLFiscalYearId
+       AND PB.BudgetType = @BudgetType
+       AND ch.ChargeGroup = PB.ChargeGroup
 
 WHERE 1 = 1
 
  ";
 
                 if (vm.Id > 0)
-                query += " AND p.Id=@Id ";
+                    query += " AND p.Id=@Id ";
 
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
                 SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
                 adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                adapter.SelectCommand.Parameters.AddWithValue("@GLFiscalYearId", vm.GLFiscalYearId);
+                adapter.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
 
                 if (vm.Id > 0)
                     adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
@@ -722,7 +840,7 @@ WHERE 1 = 1
                     BudgetType = row.Field<string>("BudgetType"),
                     YearName = row.Field<string>("YearName"),
                     ProductGroupName = row.Field<string>("ProductGroupName"),
-                   
+
                 }).ToList();
 
                 result.Status = MessageModel.Success;
@@ -755,7 +873,7 @@ WHERE 1 = 1
 
                 string sqlQuery = $@"
                     
-                    SELECT COUNT(DISTINCT PB.BudgetType) AS totalcount
+                    SELECT COUNT(DISTINCT PB.ChargeGroup) AS totalcount
                 FROM ProductBudgets PB 
                 WHERE 1=1
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductBudgetMasterVM>.FilterCondition(options.filter) + ")" : "");
@@ -777,7 +895,8 @@ FROM (
         t.BudgetSetNo,
         t.BudgetType,
         t.ProductGroupId,
-        t.ProductGroupName
+        t.ProductGroupName,
+        t.ChargeGroup
     FROM (
         SELECT DISTINCT
             ISNULL(PB.CompanyId,0) AS CompanyId,
@@ -787,7 +906,8 @@ FROM (
             ISNULL(PB.BudgetSetNo,0) AS BudgetSetNo,
             ISNULL(PB.BudgetType,'') AS BudgetType,
             ISNULL(p.ProductGroupId,'') AS ProductGroupId,
-            ISNULL(pg.Name,'') AS ProductGroupName
+            ISNULL(pg.Name,'') AS ProductGroupName,
+            ISNULL(PB.ChargeGroup,'') AS ChargeGroup
         FROM ProductBudgets PB
         LEFT JOIN FiscalYears fy ON fy.Id = PB.GLFiscalYearId
         LEFT JOIN Products p ON p.Id = PB.ProductId

@@ -171,8 +171,8 @@ namespace ShampanBFRS.Service.Ceiling
 
                 #endregion
 
-                string[] conditionalFields = new[] { "p.ProductGroupId" };
-                string[] conditionalValues = new[] { model.ProductGroupId.ToString() };
+                string[] conditionalFields = new[] { "ch.ChargeGroup" };
+                string[] conditionalValues = new[] { model.ChargeGroup.ToString() };
 
                 result = await new ProductBudgetRepository().ProductBudgetListForNew(conditionalFields, conditionalValues, model, conn, transaction);
 
