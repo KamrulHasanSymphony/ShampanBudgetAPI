@@ -260,41 +260,81 @@ SELECT SCOPE_IDENTITY();";
                 if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string query = @"
-                SELECT
-                    ISNULL(M.Id, 0) AS Id,
-             ISNULL(M.Code, '') AS Code,
-             ISNULL(M.Name, '') AS Name,
-             ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
-             --ISNULL(M.CIFCharge, 0) AS CIFCharge,
-             --ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
-             --ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
-             --ISNULL(M.BankCharge, 0) AS BankCharge,
-             --ISNULL(M.OceanLoss, 0) AS OceanLoss,
-             --ISNULL(M.CPACharge, 0) AS CPACharge,
-             --ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
-             --ISNULL(M.LightCharge, 0) AS LightCharge,
-             --ISNULL(M.Survey, 0) AS Survey,
-             --ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
-             --ISNULL(M.ExERLRate, 0) AS ExERLRate,
-             --ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
-             --ISNULL(M.Refined, 0) AS Refined,
-             --ISNULL(M.Crude, 0) AS Crude,
-             --ISNULL(M.SDRate, 0) AS SDRate,
-             --ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
-             --ISNULL(M.ATRate, 0) AS ATRate,
-             --ISNULL(M.VATRate, 0) AS VATRate,
-             ISNULL(M.IsActive, 0) AS IsActive,
-             ISNULL(M.CreatedBy, '') AS CreatedBy,
-             ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
-             ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-             ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
-         FROM Products M
-WHERE 1 = 1
+--                SELECT
+--                    ISNULL(M.Id, 0) AS Id,
+--             ISNULL(M.Code, '') AS Code,
+--             ISNULL(M.Name, '') AS Name,
+--             ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
+--             --ISNULL(M.CIFCharge, 0) AS CIFCharge,
+--             --ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+--             --ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
+--             --ISNULL(M.BankCharge, 0) AS BankCharge,
+--             --ISNULL(M.OceanLoss, 0) AS OceanLoss,
+--             --ISNULL(M.CPACharge, 0) AS CPACharge,
+--             --ISNULL(M.HandelingCharge, 0) AS HandelingCharge,
+--             --ISNULL(M.LightCharge, 0) AS LightCharge,
+--             --ISNULL(M.Survey, 0) AS Survey,
+--             --ISNULL(M.CostLiterExImport, 0) AS CostLiterExImport,
+--             --ISNULL(M.ExERLRate, 0) AS ExERLRate,
+--             --ISNULL(M.DutyPerLiter, 0) AS DutyPerLiter,
+--             --ISNULL(M.Refined, 0) AS Refined,
+--             --ISNULL(M.Crude, 0) AS Crude,
+--             --ISNULL(M.SDRate, 0) AS SDRate,
+--             --ISNULL(M.DutyInTariff, 0) AS DutyInTariff,
+--             --ISNULL(M.ATRate, 0) AS ATRate,
+--             --ISNULL(M.VATRate, 0) AS VATRate,
+--             ISNULL(M.IsActive, 0) AS IsActive,
+--            ISNULL(M.CreatedBy, '') AS CreatedBy,
+--             ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
+--             ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+--             ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
+--         FROM Products M
+--WHERE 1 = 1
 
+
+
+
+select 
+             ISNULL(p.Id, 0) AS Id,
+             ISNULL(p.Code, '') AS Code,
+             ISNULL(p.Name, '') AS Name,
+             ISNULL(p.ConversionFactor, 0) AS ConversionFactor,
+			 ISNULL(ch.ChargeGroup, 0) AS ChargeGroup,
+			 ISNULL(p.ProductGroupId, 0) AS ProductGroupId,
+			 ISNULL(pg.Name, 0) AS ProductGroupName,
+			 ISNULL(cd.CIFCharge, 0) AS CIFCharge,
+             ISNULL(cd.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+             ISNULL(cd.InsuranceRate, 0) AS InsuranceRate,
+             ISNULL(cd.BankCharge, 0) AS BankCharge,
+             ISNULL(cd.OceanLoss, 0) AS OceanLoss,
+             ISNULL(cd.CPACharge, 0) AS CPACharge,
+             ISNULL(cd.HandelingCharge, 0) AS HandelingCharge,
+             ISNULL(cd.LightCharge, 0) AS LightCharge,
+             ISNULL(cd.Survey, 0) AS Survey,
+             ISNULL(cd.CostLiterExImport, 0) AS CostLiterExImport,
+             ISNULL(cd.ExERLRate, 0) AS ExERLRate,
+             ISNULL(cd.DutyPerLiter, 0) AS DutyPerLiter,
+             ISNULL(cd.Refined, 0) AS Refined,
+             ISNULL(cd.Crude, 0) AS Crude,
+             ISNULL(cd.SDRate, 0) AS SDRate,
+             ISNULL(cd.DutyInTariff, 0) AS DutyInTariff,
+             ISNULL(cd.ATRate, 0) AS ATRate,
+             ISNULL(cd.VATRate, 0) AS VATRate,
+			 ISNULL(p.IsActive, 0) AS IsActive,
+             ISNULL(p.CreatedBy, '') AS CreatedBy,
+             ISNULL(FORMAT(p.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
+             ISNULL(p.LastUpdateBy, '') AS LastUpdateBy,
+             ISNULL(FORMAT(p.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
+
+			 from ChargeHeaders ch
+			left outer join ChargeDetails cd on cd.ChargeHeaderId = ch.Id
+			left outer join Products p on cd.ProductId = p.Id
+			left outer join ProductGroups pg on pg.Id = p.ProductGroupId
+			Where 1=1
  ";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                    query += " AND M.Id=@Id ";
+                    query += " AND p.Id=@Id ";
 
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
@@ -311,26 +351,27 @@ WHERE 1 = 1
                     Id = row.Field<int>("Id"),
                     Code = row.Field<string>("Code"),
                     Name = row.Field<string>("Name"),
-                    //ProductGroupId = row.Field<int>("ProductGroupId"),
+                    ProductGroupName = row.Field<string>("ProductGroupName"),
+                    ProductGroupId = row.Field<int>("ProductGroupId"),
                     ConversionFactor = row.Field<decimal>("ConversionFactor"),
-                    //CIFCharge = row.Field<decimal>("CIFCharge"),
-                    //ExchangeRateUsd = row.Field<decimal>("ExchangeRateUsd"),
-                    //InsuranceRate = row.Field<decimal>("InsuranceRate"),
-                    //BankCharge = row.Field<decimal>("BankCharge"),
-                    //OceanLoss = row.Field<decimal>("OceanLoss"),
-                    //CPACharge = row.Field<decimal>("CPACharge"),
-                    //HandelingCharge = row.Field<decimal>("HandelingCharge"),
-                    //LightCharge = row.Field<decimal>("LightCharge"),
-                    //Survey = row.Field<decimal>("Survey"),
-                    //CostLiterExImport = row.Field<decimal>("CostLiterExImport"),
-                    //ExERLRate = row.Field<decimal>("ExERLRate"),
-                    //DutyPerLiter = row.Field<decimal>("DutyPerLiter"),
-                    //Refined = row.Field<decimal>("Refined"),
-                    //Crude = row.Field<decimal>("Crude"),
-                    //SDRate = row.Field<decimal>("SDRate"),
-                    //DutyInTariff = row.Field<decimal>("DutyInTariff"),
-                    //ATRate = row.Field<decimal>("ATRate"),
-                    //VATRate = row.Field<decimal>("VATRate"),
+                    CIFCharge = row.Field<decimal>("CIFCharge"),
+                    ExchangeRateUsd = row.Field<decimal>("ExchangeRateUsd"),
+                    InsuranceRate = row.Field<decimal>("InsuranceRate"),
+                    BankCharge = row.Field<decimal>("BankCharge"),
+                    OceanLoss = row.Field<decimal>("OceanLoss"),
+                    CPACharge = row.Field<decimal>("CPACharge"),
+                    HandelingCharge = row.Field<decimal>("HandelingCharge"),
+                    LightCharge = row.Field<decimal>("LightCharge"),
+                    Survey = row.Field<decimal>("Survey"),
+                    CostLiterExImport = row.Field<decimal>("CostLiterExImport"),
+                    ExERLRate = row.Field<decimal>("ExERLRate"),
+                    DutyPerLiter = row.Field<decimal>("DutyPerLiter"),
+                    Refined = row.Field<decimal>("Refined"),
+                    Crude = row.Field<decimal>("Crude"),
+                    SDRate = row.Field<decimal>("SDRate"),
+                    DutyInTariff = row.Field<decimal>("DutyInTariff"),
+                    ATRate = row.Field<decimal>("ATRate"),
+                    VATRate = row.Field<decimal>("VATRate"),
                     IsActive = row.Field<bool>("IsActive"),
                     CreatedBy = row.Field<string>("CreatedBy"),
                     LastUpdateBy = row.Field<string>("LastUpdateBy"),

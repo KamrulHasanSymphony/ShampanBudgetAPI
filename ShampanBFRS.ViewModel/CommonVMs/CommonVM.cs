@@ -32,6 +32,8 @@ namespace ShampanBFRS.ViewModel.CommonVMs
         public string? TransactionType { get; set; }
 
         public string? ReportType { get; set; }
+        public string? ChargeGroupId { get; set; }
+
     }
 
 

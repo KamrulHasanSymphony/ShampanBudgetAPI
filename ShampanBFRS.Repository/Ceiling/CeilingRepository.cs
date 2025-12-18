@@ -1134,13 +1134,15 @@ EXEC sp_executesql @SQL;
                 -- Count query
                 SELECT COUNT(DISTINCT D.AccountId) AS totalcount
         FROM CeilingDetails D
-     
+        left outer join Sabres s on s.Id=D.AccountId
+        left outer join COAs C ON s.COAId = C.Id
         WHERE D.GLCeilingId = @masterId
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
 
                 -- Data query with pagination and sorting
-                SELECT s.Code AccountCode,s.Name AccountName,AccountId,InputTotal
+                SELECT s.Code AccountCode,s.Name AccountName,AccountId,InputTotal,C.Code COACode,
+C.Name COAName
                 FROM (
                     SELECT
                                 ROW_NUMBER() OVER (ORDER BY MAX(D.Id) DESC) AS rowindex,
@@ -1153,6 +1155,8 @@ EXEC sp_executesql @SQL;
                     " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
                 ) AS a
                 left outer join Sabres s on s.Id=a.AccountId
+                left outer join COAs C ON s.COAId = C.Id
+                
                 WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
                 ";
                 sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");

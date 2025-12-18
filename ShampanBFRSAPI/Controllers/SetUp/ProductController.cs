@@ -99,7 +99,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             try
             {
                 _productService = new ProductService();
-                resultVM = await _productService.List(new[] { "M.Id" }, new[] { vm.Id }, null);
+                resultVM = await _productService.List(new[] { "cd.ProductId", "ch.ChargeGroup" }, new[] { vm.Id,vm.ChargeGroupId }, null);
                 return resultVM;
             }
             catch (Exception ex)
