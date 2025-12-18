@@ -6,7 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 
 namespace ShampanBFRS.Repository.SetUp
-{    
+{
     public class ProductRepository : CommonRepository
     {
         // Insert Method       
@@ -27,21 +27,22 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 string query = @"
-        INSERT INTO Products
-        (
-           Code, Name,ProductGroupId, ConversionFactor, CIFCharge, ExchangeRateUsd, InsuranceRate, BankCharge, 
-                    OceanLoss, CPACharge, HandelingCharge, LightCharge, Survey, CostLiterExImport, ExERLRate, 
-                    DutyPerLiter, Refined, Crude, SDRate, DutyInTariff, ATRate, VATRate, IsActive, CreatedBy, 
-                    CreatedFrom, CreatedAt
-        )
-        VALUES
-        (
-            @Code, @Name,@ProductGroupId, @ConversionFactor, @CIFCharge, @ExchangeRateUsd, @InsuranceRate, @BankCharge, 
-                    @OceanLoss, @CPACharge, @HandelingCharge, @LightCharge, @Survey, @CostLiterExImport, @ExERLRate, 
-                    @DutyPerLiter, @Refined, @Crude, @SDRate, @DutyInTariff, @ATRate, @VATRate, @IsActive, @CreatedBy, 
-                    @CreatedFrom, GETDATE()
-        );
-        SELECT SCOPE_IDENTITY();";
+INSERT INTO Products
+(
+Code, Name
+,ProductGroupId, ConversionFactor
+--, CIFCharge, ExchangeRateUsd, InsuranceRate, BankCharge, OceanLoss, CPACharge, HandelingCharge, LightCharge, Survey, CostLiterExImport
+--, ExERLRate, DutyPerLiter, Refined, Crude, SDRate, DutyInTariff, ATRate, VATRate
+, IsActive, CreatedBy, CreatedFrom, CreatedAt
+)
+VALUES
+(
+@Code, @Name,@ProductGroupId, @ConversionFactor
+--, @CIFCharge, @ExchangeRateUsd, @InsuranceRate, @BankCharge, @OceanLoss, @CPACharge, @HandelingCharge, @LightCharge, @Survey
+--, @CostLiterExImport, @ExERLRate, @DutyPerLiter, @Refined, @Crude, @SDRate, @DutyInTariff, @ATRate, @VATRate
+, @IsActive, @CreatedBy,@CreatedFrom, GETDATE()
+);
+SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
@@ -49,6 +50,10 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
+                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
+
                     //cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
@@ -67,10 +72,6 @@ namespace ShampanBFRS.Repository.SetUp
                     //cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
-
 
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
 
@@ -115,24 +116,24 @@ namespace ShampanBFRS.Repository.SetUp
                     Name = @Name,
                     ProductGroupId = @ProductGroupId,
                     ConversionFactor = @ConversionFactor,
-                    //CIFCharge = @CIFCharge,
-                    //ExchangeRateUsd = @ExchangeRateUsd,
-                    //InsuranceRate = @InsuranceRate,
-                    //BankCharge = @BankCharge,
-                    //OceanLoss = @OceanLoss,
-                    //CPACharge = @CPACharge,
-                    //HandelingCharge = @HandelingCharge,
-                    //LightCharge = @LightCharge,
-                    //Survey = @Survey,
-                    //CostLiterExImport = @CostLiterExImport,
-                    //ExERLRate = @ExERLRate,
-                    //DutyPerLiter = @DutyPerLiter,
-                    //Refined = @Refined,
-                    //Crude = @Crude,
-                    //SDRate = @SDRate,
-                    //DutyInTariff = @DutyInTariff,
-                    //ATRate = @ATRate,
-                    //VATRate = @VATRate,
+                    --//CIFCharge = @CIFCharge,
+                    --//ExchangeRateUsd = @ExchangeRateUsd,
+                    --//InsuranceRate = @InsuranceRate,
+                    --//BankCharge = @BankCharge,
+                    --//OceanLoss = @OceanLoss,
+                    --//CPACharge = @CPACharge,
+                    --//HandelingCharge = @HandelingCharge,
+                    --//LightCharge = @LightCharge,
+                    --//Survey = @Survey,
+                    --//CostLiterExImport = @CostLiterExImport,
+                    --//ExERLRate = @ExERLRate,
+                    --//DutyPerLiter = @DutyPerLiter,
+                    --//Refined = @Refined,
+                    --//Crude = @Crude,
+                    --//SDRate = @SDRate,
+                    --//DutyInTariff = @DutyInTariff,
+                    --//ATRate = @ATRate,
+                    --//VATRate = @VATRate,
                     IsActive = @IsActive,
                     LastUpdateBy = @LastUpdateBy,
                     LastUpdateFrom = @LastUpdateFrom,
@@ -146,6 +147,10 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
+                    cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
+
                     //cmd.Parameters.AddWithValue("@CIFCharge", vm.CIFCharge ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@ExchangeRateUsd", vm.ExchangeRateUsd ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@InsuranceRate", vm.InsuranceRate ?? (object)DBNull.Value);
@@ -164,9 +169,7 @@ namespace ShampanBFRS.Repository.SetUp
                     //cmd.Parameters.AddWithValue("@DutyInTariff", vm.DutyInTariff ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@ATRate", vm.ATRate ?? (object)DBNull.Value);
                     //cmd.Parameters.AddWithValue("@VATRate", vm.VATRate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
+
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
@@ -188,7 +191,7 @@ namespace ShampanBFRS.Repository.SetUp
                 return result;
             }
         }
-                        
+
         // Delete Method       
         public async Task<ResultVM> Delete(CommonVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
@@ -233,12 +236,12 @@ namespace ShampanBFRS.Repository.SetUp
                     }
                 }
 
-                
+
                 return result;
             }
             catch (Exception ex)
             {
-                
+
                 result.ExMessage = ex.Message;
                 result.Message = ex.Message;
                 return result;
@@ -395,7 +398,7 @@ WHERE 1 = 1 ";
                 objComm.Fill(dataTable);
 
                 result.Status = MessageModel.Success;
-                result.Message =MessageModel.RetrievedSuccess;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = dataTable;
                 return result;
             }
@@ -516,7 +519,7 @@ ORDER BY Name";
                 data = KendoGrid<ProductVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
 
                 result.Status = MessageModel.Success;
-                result.Message =MessageModel.RetrievedSuccess;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;
@@ -592,7 +595,7 @@ ORDER BY Name";
             }
         }
 
-        
+
 
 
 

@@ -204,7 +204,6 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
-
         private void SplitCeilingByFiscalPeriods(CeilingVM model, List<FiscalYearDetailVM> fiscalYearDetais)
         {
             try
@@ -524,6 +523,98 @@ namespace ShampanBFRS.Service.Ceiling
             }
             #endregion Catch & Finally
             return result;
+        }
+
+        public async Task<ResultVM> BudgetTransfer(CeilingVM model)
+        {
+            CeilingRepository _repo = new CeilingRepository();
+            _commonRepo = new CommonRepository();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                string CodeGroup = "Ceiling";
+                string CodeName = "Ceiling";
+
+                if (model == null)
+                {
+                    return new ResultVM()
+                    {
+                        Status = MessageModel.Fail,
+                        Message = MessageModel.NotFoundForSave,
+                    };
+                }
+                else if (!model.CeilingDetailList.Any())
+                {
+                    return new ResultVM()
+                    {
+                        Status = MessageModel.Fail,
+                        Message = MessageModel.DetailsNotFoundForSave,
+                    };
+                }
+
+                string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
+
+                if (code != "" || code != null)
+                {
+                    model.Code = code;
+
+                    result = await _repo.BudgetTransferHeader(model, conn, transaction);
+
+                    if (result.Status == MessageModel.Fail)
+                        throw new Exception(result.Message);
+
+                    //detail.GLCeilingId = model.Id;
+
+                    result = await _repo.BudgetTransferDetails(model, conn, transaction);
+
+                    if (result.Status == MessageModel.Fail)
+                        throw new Exception(result.Message);
+
+                }
+                else
+                {
+                    return new ResultVM()
+                    {
+                        Status = MessageModel.Fail,
+                        Message = MessageModel.DataLoadedFailed,
+
+                    };
+                }
+
+                if (isNewConnection && result.Status == MessageModel.Success)
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
+                result.DataVM = model;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
         }
 
 

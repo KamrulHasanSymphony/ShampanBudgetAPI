@@ -1174,5 +1174,178 @@ EXEC sp_executesql @SQL;
 
         }
 
+        public async Task<ResultVM> BudgetTransferHeader(CeilingVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string sqlText = "";
+                int count = 0;
+
+                string checkQuery = @"
+SELECT COUNT(Id) FROM Ceilings WHERE BranchId = @BranchId 
+AND GLFiscalYearId = @GLFiscalYearId 
+AND BudgetSetNo = @BudgetSetNo 
+AND BudgetType = @BudgetType 
+--AND CreatedBy = @CreatedBy 
+
+";
+                SqlCommand checkCommand = new SqlCommand(checkQuery, conn, transaction);
+                checkCommand.Parameters.Add("@BranchId", SqlDbType.NVarChar).Value = objMaster.BranchId;
+                checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.ToGLFiscalYearId;
+                checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
+                checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType;
+                //checkCommand.Parameters.Add("@CreatedBy", SqlDbType.NVarChar).Value = objMaster.CreatedBy;
+                count = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+                if (count > 0)
+                {
+                    throw new Exception("Already Exists!");
+                }
+
+                sqlText = @"
+INSERT INTO Ceilings (
+
+ CompanyId
+,BranchId
+,GLFiscalYearId
+,Code
+,TransactionDate
+,IsPost
+,Remarks
+,BudgetSetNo
+,BudgetType
+,IsActive
+,IsArchive
+,CreatedBy
+,CreatedOn
+,CreatedFrom
+,TransactionType            
+) VALUES 
+(
+ @CompanyId
+,@BranchId
+,@GLFiscalYearId
+,@Code
+,@TransactionDate
+,@IsPost
+,@Remarks
+,@BudgetSetNo
+,@BudgetType
+,@IsActive
+,@IsArchive
+,@CreatedBy
+,@CreatedOn
+,@CreatedFrom
+,@TransactionType
+
+ ) SELECT SCOPE_IDENTITY() ";
+
+                SqlCommand command = new SqlCommand(sqlText, conn, transaction);
+
+                command.Parameters.Add("@Code", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.Code) ? (object)DBNull.Value : objMaster.Code.Trim();
+                command.Parameters.Add("@TransactionDate", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.TransactionDate) ? (object)DBNull.Value : objMaster.TransactionDate.Trim();
+                command.Parameters.Add("@GLFiscalYearId", SqlDbType.NChar).Value = objMaster.ToGLFiscalYearId;
+                command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = objMaster.IsActive;
+                command.Parameters.Add("@IsArchive", SqlDbType.Bit).Value = objMaster.IsArchive;
+                command.Parameters.Add("@Remarks", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.Remarks) ? (object)DBNull.Value : objMaster.Remarks.Trim();
+                command.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
+                command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.BudgetType) ? (object)DBNull.Value : objMaster.BudgetType.Trim();
+                command.Parameters.Add("@CreatedBy", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedBy) ? (object)DBNull.Value : objMaster.CreatedBy.Trim();
+                command.Parameters.Add("@CreatedFrom", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedFrom) ? (object)DBNull.Value : objMaster.CreatedFrom.Trim();
+                command.Parameters.Add("@CreatedOn", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedOn.ToString()) ? (object)DBNull.Value : objMaster.CreatedOn.ToString();
+                command.Parameters.Add("@BranchId", SqlDbType.Int).Value = objMaster.BranchId;
+                command.Parameters.Add("@CompanyId", SqlDbType.Int).Value = objMaster.CompanyId;
+                command.Parameters.Add("@IsPost", SqlDbType.NChar).Value = "N";
+                command.Parameters.Add("@TransactionType", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.TransactionType) ? (object)DBNull.Value : objMaster.TransactionType.Trim();
+
+                objMaster.Id = Convert.ToInt32(command.ExecuteScalar());
+
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.InsertSuccess;
+                result.Id = objMaster.Id.ToString();
+                result.DataVM = objMaster;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> BudgetTransferDetails(CeilingVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string sqlText = "";
+
+                sqlText = @" 
+INSERT INTO CeilingDetails (
+ GLCeilingId
+,AccountId
+,GLFiscalYearDetailId
+,PeriodSl
+,PeriodStart
+,PeriodEnd
+,Amount
+,IsPost
+          
+)
+select 
+ @GLCeilingId
+,cd.AccountId
+,cd.GLFiscalYearDetailId
+,cd.PeriodSl
+,cd.PeriodStart
+,cd.PeriodEnd
+,cd.Amount
+,cd.IsPost
+,s.BudgetType,s.GLFiscalYearId,s.CreatedBy
+from CeilingDetails cd
+left outer join Ceilings s on s.Id =cd.GLCeilingId 
+where 1=1
+and s.GLFiscalYearId=@GLFiscalYearId
+and s.BudgetSetNo=@BudgetSetNo
+and s.BudgetType=@BudgetType
+
+";
+
+                SqlCommand commands = new SqlCommand(sqlText, conn, transaction);
+
+                commands.Parameters.Add("@GLCeilingId", SqlDbType.Int).Value = objMaster.Id;
+                commands.Parameters.Add("@GLFiscalYearId", SqlDbType.Int).Value = objMaster.GLFiscalYearId;
+                commands.Parameters.Add("@BudgetSetNo", SqlDbType.Int).Value = objMaster.BudgetSetNo;
+                commands.Parameters.Add("@BudgetType", SqlDbType.Int).Value = objMaster.BudgetType;
+                commands.ExecuteNonQuery();
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.InsertSuccess;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+
     }
 }
