@@ -154,7 +154,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        [HttpPost("Insert")]
+        [HttpPost("BudgetTransfer")]
         public async Task<ResultVM> BudgetTransfer(CeilingVM vm)
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
