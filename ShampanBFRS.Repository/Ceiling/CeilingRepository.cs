@@ -365,7 +365,7 @@ where  Id=@Id  ";
                            ISNULL(c.Id,0) AS Id
                            ,ISNULL(c.CompanyId,0) AS CompanyId
                            ,ISNULL(c.BranchId,0) AS BranchId
-                           ,ISNULL(c.GLFiscalYearId,0) AS FiscalYearId
+                           ,ISNULL(c.GLFiscalYearId,0) AS GLFiscalYearId
                            ,ISNULL(fy.YearName,0) AS YearName
                            ,ISNULL(c.BudgetSetNo,0) AS BudgetSetNo
                            ,ISNULL(c.BudgetType,'') AS BudgetType

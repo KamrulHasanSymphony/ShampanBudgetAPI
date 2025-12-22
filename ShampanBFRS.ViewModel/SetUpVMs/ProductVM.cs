@@ -8,7 +8,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public int Id { get; set; }
         public string? Code { get; set; }
         public string Name { get; set; }
-        public string ProductGroupName { get; set; }
+        public string? ProductGroupName { get; set; }
         public int? ProductGroupId { get; set; }
         public decimal? ConversionFactor { get; set; }
         public decimal? CIFCharge { get; set; }

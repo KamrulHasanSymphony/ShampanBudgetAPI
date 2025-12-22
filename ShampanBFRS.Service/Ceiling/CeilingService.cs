@@ -570,8 +570,8 @@ namespace ShampanBFRS.Service.Ceiling
 
                     result = await _repo.BudgetTransferHeader(model, conn, transaction);
 
-                    if (result.Status == MessageModel.Fail)
-                        throw new Exception(result.Message);
+                    //if (result.Status == MessageModel.Fail)
+                    //    throw new Exception(result.Message);
 
                     //detail.GLCeilingId = model.Id;
 

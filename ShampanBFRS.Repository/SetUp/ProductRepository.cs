@@ -260,6 +260,79 @@ SELECT SCOPE_IDENTITY();";
                 if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
                 string query = @"
+                                SELECT
+                                    ISNULL(Id, 0)                AS Id,
+                                    ISNULL(Code, '')             AS Code,
+                                    ISNULL(Name, '')             AS Name,
+                                    ISNULL(ProductGroupId, 0)    AS ProductGroupId,
+                                    ISNULL(ConversionFactor, 0)  AS ConversionFactor,
+                                    ISNULL(IsActive, 0)          AS IsActive,
+                                    ISNULL(CreatedBy, '')        AS CreatedBy,
+                                    ISNULL(CONVERT(VARCHAR(19), CreatedAt, 120), '')    AS CreatedAt,
+                                    ISNULL(CreatedFrom, '')      AS CreatedFrom,
+                                    ISNULL(LastUpdateBy, '')     AS LastUpdateBy,
+                                    ISNULL(CONVERT(VARCHAR(19), LastUpdateAt, 120), '')    AS LastUpdateAt,
+                                    ISNULL(LastUpdateFrom, '')   AS LastUpdateFrom
+                                FROM Products Where 1=1
+                                 ";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                    query += " AND Id=@Id ";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                    adapter.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+
+                adapter.Fill(dt);
+
+                var list = dt.AsEnumerable().Select(row => new ProductVM
+                {
+                    Id = row.Field<int>("Id"),
+                    Code = row.Field<string>("Code"),
+                    Name = row.Field<string>("Name"),
+                    ProductGroupId = row.Field<int>("ProductGroupId"),
+                    ConversionFactor = row.Field<decimal>("ConversionFactor"),
+                    IsActive = row.Field<bool>("IsActive"),
+                    CreatedBy = row.Field<string>("CreatedBy"),
+                    CreatedAt = row.Field<string>("CreatedAt"),
+                    CreatedFrom = row.Field<string>("CreatedFrom"),
+                    LastUpdateBy = row.Field<string>("LastUpdateBy"),
+                    LastUpdateAt = row.Field<string>("LastUpdateAt"),
+                    LastUpdateFrom = row.Field<string>("LastUpdateFrom")
+                }).ToList();
+
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> EstimatedList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
+            SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
 --                SELECT
 --                    ISNULL(M.Id, 0) AS Id,
 --             ISNULL(M.Code, '') AS Code,
@@ -290,7 +363,6 @@ SELECT SCOPE_IDENTITY();";
 --             ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
 --         FROM Products M
 --WHERE 1 = 1
-
 
 
 
@@ -393,7 +465,6 @@ select
                 return result;
             }
         }
-
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
