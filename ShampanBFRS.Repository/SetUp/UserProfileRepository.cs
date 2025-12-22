@@ -17,6 +17,63 @@ namespace ShampanBFRS.Repository.SetUp
             throw new NotImplementedException();
         }
 
+        public async Task<ResultVM> UserInformationsInsert(UserInformationVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    conn.Open();
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction();
+                }
+
+                string query = @"
+                
+                INSERT INTO UserInformations
+                (
+                    UserId,UserName,FullName, DepartmentId, CreatedBy,CreatedAt,CreatedFrom
+                )
+                VALUES
+                (
+                    @UserId,@UserName, @FullName, 1,@CreatedBy, @CreatedAt, @CreatedFrom
+                );
+                SELECT SCOPE_IDENTITY();";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
+                {
+
+                    cmd.Parameters.AddWithValue("@UserId", vm.UserId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UserName", vm.UserName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FullName", vm.FullName ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedAt", vm.CreatedAt ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
+
+                    //vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
+                    int newId = Convert.ToInt32(cmd.ExecuteScalar());
+
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
+                    result.Id = newId.ToString();
+                    result.DataVM = vm;
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+            }
+
+            return result;
+        }
+
         // Update Method
         public async Task<ResultVM> Update(UserProfileVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
@@ -205,7 +262,7 @@ WHERE 1 = 1 ";
         public async Task<ResultVM> GetGridData(GridOptions options, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status =MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -222,7 +279,7 @@ WHERE 1 = 1 ";
                     SELECT COUNT(DISTINCT U.Id) AS totalcount
                     FROM 
                     [{DatabaseHelper.AuthDbName()}].[dbo].AspNetUsers AS U
-                    LEFT OUTER JOIN [{DatabaseHelper.DBName()}].[dbo].SalesPersons SP ON ISNULL(U.SalePersonId,0) = ISNULL(SP.Id,0)
+                    LEFT OUTER JOIN [{DatabaseHelper.DBName()}].[dbo].UserInformations SP ON ISNULL(U.Id,0) = ISNULL(SP.Id,0)
                     WHERE 1 = 1
                     " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<UserProfileVM>.FilterCondition(options.filter) + ")" : "") + @"
 
@@ -253,8 +310,8 @@ WHERE 1 = 1 ";
 
                 data = KendoGrid<UserProfileVM>.GetAuthGridData_CMD(options, sqlQuery, "U.UserName");
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status =MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = data;
 
                 return result;

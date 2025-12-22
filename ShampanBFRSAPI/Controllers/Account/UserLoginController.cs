@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.AccountVMs;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.SetUpVMs;
@@ -14,11 +15,12 @@ namespace ShampanBFRSAPI.Controllers.Login
     [ApiController]
     public class UserLoginController : ControllerBase
     {
-
+        UserProfileService _service = new UserProfileService();
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+
 
         public UserLoginController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
         {
@@ -113,7 +115,10 @@ namespace ShampanBFRSAPI.Controllers.Login
                         return resultVM;
                     }
 
-                    var _user = new ApplicationUser { UserName = model.UserName, FullName = model.FullName, PhoneNumber = model.PhoneNumber, Email = model.Email, EmailConfirmed = false, PhoneNumberConfirmed  = false, TwoFactorEnabled  = false,LockoutEnabled  =false, AccessFailedCount = 0, NormalizedName = model.UserName, NormalizedUserName = model.UserName , NormalizedEmail = model.Email, NormalizedPassword  = model.Password, IsHeadOffice = model.IsHeadOffice};
+                    var _user = new ApplicationUser { UserName = model.UserName, FullName = model.FullName, PhoneNumber = model.PhoneNumber
+                        , Email = model.Email, EmailConfirmed = false, PhoneNumberConfirmed  = false, TwoFactorEnabled  = false
+                        ,LockoutEnabled  =false, AccessFailedCount = 0, NormalizedName = model.UserName, NormalizedUserName = model.UserName 
+                        , NormalizedEmail = model.Email, NormalizedPassword  = model.Password, IsHeadOffice = model.IsHeadOffice};
 
                     var _result = await _userManager.CreateAsync(_user, model.Password);
 
@@ -161,6 +166,14 @@ namespace ShampanBFRSAPI.Controllers.Login
                             return resultVM;
                         }
                     }
+
+                    //
+                    //UserProfileService ups = new UserProfileService();
+                    //UserInformationVM up = new UserInformationVM();
+                    //up.UserId = model.Id;
+                    //up.UserName = model.UserName;
+                    //up.FullName = model.FullName;                
+                    //ups.InsertUserInfo(up);
 
                     resultVM.Status = "Success";
                     resultVM.Message = "Data inserted successfully.";

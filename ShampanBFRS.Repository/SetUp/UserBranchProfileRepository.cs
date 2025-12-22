@@ -181,12 +181,12 @@ UM.UserId,
 UM.BranchId,
 B.Name BranchName,
 B.Code BranchCode,
-B.IsActive,
+--B.IsActive,
 ISNULL(UM.CreatedBy, '') AS CreatedBy,
-ISNULL(UM.LastModifiedBy, '') AS LastModifiedBy,
+ISNULL(UM.LastUpdateBy, '') AS LastUpdateBy,
 ISNULL(UM.CreatedFrom, '') AS CreatedFrom,
 ISNULL(UM.LastUpdateFrom, '') AS LastUpdateFrom,
-ISNULL(FORMAT(UM.LastModifiedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastModifiedOn,
+ISNULL(FORMAT(UM.LastUpdateOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastUpdateOn,
 ISNULL(FORMAT(UM.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn
 
 FROM {DatabaseHelper.AuthDbName()}.[dbo].AspNetUsers U
@@ -219,7 +219,7 @@ WHERE UM.UserId IS NOT NULL
                 var modelList = dataTable.AsEnumerable().Select(row => new UserBranchMapVM
                 {
                     Id = Convert.ToInt32(row["Id"]),
-                    IsActive = Convert.ToBoolean(row["IsActive"]),
+                    //IsActive = Convert.ToBoolean(row["IsActive"]),
                     BranchId = Convert.ToInt32(row["BranchId"]),
                     UserId = row["UserId"].ToString(),
 
@@ -234,8 +234,8 @@ WHERE UM.UserId IS NOT NULL
 
                     CreatedBy = row["CreatedBy"].ToString(),
                     CreatedOn = row["CreatedOn"].ToString(),
-                    LastModifiedBy = row["LastModifiedBy"].ToString(),
-                    LastModifiedOn = row["LastModifiedOn"].ToString(),
+                    LastUpdateBy = row["LastUpdateBy"].ToString(),
+                    //LastModifiedOn = row["LastModifiedOn"].ToString(),
                     CreatedFrom = row["CreatedFrom"].ToString(),
                     LastUpdateFrom = row["LastUpdateFrom"].ToString(),                   
                 }).ToList();
@@ -370,7 +370,7 @@ WHERE UM.UserId IS NOT NULL
                     throw new Exception("Database connection fail!");
                 }
 
-                var data = new GridEntity<UserBranchMapVM>();
+                var data = new GridEntity<UserBranchProfileVM>();
 
                 // Define your SQL query string with dynamic SalePersonId condition
                 string sqlQuery = $@"
@@ -381,7 +381,7 @@ WHERE UM.UserId IS NOT NULL
                     LEFT OUTER JOIN BranchProfiles B ON UM.BranchId=B.Id
                     WHERE UM.UserId IS NOT NULL  
         -- Add the filter condition
-        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<UserBranchMapVM>.FilterCondition(options.filter) + ")" : "");
+        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<UserBranchProfileVM>.FilterCondition(options.filter) + ")" : "");
 
                 if (!string.IsNullOrEmpty(userId))
                 {
@@ -405,7 +405,7 @@ WHERE UM.UserId IS NOT NULL
             LEFT OUTER JOIN UserBranchMap UM ON UM.UserId=U.Id
             LEFT OUTER JOIN BranchProfiles B ON UM.BranchId=B.Id
             WHERE UM.UserId IS NOT NULL
-        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<UserBranchMapVM>.FilterCondition(options.filter) + ")" : "");
+        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<UserBranchProfileVM>.FilterCondition(options.filter) + ")" : "");
 
                 if (!string.IsNullOrEmpty(userId))
                 {
@@ -418,7 +418,7 @@ WHERE UM.UserId IS NOT NULL
         ";
 
                 // Now you can pass options without the SqlParameter
-                data = KendoGrid<UserBranchMapVM>.GetGridData_CMD(options, sqlQuery, "UM.Id");
+                data = KendoGrid<UserBranchProfileVM>.GetGridData_CMD(options, sqlQuery, "UM.Id");
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
