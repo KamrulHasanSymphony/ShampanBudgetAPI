@@ -99,7 +99,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             try
             {
                 _productService = new ProductService();
-                resultVM = await _productService.List(new[] { "cd.ProductId", "ch.ChargeGroup" }, new[] { vm.Id,vm.ChargeGroupId }, null);
+                resultVM = await _productService.List(new[] { "Id" }, new[] { vm.Id }, null);
                 return resultVM;
             }
             catch (Exception ex)
@@ -113,6 +113,30 @@ namespace ShampanBFRSAPI.Controllers.SetUp
                 };
             }
         }
+
+        // POST: api/Product/EstimatedList
+        [HttpPost("EstimatedList")]
+        public async Task<ResultVM> EstimatedList(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                _productService = new ProductService();
+                resultVM = await _productService.EstimatedList(new[] { "cd.ProductId", "ch.ChargeGroup" }, new[] { vm.Id, vm.ChargeGroupId }, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
+                };
+            }
+        }
+
 
         // GET: api/Product/ListAsDataTable
         [HttpGet("ListAsDataTable")]
