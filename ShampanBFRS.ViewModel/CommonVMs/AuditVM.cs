@@ -10,6 +10,7 @@
         public string? LastModifiedBy { get; set; }
         public string? LastUpdateBy { get; set; }
         public string? LastModifiedOn { get; set; }
+        public string? LastUpdateOn { get; set; }
         public string? LastUpdateAt { get; set; }
         public string? LastUpdateFrom { get; set; }
 
