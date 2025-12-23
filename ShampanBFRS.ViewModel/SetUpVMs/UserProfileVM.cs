@@ -38,6 +38,8 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public string? Mode { get; set; }
         public bool IsAdmin { get; set; }
         public bool IsHeadOffice { get; set; }
+        public int ? DepartmentId { get; set; }
+        public string? DepartmentName { get;set; }
 
 
     }

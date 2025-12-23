@@ -41,7 +41,7 @@ namespace ShampanBFRS.Repository.SetUp
                 )
                 VALUES
                 (
-                    @UserId,@UserName, @FullName, 1,@CreatedBy, @CreatedAt, @CreatedFrom
+                    @UserId,@UserName, @FullName,@DepartmentId,@CreatedBy, @CreatedAt, @CreatedFrom
                 );
                 SELECT SCOPE_IDENTITY();";
 
@@ -51,7 +51,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@UserId", vm.UserId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@UserName", vm.UserName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FullName", vm.FullName ?? (object)DBNull.Value);
-                    //cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedAt", vm.CreatedAt ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -72,6 +72,58 @@ namespace ShampanBFRS.Repository.SetUp
             }
 
             return result;
+        }
+        public async Task<ResultVM> UserInformationsUpdate(UserInformationVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", Id = vm.Id.ToString(), DataVM = vm };
+
+            try
+            {
+                if (conn == null) throw new Exception("Database connection failed!");
+                if (transaction == null) transaction = conn.BeginTransaction();
+
+                string query = @"
+                UPDATE UserInformations
+                SET 
+                    UserName = @UserName,
+                    FullName =@FullName,
+                    DepartmentId = @DepartmentId,
+                    LastUpdateBy = @LastUpdateBy,
+                    LastUpdateFrom = @LastUpdateFrom,
+                    LastUpdateAt = GETDATE()
+                WHERE UserId  = @UserId ";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@Id", vm.Id);
+                    cmd.Parameters.AddWithValue("@UserId", vm.UserId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UserName", vm.UserName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FullName", vm.FullName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DepartmentId", vm.DepartmentId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
+
+                    int rows = cmd.ExecuteNonQuery();
+
+                    if (rows > 0)
+                    {
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.UpdateSuccess;
+                    }
+                    else
+                    {
+                        throw new Exception("No rows were updated.");
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
         }
 
         // Update Method
@@ -110,9 +162,11 @@ SELECT
 ,U.PasswordHash
 ,U.NormalizedPassword
 ,ISNULL(U.IsHeadOffice,0) IsHeadOffice
+,isnull(ui.DepartmentId,0) DepartmentId
 
 FROM 
 [{DatabaseHelper.AuthDbName()}].[dbo].AspNetUsers AS U
+left outer join UserInformations ui on ui.UserId=u.Id
 WHERE 1 = 1 ";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
@@ -147,10 +201,11 @@ WHERE 1 = 1 ";
                     ConfirmPassword = row["NormalizedPassword"].ToString(),
                     CurrentPassword = row["NormalizedPassword"].ToString(),
                     NormalizedPassword = row["NormalizedPassword"].ToString(),
+                    DepartmentId = Convert.ToInt32(row["DepartmentId"].ToString()),
                 }).ToList();
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status =MessageModel.Success;
+                result.Message =MessageModel.RetrievedSuccess;
                 result.DataVM = modelList;
 
                 return result;

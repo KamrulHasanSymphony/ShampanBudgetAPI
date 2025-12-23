@@ -60,6 +60,29 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             }
         }
 
+
+        [HttpPost("UserInformationsUpdate")]
+        public async Task<ResultVM> UserInformationsUpdate(UserInformationVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                _service = new UserProfileService();
+                resultVM = await _service.UserInformationsUpdate(vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
+                };
+            }
+        }
+
         // POST: api/UserProfile/Update
         [HttpPost("Update")]
         public async Task<ResultVM> Update(UserProfileVM vm)
