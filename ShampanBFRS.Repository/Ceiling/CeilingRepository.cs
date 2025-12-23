@@ -1200,10 +1200,32 @@ AND BudgetType = @BudgetType
 ";
                 SqlCommand checkCommand = new SqlCommand(checkQuery, conn, transaction);
                 checkCommand.Parameters.Add("@BranchId", SqlDbType.NVarChar).Value = objMaster.BranchId;
-                checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.ToGLFiscalYearId;
+                checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.GLFiscalYearId;
                 checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
                 checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType;
                 //checkCommand.Parameters.Add("@CreatedBy", SqlDbType.NVarChar).Value = objMaster.CreatedBy;
+                count = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+                if (count <= 0)
+                {
+                    throw new Exception("From Budget Not Found!");
+                }
+
+
+                checkQuery = @"
+SELECT COUNT(Id) FROM Ceilings WHERE BranchId = @BranchId 
+AND GLFiscalYearId = @GLFiscalYearId 
+AND BudgetSetNo = @BudgetSetNo 
+AND BudgetType = @BudgetType 
+AND CreatedBy = @CreatedBy 
+
+";
+                checkCommand = new SqlCommand(checkQuery, conn, transaction);
+                checkCommand.Parameters.Add("@BranchId", SqlDbType.NVarChar).Value = objMaster.BranchId;
+                checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.ToGLFiscalYearId;
+                checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
+                checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.ToBudgetType;
+                checkCommand.Parameters.Add("@CreatedBy", SqlDbType.NVarChar).Value = objMaster.CreatedBy;
                 count = Convert.ToInt32(checkCommand.ExecuteScalar());
 
                 if (count > 0)
@@ -1258,7 +1280,7 @@ INSERT INTO Ceilings (
                 command.Parameters.Add("@IsArchive", SqlDbType.Bit).Value = objMaster.IsArchive;
                 command.Parameters.Add("@Remarks", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.Remarks) ? (object)DBNull.Value : objMaster.Remarks.Trim();
                 command.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
-                command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.BudgetType) ? (object)DBNull.Value : objMaster.BudgetType.Trim();
+                command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.ToBudgetType) ? (object)DBNull.Value : objMaster.BudgetType.Trim();
                 command.Parameters.Add("@CreatedBy", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedBy) ? (object)DBNull.Value : objMaster.CreatedBy.Trim();
                 command.Parameters.Add("@CreatedFrom", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedFrom) ? (object)DBNull.Value : objMaster.CreatedFrom.Trim();
                 command.Parameters.Add("@CreatedOn", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedOn.ToString()) ? (object)DBNull.Value : objMaster.CreatedOn.ToString();
@@ -1316,15 +1338,23 @@ select
 ,cd.PeriodSl
 ,cd.PeriodStart
 ,cd.PeriodEnd
-,cd.Amount
-,cd.IsPost
-,s.BudgetType,s.GLFiscalYearId,s.CreatedBy
+,sum(cd.Amount)
+,'N'
+--,s.BudgetType,s.GLFiscalYearId,s.CreatedBy
 from CeilingDetails cd
 left outer join Ceilings s on s.Id =cd.GLCeilingId 
 where 1=1
 and s.GLFiscalYearId=@GLFiscalYearId
 and s.BudgetSetNo=@BudgetSetNo
 and s.BudgetType=@BudgetType
+
+group by 
+ cd.AccountId
+,cd.GLFiscalYearDetailId
+,cd.PeriodSl
+,cd.PeriodStart
+,cd.PeriodEnd
+,cd.IsPost
 
 ";
 
@@ -1333,7 +1363,7 @@ and s.BudgetType=@BudgetType
                 commands.Parameters.Add("@GLCeilingId", SqlDbType.Int).Value = objMaster.Id;
                 commands.Parameters.Add("@GLFiscalYearId", SqlDbType.Int).Value = objMaster.GLFiscalYearId;
                 commands.Parameters.Add("@BudgetSetNo", SqlDbType.Int).Value = objMaster.BudgetSetNo;
-                commands.Parameters.Add("@BudgetType", SqlDbType.Int).Value = objMaster.BudgetType;
+                commands.Parameters.Add("@BudgetType", SqlDbType.NChar).Value = objMaster.BudgetType;
                 commands.ExecuteNonQuery();
 
                 result.Status = MessageModel.Success;

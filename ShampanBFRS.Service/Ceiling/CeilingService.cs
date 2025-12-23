@@ -553,14 +553,14 @@ namespace ShampanBFRS.Service.Ceiling
                         Message = MessageModel.NotFoundForSave,
                     };
                 }
-                else if (!model.CeilingDetailList.Any())
-                {
-                    return new ResultVM()
-                    {
-                        Status = MessageModel.Fail,
-                        Message = MessageModel.DetailsNotFoundForSave,
-                    };
-                }
+                //else if (!model.CeilingDetailList.Any())
+                //{
+                //    return new ResultVM()
+                //    {
+                //        Status = MessageModel.Fail,
+                //        Message = MessageModel.DetailsNotFoundForSave,
+                //    };
+                //}
 
                 string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
@@ -570,8 +570,8 @@ namespace ShampanBFRS.Service.Ceiling
 
                     result = await _repo.BudgetTransferHeader(model, conn, transaction);
 
-                    //if (result.Status == MessageModel.Fail)
-                    //    throw new Exception(result.Message);
+                    if (result.Status == MessageModel.Fail)
+                        throw new Exception(result.Message);
 
                     //detail.GLCeilingId = model.Id;
 

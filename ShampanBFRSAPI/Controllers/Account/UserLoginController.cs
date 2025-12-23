@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.AccountVMs;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.SetUpVMs;
@@ -14,11 +15,12 @@ namespace ShampanBFRSAPI.Controllers.Login
     [ApiController]
     public class UserLoginController : ControllerBase
     {
-
+        UserProfileService _service = new UserProfileService();
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+
 
         public UserLoginController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
         {
@@ -26,7 +28,7 @@ namespace ShampanBFRSAPI.Controllers.Login
             _roleManager = roleManager;
             _signInManager = signInManager;
             _configuration = configuration;
-        }       
+        }
 
 
         // POST: api/UserLogin/CreateEditAsync 
@@ -43,7 +45,7 @@ namespace ShampanBFRSAPI.Controllers.Login
 
                 if (model.Operation == "update")
                 {
-                    var user = await _userManager.FindByNameAsync(model.UserName);
+                     var user = await _userManager.FindByNameAsync(model.UserName);
 
                     if (user == null)
                     {
@@ -59,14 +61,32 @@ namespace ShampanBFRSAPI.Controllers.Login
                         user.IsHeadOffice = model.IsHeadOffice;
 
                         var updateResult = await _userManager.UpdateAsync(user);
+
                         if (!updateResult.Succeeded)
                         {
                             resultVM.Message = "Failed to update user profile.";
                             return resultVM;
                         }
 
-                        resultVM.Status = "Success";
-                        resultVM.Message = "User profile updated successfully.";
+                        var _userInfo = new UserInformationVM
+                        {
+                            UserId =model.Id,
+                            UserName = model.UserName,
+                            FullName = model.FullName,
+                            DepartmentId = model.DepartmentId,
+                            CreatedBy = model.CreatedBy,
+                            CreatedFrom = model.CreatedFrom,
+                            CreatedOn = model.CreatedOn,
+                            CreatedAt = model.CreatedOn,
+                            IsActive = true,
+                            IsArchive = false,
+
+                        };
+
+                        resultVM = await _service.UserInformationsUpdate(_userInfo);
+
+                        resultVM.Status =MessageModel.Success;
+                        resultVM.Message = MessageModel.UpdateSuccess;
                         resultVM.DataVM = model;
                         return resultVM;
                     }
@@ -113,11 +133,30 @@ namespace ShampanBFRSAPI.Controllers.Login
                         return resultVM;
                     }
 
-                    var _user = new ApplicationUser { UserName = model.UserName, FullName = model.FullName, PhoneNumber = model.PhoneNumber, Email = model.Email, EmailConfirmed = false, PhoneNumberConfirmed  = false, TwoFactorEnabled  = false,LockoutEnabled  =false, AccessFailedCount = 0, NormalizedName = model.UserName, NormalizedUserName = model.UserName , NormalizedEmail = model.Email, NormalizedPassword  = model.Password, IsHeadOffice = model.IsHeadOffice};
+                    var _user = new ApplicationUser
+                    {
+                        UserName = model.UserName,
+                        FullName = model.FullName,
+                        PhoneNumber = model.PhoneNumber
+                        ,
+                        Email = model.Email,
+                        EmailConfirmed = false,
+                        PhoneNumberConfirmed = false,
+                        TwoFactorEnabled = false
+                        ,
+                        LockoutEnabled = false,
+                        AccessFailedCount = 0,
+                        NormalizedName = model.UserName,
+                        NormalizedUserName = model.UserName
+                        ,
+                        NormalizedEmail = model.Email,
+                        NormalizedPassword = model.Password,
+                        IsHeadOffice = model.IsHeadOffice
+                    };
 
                     var _result = await _userManager.CreateAsync(_user, model.Password);
 
-                    if (!_result.Succeeded)
+                     if (!_result.Succeeded)
                     {
                         foreach (var error in _result.Errors)
                         {
@@ -162,8 +201,25 @@ namespace ShampanBFRSAPI.Controllers.Login
                         }
                     }
 
-                    resultVM.Status = "Success";
-                    resultVM.Message = "Data inserted successfully.";
+                    var _userInfo = new UserInformationVM
+                    {
+                        UserId = loginuser.Id,
+                        UserName = model.UserName,
+                        FullName = model.FullName,
+                        DepartmentId = model.DepartmentId,
+                        CreatedBy = model.CreatedBy,
+                        CreatedFrom = model.CreatedFrom,
+                        CreatedOn = model.CreatedOn,
+                        CreatedAt = model.CreatedOn,
+                        IsActive = true,
+                        IsArchive = false,
+
+                    };
+
+                    resultVM = await _service.UserInformationsInsert(_userInfo);
+
+                    resultVM.Status = MessageModel.Success;
+                    resultVM.Message =MessageModel.InsertSuccess;
                     model.Id = _user.Id;
                     resultVM.DataVM = model;
                 }
