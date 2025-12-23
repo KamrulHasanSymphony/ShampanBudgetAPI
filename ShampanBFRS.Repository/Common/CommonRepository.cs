@@ -2492,6 +2492,59 @@ WHERE
                 return result;
             }
         }
+
+        public async Task<ResultVM> GetChargeGroupList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+                string sqlQuery = @"
+	         SELECT DISTINCT
+
+          ISNULL(H.Id, 0) Id
+         ,ISNULL(H.ChargeGroupValue, '') ChargeGroupValue
+         ,ISNULL(H.ChargeGroupText, '') ChargeGroupText
+         FROM ChargeGroups H
+         ";
+
+
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter objComm = CreateAdapter(sqlQuery, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+
+
+                objComm.Fill(dataTable);
+
+                var modelList = dataTable.AsEnumerable().Select(row => new ChargeGroupVM
+                {
+                    Id = Convert.ToInt32(row["Id"]),
+                    ChargeGroupValue = row["ChargeGroupValue"]?.ToString(),
+                    ChargeGroupText = row["ChargeGroupText"]?.ToString(),
+                }).ToList();
+
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = modelList;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+        }
     }
 
 }
