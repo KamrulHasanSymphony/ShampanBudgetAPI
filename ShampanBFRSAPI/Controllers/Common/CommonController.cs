@@ -341,6 +341,31 @@ namespace ShampanBFRSAPI.Controllers.Common
 
 
 
+        [HttpPost("PersonnelCategoriesList")]
+        public async Task<ResultVM> PersonnelCategoriesList(CommonVM Vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                CommonService _commonService = new CommonService();
+                resultVM = await _commonService.PersonnelCategoriesList(new[] { "" }, new[] { "" }, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = "Data not fetched.",
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
+
+
+
 
     }
 }
