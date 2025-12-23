@@ -28,27 +28,38 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 string query = @"
-                INSERT INTO BranchProfiles 
-                (Code, Name,TelephoneNo, Email, VATRegistrationNo, BIN, TINNO, Address,Comments, 
-                 IsArchive, IsActive, CreatedBy, CreatedOn)
-                VALUES 
-                (@Code, @Name, @TelephoneNo, @Email, @VATRegistrationNo, @BIN, @TINNO,@Address, @Comments, 
-                 @IsArchive, @IsActive, @CreatedBy, GETDATE());
-                SELECT SCOPE_IDENTITY();";
+         INSERT INTO BranchProfiles 
+                     (Code, Name, LegalName, Address, ActiveStatus, IsArchive, City, ZipCode, TelephoneNo, FaxNo, Email, ContactPerson, ContactPersonDesignation, ContactPersonTelephone, ContactPersonEmail, Comments, CreatedBy, CreatedOn)
+                     VALUES 
+                     (@Code, @Name, @LegalName, @Address, @ActiveStatus, @IsArchive, @City, @ZipCode, @TelephoneNo, @FaxNo, @Email, @ContactPerson, @ContactPersonDesignation, @ContactPersonTelephone, @ContactPersonEmail, @Comments, @CreatedBy, GETDATE());
+                     SELECT SCOPE_IDENTITY();";
+
+
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
+
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name);
-                    cmd.Parameters.AddWithValue("@TelephoneNo", vm.TelephoneNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Email", vm.Email ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@VATRegistrationNo", vm.VATRegistrationNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@TINNO", vm.TINNO ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LegalName", vm.LegalName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Address", vm.Address ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ActiveStatus", vm.ActiveStatus);
+                    cmd.Parameters.AddWithValue("@City", vm.City ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ZipCode", vm.ZipCode ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@TelephoneNo", vm.TelephoneNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FaxNo", vm.FaxNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Email", vm.Email ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPerson", vm.ContactPerson ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPersonDesignation", vm.ContactPersonDesignation ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPersonTelephone", vm.ContactPersonTelephone ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPersonEmail", vm.ContactPersonEmail ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@VATRegistrationNo", vm.VATRegistrationNo ?? (object)DBNull.Value);
+                   // cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@TINNO", vm.TINNO ?? (object)DBNull.Value);
+                
                     cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
-                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
+                   
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy);
 
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
@@ -90,22 +101,31 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
                 UPDATE BranchProfiles 
                 SET 
-                    Name = @Name, TelephoneNo = @TelephoneNo, Email = @Email, VATRegistrationNo = @VATRegistrationNo, BIN = @BIN,TINNO = @TINNO, Comments = @Comments,IsActive = @IsActive, 
-                    LastModifiedBy = @LastModifiedBy, LastModifiedOn = GETDATE(),Address=@Address
+                    Name = @Name,LegalName=@LegalName,Address=@Address,City=@City,ZipCode=@ZipCode,TelephoneNo = @TelephoneNo,FaxNo=@FaxNo,Email = @Email,ContactPerson=@ContactPerson, ContactPersonDesignation = @ContactPersonDesignation, ContactPersonTelephone = @ContactPersonTelephone,ContactPersonEmail = @ContactPersonEmail, Comments = @Comments,ActiveStatus = @ActiveStatus, 
+                    LastModifiedBy = @LastModifiedBy, LastModifiedOn = GETDATE()
                 WHERE Id = @Id";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", branchProfile.Id);
                     cmd.Parameters.AddWithValue("@Name", branchProfile.Name);
-                    cmd.Parameters.AddWithValue("@TelephoneNo", branchProfile.TelephoneNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Email", branchProfile.Email ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@VATRegistrationNo", branchProfile.VATRegistrationNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BIN", branchProfile.BIN ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@TINNO", branchProfile.TINNO ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LegalName", branchProfile.LegalName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Address", branchProfile.Address ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@City", branchProfile.City ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ZipCode", branchProfile.ZipCode ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@TelephoneNo", branchProfile.TelephoneNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FaxNo", branchProfile.FaxNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Email", branchProfile.Email ?? (object)DBNull.Value);
+
+                    //cmd.Parameters.AddWithValue("@VATRegistrationNo", branchProfile.VATRegistrationNo ?? (object)DBNull.Value);
+                    // cmd.Parameters.AddWithValue("@BIN", branchProfile.BIN ?? (object)DBNull.Value);
+                    // cmd.Parameters.AddWithValue("@TINNO", branchProfile.TINNO ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPerson", branchProfile.ContactPerson ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPersonDesignation", branchProfile.ContactPersonDesignation ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPersonTelephone", branchProfile.ContactPersonTelephone ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactPersonEmail", branchProfile.ContactPersonEmail ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Comments", branchProfile.Comments ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsActive", branchProfile.IsActive);
+                    cmd.Parameters.AddWithValue("@ActiveStatus", branchProfile.ActiveStatus);
                     cmd.Parameters.AddWithValue("@LastModifiedBy", branchProfile.LastModifiedBy ?? (object)DBNull.Value);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
@@ -220,28 +240,26 @@ SELECT
 
                 query += @"
     
-    ,ISNULL(H.Code, '') AS Code
+     ,ISNULL(H.Code, '') AS Code
     ,ISNULL(H.Name, '') AS Name
-    ,ISNULL(H.TelephoneNo, '') AS TelephoneNo
-    ,ISNULL(H.Address, '') AS Address
+	,ISNULL(H.LegalName, '') AS LegalName
+	,ISNULL(H.Address, '') AS Address
+	,ISNULL(H.City, '') AS City
+	,ISNULL(H.ZipCode, '') AS ZipCode
+    ,ISNULL(H.TelephoneNo, '') AS TelephoneNo 
+	,ISNULL(H.FaxNo, '') AS FaxNo	
     ,ISNULL(H.Email, '') AS Email
-    --,ISNULL(H.VATRegistrationNo, '') AS VATRegistrationNo
-    --,ISNULL(H.BIN, '') AS BIN
-    --,ISNULL(H.TINNO, '') AS TINNO
-    ,'0' VATRegistrationNo
-    ,'0' BIN
-    ,'0' TINNO
-    ,ISNULL(H.Comments, '') AS Comments
-    ,ISNULL(H.IsArchive, 0) AS IsArchive
-    ,ISNULL(H.ActiveStatus, 0) AS IsActive
-    ,ISNULL(H.CreatedBy, '') AS CreatedBy
-    --,ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS CreatedOn
-    ,CONVERT(VARCHAR(16), ISNULL(H.CreatedOn, '1900-01-01'), 120) AS CreatedOn
-    ,ISNULL(H.LastModifiedBy, '') AS LastModifiedBy
-    --,ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS LastModifiedOn
-    ,CONVERT(VARCHAR(16), ISNULL(H.LastModifiedOn, '1900-01-01'), 120) AS LastModifiedOn
-    ,ISNULL(H.CreatedFrom, '') AS CreatedFrom
-    ,ISNULL(H.LastUpdateFrom, '') AS LastUpdateFrom
+	,ISNULL(H.ContactPerson, '') AS ContactPerson
+	,ISNULL(H.ContactPersonDesignation, '') AS ContactPersonDesignation
+	,ISNULL(H.ContactPersonTelephone, '') AS ContactPersonTelephone
+	,ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail
+    ,ISNULL(H.Comments,'') Comments
+    ,ISNULL(H.IsArchive,0)	IsArchive
+    ,ISNULL(H.ActiveStatus,0)	ActiveStatus
+    ,CASE WHEN ISNULL(H.ActiveStatus,0) = 1 THEN 'Active' ELSE 'Inactive'	END Status
+    ,ISNULL(H.CreatedBy,'') CreatedBy
+    ,ISNULL(H.LastModifiedBy,'') LastModifiedBy
+    ,ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'1900-01-01') CreatedOn
 FROM 
     BranchProfiles H
 	
@@ -275,23 +293,29 @@ FROM
 
                     Id = Convert.ToInt32(row["Id"]),
                     Code = row["Code"].ToString(),
-                    UserId = row["UserId"].ToString(),
                     Name = row["Name"].ToString(),
-                    TelephoneNo = row["TelephoneNo"].ToString(),
-                    Email = row["Email"].ToString(),
+                    LegalName = row["LegalName"].ToString(),
                     Address = row["Address"].ToString(),
-                    VATRegistrationNo = row["VATRegistrationNo"].ToString(),
-                    BIN = row["BIN"].ToString(),
-                    TINNO = row["TINNO"].ToString(),
+                    City = row["City"].ToString(),
+                    ZipCode = row["ZipCode"].ToString(),
+                    TelephoneNo = row["TelephoneNo"].ToString(),
+                    FaxNo = row["FaxNo"].ToString(),
+                    Email = row["Email"].ToString(),
+
+                    ContactPerson = row["ContactPerson"].ToString(),
+                    ContactPersonDesignation = row["ContactPersonDesignation"].ToString(),
+                    ContactPersonTelephone = row["ContactPersonTelephone"].ToString(),
+                    ContactPersonEmail = row["ContactPersonEmail"].ToString(),
+
                     Comments = row["Comments"].ToString(),
+
                     IsArchive = Convert.ToBoolean(row["IsArchive"]),
-                    IsActive = Convert.ToBoolean(row["IsActive"]),
+                    IsActive = Convert.ToBoolean(row["ActiveStatus"]),
+                    Status = row["Status"].ToString(),
+
                     CreatedBy = row["CreatedBy"].ToString(),
                     LastModifiedBy = row["LastModifiedBy"].ToString(),
                     CreatedOn = row["CreatedOn"].ToString(),
-                    LastModifiedOn = row["LastModifiedOn"].ToString(),
-                    CreatedFrom = row["CreatedFrom"].ToString(),
-                    LastUpdateFrom = row["LastUpdateFrom"].ToString(),
                 }).ToList();
 
                 result.Status = MessageModel.Success;
@@ -447,20 +471,25 @@ FROM
                         ,ISNULL(H.Id, 0) AS Id
                         ,ISNULL(H.Code, '') AS Code
                         ,ISNULL(H.Name, '') AS Name
-				        ,ISNULL(H.Email,'') Email
-                        ,ISNULL(H.TelephoneNo, '') AS TelephoneNo                        
-                        ,ISNULL(H.Address, '') AS Address
-                        ,ISNULL(H.TINNO, '') AS TINNO
-				        ,ISNULL(H.VATRegistrationNo,'''') VATRegistrationNo
-				        ,ISNULL(H.BIN,'') BIN
-				        ,ISNULL(H.Comments,'') Comments
-				        ,ISNULL(H.IsArchive,0)	IsArchive
-				        ,ISNULL(H.IsActive,0)	IsActive
-				        ,CASE WHEN ISNULL(H.IsActive,0) = 1 THEN 'Active' ELSE 'Inactive'	END Status
-				        ,ISNULL(H.CreatedBy,'') CreatedBy
-				        ,ISNULL(H.LastModifiedBy,'') LastModifiedBy
-				        ,ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'1900-01-01') CreatedOn
-				        ,ISNULL(FORMAT(H.LastModifiedOn,'yyyy-MM-dd HH:mm'),'1900-01-01') LastModifiedOn
+	                    ,ISNULL(H.LegalName, '') AS LegalName
+	                    ,ISNULL(H.Address, '') AS Address
+	                    ,ISNULL(H.City, '') AS City
+	                    ,ISNULL(H.ZipCode, '') AS ZipCode
+                        ,ISNULL(H.TelephoneNo, '') AS TelephoneNo 
+	                    ,ISNULL(H.FaxNo, '') AS FaxNo	
+                        ,ISNULL(H.Email, '') AS Email
+	                    ,ISNULL(H.ContactPerson, '') AS ContactPerson
+	                    ,ISNULL(H.ContactPersonDesignation, '') AS ContactPersonDesignation
+	                    ,ISNULL(H.ContactPersonTelephone, '') AS ContactPersonTelephone
+	                    ,ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail
+                        ,ISNULL(H.Comments,'') Comments
+                        ,ISNULL(H.IsArchive,0)	IsArchive
+                        ,ISNULL(H.ActiveStatus,0)	ActiveStatus
+                        ,CASE WHEN ISNULL(H.ActiveStatus,0) = 1 THEN 'Active' ELSE 'Inactive'	END Status
+                        ,ISNULL(H.CreatedBy,'') CreatedBy
+                        ,ISNULL(H.LastModifiedBy,'') LastModifiedBy
+                        ,ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'1900-01-01') CreatedOn
+				        
 
                     FROM BranchProfiles H
                     WHERE H.IsArchive != 1
