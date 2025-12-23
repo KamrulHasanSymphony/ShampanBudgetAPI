@@ -120,6 +120,34 @@ update #ProductBudgetTemp set
 ,RiverDuesValue = 0
 ,CostBblValue = 0
 ,CostLiterValue = 0
+,TariffRate = 0
+,ProcessQuantityMT = 0
+,ProcessQuantityBBL = 0
+,ProductionMT = 0
+,ProductionBBL = 0
+,FobPriceBBL = 0
+,FobPriceMT = 0
+,FobValueUsd = 0
+,FobValueBdt = 0
+,FreightUsd = 0
+,FreightBdt = 0
+,FreightMT = 0
+,FreightBBL = 0
+,ServiceCharge = 0
+,ServiceChargeValueUsd = 0
+,ServiceChargeBdt = 0
+,LightChargeValueUsd = 0
+,CfrPriceUsd = 0
+,CfrPriceBBL = 0
+,CfrPriceBdt = 0
+,ProcessFee = 0
+,ProcessFeeValue = 0
+,RcoTreatmentFee = 0
+,RcoTreatmentFeeValue = 0
+,AbpTreatmentFee = 0
+,AbpTreatmentFeeValue = 0
+,ProductImprovementFeeValue = 0
+,FinancingCharge = 0
 ;
 
 UPDATE T
@@ -146,7 +174,15 @@ T.AITRate                        = cd.AITRate,
 T.VATRateFixed                   = cd.VATRateFixed,
 T.ConversionFactorFixedValue     = cd.ConversionFactorFixedValue,
 T.VATRate                        = cd.VATRate,
-T.RiverDues                      = cd.RiverDues
+T.RiverDues                      = cd.RiverDues,
+T.TariffRate                     = cd.TariffRate,
+T.FobPriceBBL                    = cd.FobPriceBBL,
+T.FreightUsd                     = cd.FreightUsd,
+T.ServiceCharge                  = cd.ServiceCharge,
+T.ProcessFee                     = cd.ProcessFee,
+T.RcoTreatmentFee                = cd.RcoTreatmentFee,
+T.AbpTreatmentFee                = cd.AbpTreatmentFee
+
 FROM #ProductBudgetTemp T
 INNER JOIN Products P ON P.Id = T.ProductId
 INNER JOIN ChargeDetails cd ON P.Id = cd.ProductId
@@ -266,7 +302,54 @@ where BLQuantityMT>0
                     #endregion
                 }
 
+                else if (objMaster.ChargeGroup.ToLower() == "ImportedCrude".ToLower())
+                {
+                    #region Calculations    
 
+                    sqlText += @"
+
+update #ProductBudgetTemp set 
+ BLQuantityBBL = BLQuantityMT * ConversionFactor
+,ReceiveQuantityMT = BLQuantityMT * (99.5 / 100)
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ReceiveQuantityBBL = BLQuantityBBL * (99.5 / 100)
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ ProcessQuantityMT = ReceiveQuantityMT
+,ProcessQuantityBBL = ReceiveQuantityBBL
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ ProductionMT = ProcessQuantityMT * (97.2 / 100)
+,ProductionBBL = ProcessQuantityBBL * (97.2 / 100)
+,FobPriceMT = FobPriceBBL * ConversionFactor
+,FobValueUsd = FobPriceBBL * BLQuantityBBL
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ FobValueBdt = FobValueUsd * ExchangeRateUsd
+,FreightBdt = FreightUsd * ExchangeRateUsd
+,FreightMT = FreightUsd * BLQuantityMT
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ FreightBBL = FreightMT / ConversionFactor
+,
+where BLQuantityMT>0
+;
+
+";
+
+                    #endregion
+                }
 
                 #region insert ProductBudgets
 
@@ -340,6 +423,34 @@ insert into ProductBudgets(
 ,[CostBblValue]
 ,[CostLiterValue]
 ,CifPriceValue
+,[TariffRate]
+,[ProcessQuantityMT]
+,[ProcessQuantityBBL]
+,[ProductionMT]
+,[ProductionBBL]
+,[FobPriceBBL]
+,[FobPriceMT]
+,[FobValueUsd]
+,[FobValueBdt]
+,[FreightUsd]
+,[FreightBdt]
+,[FreightMT]
+,[FreightBBL]
+,[ServiceCharge]
+,[ServiceChargeValueUsd]
+,[ServiceChargeBdt]
+,[LightChargeValueUsd]
+,[CfrPriceUsd]
+,[CfrPriceBBL]
+,[CfrPriceBdt]
+,[ProcessFee]
+,[ProcessFeeValue]
+,[RcoTreatmentFee]
+,[RcoTreatmentFeeValue]
+,[AbpTreatmentFee]
+,[AbpTreatmentFeeValue]
+,[ProductImprovementFeeValue]
+,[FinancingCharge]
 )
 
 SELECT 
@@ -409,6 +520,34 @@ SELECT
 ,[CostBblValue]
 ,[CostLiterValue]
 ,CifPriceValue
+,[TariffRate]
+,[ProcessQuantityMT]
+,[ProcessQuantityBBL]
+,[ProductionMT]
+,[ProductionBBL]
+,[FobPriceBBL]
+,[FobPriceMT]
+,[FobValueUsd]
+,[FobValueBdt]
+,[FreightUsd]
+,[FreightBdt]
+,[FreightMT]
+,[FreightBBL]
+,[ServiceCharge]
+,[ServiceChargeValueUsd]
+,[ServiceChargeBdt]
+,[LightChargeValueUsd]
+,[CfrPriceUsd]
+,[CfrPriceBBL]
+,[CfrPriceBdt]
+,[ProcessFee]
+,[ProcessFeeValue]
+,[RcoTreatmentFee]
+,[RcoTreatmentFeeValue]
+,[AbpTreatmentFee]
+,[AbpTreatmentFeeValue]
+,[ProductImprovementFeeValue]
+,[FinancingCharge]
 FROM #ProductBudgetTemp
 
 drop table #ProductBudgetTemp
