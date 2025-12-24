@@ -785,7 +785,100 @@ namespace ShampanBFRS.ViewModel.KendoCommon
                 throw new Exception(ex.Message);
             }
         }
+        public static GridEntity<T> GetDataWithBetween_CMD(GridOptions gridOption, string sqlQuery, string orderby, string[] conditionalFields, string[] conditionalValues, string param1 = "", string param2 = "", string param3 = "", string param4 = "", string param5 = "", string param6 = "", string param7 = "", string param8 = "", string param9 = "", string param10 = "")
+        {
+            try
+            {
+                int count = 1;
+                gridOption.take = gridOption.skip + gridOption.take;
+                var filterby = "";
+                if (gridOption.filter.Filters.Count > 0)
+                {
+                    filterby = gridOption != null ? GridQueryBuilder<T>.FilterCondition(gridOption.filter) : "";
+                }
 
+                if (gridOption.sort.Count > 0)
+                {
+                    orderby = gridOption.sort[0].field + " " + gridOption.sort[0].dir;
+                }
+                else
+                {
+                    orderby = orderby + " DESC";
+                }
+
+                for (int i = 0; i < conditionalFields.Length; i++)
+                {
+                    if (string.IsNullOrWhiteSpace(conditionalFields[i]) || string.IsNullOrWhiteSpace(conditionalValues[i]))
+                    {
+                        continue;
+                    }
+
+                    string field = conditionalFields[i].Split('.')[1];
+                    string cField = conditionalFields[i].Replace(".", "").Replace(" between", "");
+                    field = field.Replace(".", "").Replace(" between", "");
+
+                    if (conditionalFields[i].ToLower().Contains("between"))
+                    {
+                        var range = conditionalValues[i].Split('|');
+                        if (range.Length == 2)
+                        {
+                            sqlQuery = sqlQuery.Replace("@" + cField + "_From", "'" + range[0] + "'");
+                            sqlQuery = sqlQuery.Replace("@" + cField + "_To", "'" + range[1] + "'");
+                        }
+                    }
+                    else
+                    {
+                        sqlQuery = sqlQuery.Replace("@" + cField, "'" + conditionalValues[i] + "'");
+                    }
+
+                    //if (conditionalFields[i].ToLower().Contains("date"))
+                    //{
+                    //    if (count == 1)
+                    //    {
+                    //        sqlQuery = sqlQuery.Replace("@" + field, "'" + conditionalValues[i + 1] + "'");
+                    //    }
+                    //    count++;
+                    //}
+
+                }
+
+                dbConn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                dbConn.Open();
+                cmd = new SqlCommand(sqlQuery, dbConn);
+                cmd.CommandType = CommandType.Text;
+
+                cmd.Parameters.Add(new SqlParameter("@skip", gridOption.skip));
+                cmd.Parameters.Add(new SqlParameter("@take", gridOption.take));
+                cmd.Parameters.Add(new SqlParameter("@filter", filterby));
+                cmd.Parameters.Add(new SqlParameter("@orderby", orderby.Trim()));
+
+                da = new SqlDataAdapter(cmd);
+                ds = new DataSet();
+                da.Fill(ds);
+                dbConn.Close();
+                dbConn.Dispose();
+                cmd.Dispose();
+
+                DataTable countTable = ds.Tables[0];
+                int totalCount = 0;
+
+                if (countTable.Rows.Count > 0)
+                {
+                    totalCount = Convert.ToInt32(countTable.Rows[0]["totalcount"]);
+                }
+
+                DataTable dataTable = ds.Tables[1];
+                var dataList = (List<T>)ListConversion.ConvertTo<T>(dataTable).ToList();
+
+                var result = new GridResult<T>().Data(dataList, totalCount);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
     }
 }

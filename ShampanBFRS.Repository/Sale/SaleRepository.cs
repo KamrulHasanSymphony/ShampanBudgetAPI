@@ -2,7 +2,7 @@
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.SalaryAllowance;
-using ShampanBFRS.ViewModel.SetUpVMs;
+using ShampanBFRS.ViewModel.Sale;
 using ShampanBFRS.ViewModel.Utility;
 using System;
 using System.Collections.Generic;
@@ -12,12 +12,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShampanBFRS.Repository.SalaryAllowance
+namespace ShampanBFRS.Repository.Sale
 {
-    public class SalaryAllowanceRepository : CommonRepository
+    public class SaleRepository : CommonRepository
     {
+
         // Insert Method
-        public async Task<ResultVM> Insert(SalaryAllowanceHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Insert(SaleHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
@@ -30,7 +31,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                     transaction = conn.BeginTransaction();
 
                 string query = @"
-            INSERT INTO SalaryAllowanceHeaders
+            INSERT INTO SaleHeaders
             (
                 Code, 
                 BudgetType,
@@ -65,8 +66,8 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                     cmd.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
 
-                    // Ensure @IsPost is always provided, even if it's null
-                    cmd.Parameters.AddWithValue("@IsPost", vm.IsPost); // Default to "N" if IsPost is null
+                   
+                    cmd.Parameters.AddWithValue("@IsPost", false); 
 
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? "ERP");
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -93,7 +94,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
         }
 
         // Update Method
-        public async Task<ResultVM> Update(SalaryAllowanceHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Update(SaleHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
@@ -106,7 +107,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                     transaction = conn.BeginTransaction();
 
                 string query = @"
-                    UPDATE SalaryAllowanceHeaders
+                    UPDATE SaleHeaders
                     SET
 
                         BudgetType = @BudgetType,
@@ -164,7 +165,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
             {
                 string inClause = string.Join(", ", vm.IDs.Select((id, index) => $"@Id{index}"));
 
-                string query = $" UPDATE SalaryAllowanceHeaders SET IsArchive = 1, IsActive = 0, LastModifiedBy = @LastModifiedBy, LastUpdateFrom = @LastUpdateFrom, LastModifiedOn = GETDATE() WHERE Id IN ({inClause})";
+                string query = $" UPDATE SaleHeaders SET IsArchive = 1, IsActive = 0, LastModifiedBy = @LastModifiedBy, LastUpdateFrom = @LastUpdateFrom, LastModifiedOn = GETDATE() WHERE Id IN ({inClause})";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
@@ -221,7 +222,7 @@ SELECT
     ISNULL(M.PostedBy, '') AS PostedBy,
     ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
     ISNULL(M.PostedFrom, '') AS PostedFrom
-FROM SalaryAllowanceHeaders M
+FROM SaleHeaders M
 WHERE 1 = 1
                 ";
 
@@ -245,7 +246,7 @@ WHERE 1 = 1
 
                 objComm.Fill(dataTable);
 
-                var modelList = dataTable.AsEnumerable().Select(row => new SalaryAllowanceHeaderVM
+                var modelList = dataTable.AsEnumerable().Select(row => new SaleHeaderVM
                 {
                     BranchId = row.Field<int>("BranchId"),
                     Code = row.Field<string>("Code"),
@@ -297,7 +298,7 @@ SELECT
     ISNULL(M.PostedBy, '') AS PostedBy,
     ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
     ISNULL(M.PostedFrom, '') AS PostedFrom
-FROM SalaryAllowanceHeaders M
+FROM SaleHeaders M
 WHERE 1 = 1
                 ";
 
@@ -375,87 +376,154 @@ WHERE 1 = 1
         // GetGridData Method
         public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
         {
-            DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
 
             try
             {
                 if (conn == null)
-                {
                     throw new Exception("Database connection fail!");
-                }
 
-                var data = new GridEntity<SalaryAllowanceHeaderVM>();
+                var data = new GridEntity<SaleHeaderVM>();
 
-                // Define your SQL query string
                 string sqlQuery = @"
-                -- Count query
-                SELECT COUNT(DISTINCT M.Id) AS totalcount
-FROM SalaryAllowanceHeaders M
-WHERE 1 = 1
+                SELECT COUNT(DISTINCT M.ID) AS totalcount
+                FROM SaleHeaders M
+                WHERE 1 = 1 
+    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
-                -- Add the filter condition
-                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-                // Apply additional conditions
-                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+                //Apply additional conditions
+                sqlQuery = ApplyConditionsWithBetween(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
-                -- Data query with pagination and sorting
-                SELECT * 
-                FROM (
-                    SELECT 
-                    ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
-
-                   
     
-    ISNULL(M.Id, 0) AS Id,    
-    ISNULL(M.BranchId, 0) AS BranchId,
-    ISNULL(M.Code, '') AS Code,
-    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
-    ISNULL(M.BudgetType, '') AS BudgetType,
-    ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
-    ISNULL(M.IsPost, '') AS IsPost,
-    CASE WHEN ISNULL(M.IsPost, '') = 'Y' THEN 'Posted' ELSE 'Not Posted' END AS Status,
-    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-    ISNULL(M.PostedBy, '') AS PostedBy,
-    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-    ISNULL(M.PostedFrom, '') AS PostedFrom,  
-    ISNULL(M.CreatedBy, '') AS CreatedBy,
-    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-    ISNULL(M.CreatedFrom, '') AS CreatedFrom
-FROM SalaryAllowanceHeaders M
-WHERE 1 = 1
+    SELECT *
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
+				 ISNULL(M.Id, 0) AS Id,
+            ISNULL(M.BranchId, 0) AS BranchId,
+            ISNULL(M.Code, '') AS Code,
+            ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
+            ISNULL(M.BudgetType, '') AS BudgetType,
+            ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
+            ISNULL(M.IsPost, '') AS IsPost,
+            CASE WHEN ISNULL(M.IsPost, '') = 'Y' THEN 'Posted' ELSE 'Not Posted' END AS Status,
+                ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+                ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+                ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
+                ISNULL(M.PostedBy, '') AS PostedBy,
+                ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
+                ISNULL(M.PostedFrom, '') AS PostedFrom,
+                ISNULL(M.CreatedBy, '') AS CreatedBy,
+                ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
+                ISNULL(M.CreatedFrom, '') AS CreatedFrom
+            FROM SaleHeaders M
+            WHERE 1 = 1             
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
-                -- Add the filter condition
-                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-                // Apply additional conditions
-                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+                //Apply additional conditions
+                sqlQuery = ApplyConditionsWithBetween(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
-                ) AS a
-                WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-            ";
 
-                // Execute the query and get data
-                data = KendoGrid<SalaryAllowanceHeaderVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
+    ) AS a
+    WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+    ";
 
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
+                data = KendoGrid<SaleHeaderVM>.GetDataWithBetween_CMD(options, sqlQuery, "M.ID", conditionalFields, conditionalValues);
+
+                result.Status = "Success";
+                result.Message = "Data retrieved successfully.";
                 result.DataVM = data;
-
                 return result;
             }
             catch (Exception ex)
             {
-                result.ExMessage = ex.Message;
                 result.Message = ex.Message;
+                result.ExMessage = ex.Message;
                 return result;
             }
+            //            DataTable dataTable = new DataTable();
+            //            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+
+            //            try
+            //            {
+            //                if (conn == null)
+            //                {
+            //                    throw new Exception("Database connection fail!");
+            //                }
+
+            //                var data = new GridEntity<SaleHeaderVM>();
+
+            //                // Define your SQL query string
+            //                string sqlQuery = @"
+            //                -- Count query
+            //                SELECT COUNT(DISTINCT M.Id) AS totalcount
+            //FROM SaleHeaders M
+            //WHERE 1 = 1
+
+            //                -- Add the filter condition
+            //                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
+
+            //                // Apply additional conditions
+            //                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+            //                sqlQuery += @"
+            //                -- Data query with pagination and sorting
+            //                SELECT * 
+            //                FROM (
+            //                    SELECT 
+            //                    ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
+
+
+
+            //ISNULL(M.Id, 0) AS Id,
+            //ISNULL(M.BranchId, 0) AS BranchId,
+            //ISNULL(M.Code, '') AS Code,
+            //ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
+            //ISNULL(M.BudgetType, '') AS BudgetType,
+            //ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
+            //ISNULL(M.IsPost, '') AS IsPost,
+            //CASE WHEN ISNULL(M.IsPost, '') = 'Y' THEN 'Posted' ELSE 'Not Posted' END AS Status,
+            //    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+            //    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+            //    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
+            //    ISNULL(M.PostedBy, '') AS PostedBy,
+            //    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
+            //    ISNULL(M.PostedFrom, '') AS PostedFrom,
+            //    ISNULL(M.CreatedBy, '') AS CreatedBy,
+            //    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
+            //    ISNULL(M.CreatedFrom, '') AS CreatedFrom
+            //FROM SaleHeaders M
+            //WHERE 1 = 1
+
+            //                -- Add the filter condition
+            //                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
+
+            //                // Apply additional conditions
+            //                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+            //                sqlQuery += @"
+            //                ) AS a
+            //                WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+            //            ";
+
+            //                // Execute the query and get data
+            //                data = KendoGrid<SaleHeaderVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
+
+            //                result.Status = MessageModel.Success;
+            //                result.Message = MessageModel.RetrievedSuccess;
+            //                result.DataVM = data;
+
+            //                return result;
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                result.ExMessage = ex.Message;
+            //                result.Message = ex.Message;
+            //                return result;
+            //            }
         }
         // ReportPreview Method
         public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValue
@@ -467,22 +535,30 @@ WHERE 1 = 1
             try
             {
                 string query = @"
-                SELECT 
-                    ISNULL(H.Id, 0) AS Id,
-                    ISNULL(H.Code, '') AS Code,
-                    ISNULL(H.TransactionDate, '') AS TransactionDate,
-                    ISNULL(H.TransactionType, '') AS TransactionType,
-                    ISNULL(H.SupplierId, 0) AS SupplierId,
-                    ISNULL(H.Status, '') AS Status,
-                    ISNULL(H.Notes, '') AS Notes,
-                    ISNULL(H.CreatedBy, '') AS CreatedBy,
-                    ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS CreatedOn
-                FROM FM_FeedPurchaseHeaders H
-                WHERE 1 = 1 ";
+select
+    ISNULL(M.Id, 0) AS Id,    
+    ISNULL(M.BranchId, 0) AS BranchId,
+    ISNULL(M.Code, '') AS Code,
+    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
+    ISNULL(M.BudgetType, '') AS BudgetType,
+    ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
+    ISNULL(M.IsPost, '') AS IsPost,
+    CASE WHEN ISNULL(M.IsPost, '') = 'Y' THEN 'Active' ELSE 'In Active' END AS Status,
+    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
+    ISNULL(M.PostedBy, '') AS PostedBy,
+    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
+    ISNULL(M.PostedFrom, '') AS PostedFrom,  
+    ISNULL(M.CreatedBy, '') AS CreatedBy,
+    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
+    ISNULL(M.CreatedFrom, '') AS CreatedFrom
+FROM SaleHeaders M
+WHERE 1 = 1 ";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                 {
-                    query += " AND H.Id = @Id ";
+                    query += " AND M.Id = @Id ";
                 }
 
                 // Apply additional conditions
@@ -501,7 +577,7 @@ WHERE 1 = 1
                 objComm.Fill(dataTable);
 
                 result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
+                result.Message = MessageModel.PostSuccess;
                 result.DataVM = dataTable;
                 return result;
             }
@@ -522,7 +598,7 @@ WHERE 1 = 1
             {
                 string inClause = string.Join(", ", vm.IDs.Select((id, index) => $"@Id{index}"));
 
-                string query = $" UPDATE SalaryAllowanceHeaders SET IsPost = 1, PostedBy = @PostedBy , PostedFrom = @PostedFrom ,PostedOn = GETDATE() WHERE Id IN ({inClause}) ";
+                string query = $" UPDATE SaleHeaders SET IsPost = 1, PostedBy = @PostedBy , PostedFrom = @PostedFrom ,PostedOn = GETDATE() WHERE Id IN ({inClause}) ";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
@@ -556,30 +632,32 @@ WHERE 1 = 1
             }
         }
         // InsertDetails Method
-        public async Task<ResultVM> InsertDetails(SalaryAllowanceDetailVM details, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> InsertDetails(SaleDetailVM details, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
                 string query = @"
-                    INSERT INTO SalaryAllowanceDetails
-                    (SalaryAllowanceHeaderId, PersonnelCategoriesId, TotalPostSanctioned,ActualPresentStrength,ExpectedNumber,BasicWagesSalaries,OtherCash,TotalSalary,PersonnelSentForTraining)
+                    INSERT INTO SaleDetails
+                    (SaleHeaderId, ProductId, ConversionFactor,ProductionMT,PriceMT,PriceLTR,SalesExERLValue,SalesExImport_LocalMT,SalesExImport_LocalValue,TotalMT,TotalValueTK_LAC)
                     VALUES 
-                       (@SalaryAllowanceHeaderId, @PersonnelCategoriesId, @TotalPostSanctioned,@ActualPresentStrength,@ExpectedNumber,@BasicWagesSalaries,@OtherCash,@TotalSalary,@PersonnelSentForTraining);
+                       (@SaleHeaderId, @ProductId, @ConversionFactor,@ProductionMT,@PriceMT,@PriceLTR,@SalesExERLValue,@SalesExImport_LocalMT,@SalesExImport_LocalValue,@TotalMT,@TotalValueTK_LAC);
                     SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@SalaryAllowanceHeaderId", details.SalaryAllowanceHeaderId);
-                    cmd.Parameters.AddWithValue("@PersonnelCategoriesId", details.PersonnelCategoriesId);
-                    cmd.Parameters.AddWithValue("@TotalPostSanctioned", details.TotalPostSanctioned);
-                    cmd.Parameters.AddWithValue("@ActualPresentStrength", details.ActualPresentStrength);
-                    cmd.Parameters.AddWithValue("@ExpectedNumber", details.ExpectedNumber);
-                    cmd.Parameters.AddWithValue("@BasicWagesSalaries", details.BasicWagesSalaries);
-                    cmd.Parameters.AddWithValue("@OtherCash", details.OtherCash);
-                    cmd.Parameters.AddWithValue("@TotalSalary", details.TotalSalary);
-                    cmd.Parameters.AddWithValue("@PersonnelSentForTraining", details.PersonnelSentForTraining);
+                    cmd.Parameters.AddWithValue("@SaleHeaderId", details.SaleHeaderId);
+                    cmd.Parameters.AddWithValue("@ProductId", details.ProductId);
+                    cmd.Parameters.AddWithValue("@ConversionFactor", details.ConversionFactor);
+                    cmd.Parameters.AddWithValue("@ProductionMT", details.ProductionMT);
+                    cmd.Parameters.AddWithValue("@PriceMT", details.PriceMT);
+                    cmd.Parameters.AddWithValue("@PriceLTR", details.PriceLTR);
+                    cmd.Parameters.AddWithValue("@SalesExERLValue", details.SalesExERLValue);
+                    cmd.Parameters.AddWithValue("@SalesExImport_LocalMT", details.SalesExImport_LocalMT);
+                    cmd.Parameters.AddWithValue("@SalesExImport_LocalValue", details.SalesExImport_LocalValue);
+                    cmd.Parameters.AddWithValue("@TotalMT", details.TotalMT);
+                    cmd.Parameters.AddWithValue("@TotalValueTK_LAC", details.TotalValueTK_LAC);
 
                     object newId = await cmd.ExecuteScalarAsync();
 
@@ -620,25 +698,27 @@ WHERE 1 = 1
                 string query = @"
              SELECT 
              ISNULL(D.Id, 0) AS Id
-            ,D.SalaryAllowanceHeaderId
-            ,D.PersonnelCategoriesId
-            ,P.CategoryOfPersonnel AS PersonnelCategoriesName
-            ,D.TotalPostSanctioned
-            ,D.ActualPresentStrength
-            ,D.ExpectedNumber
-            ,D.BasicWagesSalaries
-            ,D.OtherCash
-            ,D.TotalSalary
-            ,D.PersonnelSentForTraining
+            ,D.SaleHeaderId
+            ,D.ProductId
+            ,P.Name AS ProductName
+            ,D.ConversionFactor
+            ,D.ProductionMT
+            ,D.PriceMT
+            ,D.PriceLTR
+            ,D.SalesExERLValue
+            ,D.SalesExImport_LocalMT
+            ,D.SalesExImport_LocalValue
+			,D.TotalMT
+			,D.TotalValueTK_LAC
 
-        FROM SalaryAllowanceDetails D
-        LEFT JOIN PersonnelCategories P ON D.PersonnelCategoriesId = P.Id
+        FROM SaleDetails D
+        LEFT JOIN Products P ON D.ProductId = P.Id
   
                    WHERE 1 = 1 ";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                 {
-                    query += " AND D.SalaryAllowanceHeaderId = @Id ";
+                    query += " AND D.SaleHeaderId = @Id ";
                 }
 
                 // Apply additional conditions
@@ -684,47 +764,52 @@ WHERE 1 = 1
 
             try
             {
-                var data = new GridEntity<SalaryAllowanceDetailVM>();
+                var data = new GridEntity<SaleDetailVM>();
 
                 string sqlQuery = @"
                 -- Count query
-                SELECT COUNT(DISTINCT D.Id) AS totalcount
-        FROM ChargeDetails D
-     
-        WHERE D.ChargeHeaderId = @masterId
+       SELECT COUNT(DISTINCT D.Id) AS totalcount
+
+        FROM SaleDetails D
+        LEFT JOIN Products P ON D.ProductId = P.Id
+  
+        Where D.SaleHeaderId = @masterId
                 -- Add the filter condition
-                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
 
                 -- Data query with pagination and sorting
                 SELECT *
                 FROM (
                     SELECT
                         ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "D.Id DESC ") + @") AS rowindex,
+           
              ISNULL(D.Id, 0) AS Id
-            ,D.SalaryAllowanceHeaderId
-            ,D.PersonnelCategoriesId
-            ,P.CategoryOfPersonnel AS PersonnelCategoriesName
-            ,D.TotalPostSanctioned
-            ,D.ActualPresentStrength
-            ,D.ExpectedNumber
-            ,D.BasicWagesSalaries
-            ,D.OtherCash
-            ,D.TotalSalary
-            ,D.PersonnelSentForTraining
+            ,D.SaleHeaderId
+            ,D.ProductId
+            ,P.Name AS ProductName
+            ,D.ConversionFactor
+            ,D.ProductionMT
+            ,D.PriceMT
+            ,D.PriceLTR
+            ,D.SalesExERLValue
+            ,D.SalesExImport_LocalMT
+            ,D.SalesExImport_LocalValue
+			,D.TotalMT
+			,D.TotalValueTK_LAC
 
-        FROM SalaryAllowanceDetails D
-        LEFT JOIN PersonnelCategories P ON D.PersonnelCategoriesId = P.Id
+        FROM SaleDetails D
+        LEFT JOIN Products P ON D.ProductId = P.Id
   
-        Where D.SalaryAllowanceHeaderId = @masterId
+        Where D.SaleHeaderId = @masterId
 
 
                     -- Add the filter condition
-                    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+                    " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
                 ) AS a
                 WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
                 ";
                 sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
-                data = KendoGrid<SalaryAllowanceDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
+                data = KendoGrid<SaleDetailVM>.GetGridData_CMD(options, sqlQuery, "D.Id");
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
@@ -753,18 +838,18 @@ WHERE 1 = 1
             try
             {
 
-                var data = new GridEntity<SalaryAllowanceDetailVM>();
+                var data = new GridEntity<SaleDetailVM>();
 
                 // Define your SQL query string
                 string sqlQuery = $@"
     -- Count query
     SELECT COUNT(DISTINCT D.Id) AS totalcount
-        FROM SalaryAllowanceDetails D
-        LEFT JOIN PersonnelCategories P ON D.PersonnelCategoriesId = P.Id
+        FROM SaleDetails D
+        LEFT JOIN Products P ON D.ProductId = P.Id
   
                    WHERE 1 = 1
     -- Add the filter condition
-        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceDetailVM>.FilterCondition(options.filter) + ")" : "");
+        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleDetailVM>.FilterCondition(options.filter) + ")" : "");
 
                 // Apply additional conditions
                 sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
@@ -777,24 +862,26 @@ WHERE 1 = 1
         ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "D.Id DESC") + $@") AS rowindex,
              SELECT 
              ISNULL(D.Id, 0) AS Id
-            ,D.SalaryAllowanceHeaderId
-            ,D.PersonnelCategoriesId
-            ,P.CategoryOfPersonnel AS CategoryOfPersonnel
-            ,D.TotalPostSanctioned
-            ,D.ActualPresentStrength
-            ,D.ExpectedNumber
-            ,D.BasicWagesSalaries
-            ,D.OtherCash
-            ,D.TotalSalary
-            ,D.PersonnelSentForTraining
+            ,D.SaleHeaderId
+            ,D.ProductId
+            ,P.Name AS ProductName
+            ,D.ConversionFactor
+            ,D.ProductionMT
+            ,D.PriceMT
+            ,D.PriceLTR
+            ,D.SalesExERLValue
+            ,D.SalesExImport_LocalMT
+            ,D.SalesExImport_LocalValue
+			,D.TotalMT
+			,D.TotalValueTK_LAC
 
-        FROM SalaryAllowanceDetails D
-        LEFT JOIN PersonnelCategories P ON D.PersonnelCategoriesId = P.Id
+        FROM SaleDetails D
+        LEFT JOIN Products P ON D.ProductId = P.Id
   
                    WHERE 1 = 1
 
     -- Add the filter condition
-        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceDetailVM>.FilterCondition(options.filter) + ")" : "");
+        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleDetailVM>.FilterCondition(options.filter) + ")" : "");
 
                 // Apply additional conditions
                 sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
@@ -804,7 +891,7 @@ WHERE 1 = 1
     WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
 ";
 
-                data = KendoGrid<SalaryAllowanceDetailVM>.GetTransactionalGridData_CMD(options, sqlQuery, "D.Id", conditionalFields, conditionalValues);
+                data = KendoGrid<SaleDetailVM>.GetTransactionalGridData_CMD(options, sqlQuery, "D.Id", conditionalFields, conditionalValues);
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
@@ -827,6 +914,99 @@ WHERE 1 = 1
             }
         }
 
+        public string ApplyConditionsWithBetween(string sqlText, string[] conditionalFields, string[] conditionalValue, bool orOperator = false)
+        {
+            try
+            {
+                string cField = "";
+                string field = "";
+                bool conditionFlag = true;
+                var checkValueExist = conditionalValue == null ? false : conditionalValue.ToList().Any(x => !string.IsNullOrEmpty(x));
+                var checkConditioanlValue = conditionalValue == null ? false : conditionalValue.ToList().Any(x => !string.IsNullOrEmpty(x));
 
+                if (checkValueExist && orOperator && checkConditioanlValue)
+                {
+                    sqlText += " and (";
+                }
+
+                if (conditionalFields != null && conditionalValue != null && conditionalFields.Length == conditionalValue.Length)
+                {
+                    for (int i = 0; i < conditionalFields.Length; i++)
+                    {
+                        if (string.IsNullOrWhiteSpace(conditionalFields[i]) || string.IsNullOrWhiteSpace(conditionalValue[i]))
+                        {
+                            continue;
+                        }
+                        cField = conditionalFields[i].ToString();
+                        field = StringReplacing(cField);
+                        cField = cField.Replace(".", "");
+                        string operand = " AND ";
+
+                        if (orOperator)
+                        {
+                            operand = " OR ";
+
+                            if (conditionFlag)
+                            {
+                                operand = "  ";
+                                conditionFlag = false;
+                            }
+                        }
+
+                        if (conditionalFields[i].ToLower().Contains("like"))
+                        {
+                            sqlText += operand + conditionalFields[i] + " '%'+ " + " @" + cField.Replace("like", "").Trim() + " +'%'";
+                        }
+
+                        else if (conditionalFields[i].Contains(">") || conditionalFields[i].Contains("<"))
+                        {
+                            sqlText += operand + conditionalFields[i] + " @" + cField;
+                        }
+
+                        else if (conditionalFields[i].ToLower().Contains("between"))
+                        {
+                            cField = conditionalFields[i].Replace(".", "").Replace(" between", "");
+                            sqlText += " AND " + conditionalFields[i].Replace(" between", "") +
+                                       " BETWEEN @" + cField + "_From AND @" + cField + "_To";
+                        }
+                        else if (conditionalFields[i].ToLower().Contains("not"))
+                        {
+                            cField = cField.Replace(" not", "");
+                            string param = conditionalFields[i].Replace(" not", "");
+                            sqlText += operand + param + " != @" + cField;
+                        }
+                        else if (conditionalFields[i].Contains("in", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var test = conditionalFields[i].Split(" in");
+
+                            if (test.Length > 1)
+                            {
+                                sqlText += operand + conditionalFields[i] + "(" + conditionalValue[i] + ")";
+                            }
+                            else
+                            {
+                                sqlText += operand + conditionalFields[i] + "= '" + Convert.ToString(conditionalValue[i]) + "'";
+                            }
+                        }
+                        else
+                        {
+                            sqlText += operand + conditionalFields[i] + "= @" + cField;
+                        }
+                    }
+                }
+
+                if (checkValueExist && orOperator && checkConditioanlValue)
+                {
+                    sqlText += " )";
+                }
+
+                return sqlText;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
+

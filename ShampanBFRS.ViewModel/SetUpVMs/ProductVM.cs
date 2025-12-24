@@ -30,6 +30,17 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public decimal? DutyInTariff { get; set; }
         public decimal? ATRate { get; set; }
         public decimal? VATRate { get; set; }
+        public decimal? AITRate { get; set; }
+        public decimal? ConversionFactorFixedValue { get; set; }
+        public decimal? VATRateFixed { get; set; }
+        public decimal? RiverDues { get; set; }
+        public decimal? TariffRate { get; set; }
+        public decimal? FobPriceBBL { get; set; }
+        public decimal? FreightUsd { get; set; }
+        public decimal? ServiceCharge { get; set; }
+        public decimal? ProcessFee { get; set; }
+        public decimal? RcoTreatmentFee { get; set; }
+        public decimal? AbpTreatmentFee { get; set; }
 
         public PeramModel PeramModel { get; set; }
 
