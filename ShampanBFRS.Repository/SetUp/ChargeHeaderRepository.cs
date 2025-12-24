@@ -489,7 +489,15 @@ namespace ShampanBFRS.Repository.SetUp
             VATRate,
             ConversionFactorFixedValue,
             VATRateFixed,
-            RiverDues 
+            RiverDues,
+
+            TariffRate,
+            FobPriceBBL,
+            FreightUsd,
+            ServiceCharge,
+            ProcessFee,
+            RcoTreatmentFee,
+            AbpTreatmentFee
 
         )
         VALUES
@@ -517,7 +525,16 @@ namespace ShampanBFRS.Repository.SetUp
             @VATRate,
             @ConversionFactorFixedValue,
             @VATRateFixed,
-            @RiverDues
+            @RiverDues,
+
+            @TariffRate,
+            @FobPriceBBL,
+            @FreightUsd,
+            @ServiceCharge,
+            @ProcessFee,
+            @RcoTreatmentFee,
+            @AbpTreatmentFee
+               
         );
 
         SELECT SCOPE_IDENTITY();";
@@ -549,6 +566,15 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@ConversionFactorFixedValue", details.ConversionFactorFixedValue);
                     cmd.Parameters.AddWithValue("@VATRateFixed", details.VATRateFixed);
                     cmd.Parameters.AddWithValue("@RiverDues", details.RiverDues);
+
+                    cmd.Parameters.AddWithValue("@TariffRate", details.TariffRate);
+                    cmd.Parameters.AddWithValue("@FobPriceBBL", details.FobPriceBBL);
+                    cmd.Parameters.AddWithValue("@FreightUsd", details.FreightUsd);
+                    cmd.Parameters.AddWithValue("@ServiceCharge", details.ServiceCharge);
+                    cmd.Parameters.AddWithValue("@ProcessFee", details.ProcessFee);
+                    cmd.Parameters.AddWithValue("@RcoTreatmentFee", details.RcoTreatmentFee);
+                    cmd.Parameters.AddWithValue("@AbpTreatmentFee", details.AbpTreatmentFee);
+
                     object newId = await cmd.ExecuteScalarAsync();
                     details.Id = Convert.ToInt32(newId);
 
@@ -613,6 +639,14 @@ namespace ShampanBFRS.Repository.SetUp
             ,D.ConversionFactorFixedValue
             ,D.VATRateFixed
             ,D.RiverDues
+
+            ,D.TariffRate
+            ,D.FobPriceBBL
+            ,D.FreightUsd
+            ,D.ServiceCharge
+            ,D.ProcessFee
+            ,D.RcoTreatmentFee
+            ,D.AbpTreatmentFee
 
         FROM ChargeDetails D
         LEFT JOIN Products P ON D.ProductId = P.Id
@@ -708,7 +742,16 @@ namespace ShampanBFRS.Repository.SetUp
                                 ISNULL(D.VATRate, 0) AS VATRate,
                                 ISNULL(D.ConversionFactorFixedValue, 0) AS ConversionFactorFixedValue,
                                 ISNULL(D.VATRateFixed, 0) AS VATRateFixed,
-                                ISNULL(D.RiverDues, 0) AS RiverDues
+                                ISNULL(D.RiverDues, 0) AS RiverDues,
+
+                                ISNULL(D.TariffRate, 0) AS TariffRate,
+                                ISNULL(D.FobPriceBBL, 0) AS FobPriceBBL,
+                                ISNULL(D.FreightUsd, 0) AS FreightUsd,
+                                ISNULL(D.ServiceCharge, 0) AS ServiceCharge,
+                                ISNULL(D.ProcessFee, 0) AS ProcessFee,
+                                ISNULL(D.RcoTreatmentFee, 0) AS RcoTreatmentFee,
+                                ISNULL(D.AbpTreatmentFee, 0) AS AbpTreatmentFee
+
                                 FROM ChargeDetails D
                                 LEFT OUTER JOIN Products P ON D.ProductId =P.Id
                                 Where D.ChargeHeaderId = @masterId
@@ -797,7 +840,16 @@ namespace ShampanBFRS.Repository.SetUp
                                 ISNULL(D.VATRate, 0) AS VATRate,
                                 ISNULL(D.ConversionFactorFixedValue, 0) AS ConversionFactorFixedValue,
                                 ISNULL(D.VATRateFixed, 0) AS VATRateFixed,
-                                ISNULL(D.RiverDues, 0) AS RiverDues
+                                ISNULL(D.RiverDues, 0) AS RiverDues,
+
+                                ISNULL(D.TariffRate, 0) AS TariffRate,
+                                ISNULL(D.FobPriceBBL, 0) AS FobPriceBBL,
+                                ISNULL(D.FreightUsd, 0) AS FreightUsd,
+                                ISNULL(D.ServiceCharge, 0) AS ServiceCharge,
+                                ISNULL(D.ProcessFee, 0) AS ProcessFee,
+                                ISNULL(D.RcoTreatmentFee, 0) AS RcoTreatmentFee,
+                                ISNULL(D.AbpTreatmentFee, 0) AS AbpTreatmentFee
+
                                 FROM ChargeDetails H
                                LEFT OUTER JOIN Products P ON D.ProductId =P.Id
                     WHERE 1= 1
