@@ -1014,6 +1014,8 @@ WHERE 1 = 1
                     
                     SELECT COUNT(DISTINCT PB.ChargeGroup) AS totalcount
                 FROM ProductBudgets PB 
+               LEFT OUTER JOIN ChargeGroups CG 
+    ON CG.ChargeGroupValue = PB.ChargeGroup
                 WHERE 1=1
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductBudgetMasterVM>.FilterCondition(options.filter) + ")" : "");
 
@@ -1028,29 +1030,36 @@ FROM (
             ? "t." + options.sort[0].field + " " + options.sort[0].dir
             : "t.GLFiscalYearId DESC") + @") AS rowindex,
         t.CompanyId,
-        t.BranchId,
-        t.GLFiscalYearId,
-        t.YearName,
-        t.BudgetSetNo,
-        t.BudgetType,
-        t.ProductGroupId,
-        t.ProductGroupName,
-        t.ChargeGroup
+           t.BranchId,
+           t.GLFiscalYearId,
+           t.YearName,
+           t.BudgetSetNo,
+           t.BudgetType,
+           t.ProductGroupId,
+           t.ProductGroupName,
+           t.ChargeGroup as ChargeGroup,
+           t.ChargeGroupText as ChargeGroupText
     FROM (
         SELECT DISTINCT
-            ISNULL(PB.CompanyId,0) AS CompanyId,
-            ISNULL(PB.BranchId,0) AS BranchId,
-            ISNULL(PB.GLFiscalYearId,0) AS GLFiscalYearId,
-            ISNULL(fy.YearName,'') AS YearName,
-            ISNULL(PB.BudgetSetNo,0) AS BudgetSetNo,
-            ISNULL(PB.BudgetType,'') AS BudgetType,
-            ISNULL(p.ProductGroupId,'') AS ProductGroupId,
-            ISNULL(pg.Name,'') AS ProductGroupName,
-            ISNULL(PB.ChargeGroup,'') AS ChargeGroup
+               ISNULL(PB.CompanyId,0) AS CompanyId,
+               ISNULL(PB.BranchId,0) AS BranchId,
+               ISNULL(PB.GLFiscalYearId,0) AS GLFiscalYearId,
+               ISNULL(fy.YearName,'') AS YearName,
+               ISNULL(PB.BudgetSetNo,0) AS BudgetSetNo,
+               ISNULL(PB.BudgetType,'') AS BudgetType,
+               ISNULL(p.ProductGroupId,'') AS ProductGroupId,
+               ISNULL(pg.Name,'') AS ProductGroupName,
+               ISNULL(PB.ChargeGroup,0) AS ChargeGroup,
+               ISNULL(CG.ChargeGroupText, '') AS ChargeGroupText
         FROM ProductBudgets PB
-        LEFT JOIN FiscalYears fy ON fy.Id = PB.GLFiscalYearId
-        LEFT JOIN Products p ON p.Id = PB.ProductId
-        LEFT JOIN ProductGroups pg ON pg.Id = p.ProductGroupId
+        LEFT OUTER JOIN ChargeGroups CG 
+            ON CG.Id = PB.ChargeGroup
+        LEFT JOIN FiscalYears fy 
+            ON fy.Id = PB.GLFiscalYearId
+        LEFT JOIN Products p 
+            ON p.Id = PB.ProductId
+        LEFT JOIN ProductGroups pg 
+            ON pg.Id = p.ProductGroupId
         WHERE 1=1
         " + (options.filter.Filters.Count > 0
                ? " AND (" + GridQueryBuilder<ProductBudgetMasterVM>.FilterCondition(options.filter) + ")"

@@ -140,8 +140,7 @@ namespace ShampanBFRS.Repository.SetUp
         }
 
         // List Method
-        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues
-            , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
         {
             DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
@@ -303,6 +302,7 @@ namespace ShampanBFRS.Repository.SetUp
                 -- Count query
                 SELECT COUNT(DISTINCT H.Id) AS totalcount
                   FROM ChargeHeaders H
+                LEFT OUTER JOIN ChargeGroups CG ON CG.Id = H.ChargeGroup
             WHERE 1 = 1
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ChargeHeaderVM>.FilterCondition(options.filter) + ")" : "");
@@ -319,11 +319,12 @@ namespace ShampanBFRS.Repository.SetUp
 
                    
     
-               ISNULL(H.Id, 0) AS Id,
-               ISNULL(H.ChargeGroup, '') AS ChargeGroup
-
-            FROM ChargeHeaders H
-            WHERE 1 = 1
+                 ISNULL(H.Id, 0) AS Id,
+                 ISNULL(CG.ChargeGroupText, '') AS ChargeGroup
+  
+                FROM ChargeHeaders H
+                LEFT OUTER JOIN ChargeGroups CG ON CG.Id = H.ChargeGroup
+                WHERE 1 = 1
 
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ChargeHeaderVM>.FilterCondition(options.filter) + ")" : "");
