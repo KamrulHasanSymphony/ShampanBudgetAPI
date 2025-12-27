@@ -292,6 +292,8 @@ FROM
                 {
 
                     Id = Convert.ToInt32(row["Id"]),
+                    UserId = row["UserId"].ToString(),
+
                     Code = row["Code"].ToString(),
                     Name = row["Name"].ToString(),
                     LegalName = row["LegalName"].ToString(),

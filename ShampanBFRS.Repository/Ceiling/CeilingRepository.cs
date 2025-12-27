@@ -377,6 +377,7 @@ where  Id=@Id  ";
                            ,ISNULL(c.IsArchive,0) AS IsArchive
                            ,ISNULL(c.CreatedBy,'') AS CreatedBy
                            ,ISNULL(FORMAT(c.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn
+                           ,CASE WHEN ISNULL(c.IsPost, 'N') = '1' THEN 'Posted' ELSE 'Not-posted' END AS Status
                            ,ISNULL(c.TransactionType,'') AS TransactionType
                              FROM Ceilings c
                             left outer join FiscalYears fy on fy.Id = c.GLFiscalYearId
@@ -1379,6 +1380,48 @@ group by
                 return result;
             }
         }
+
+        public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn, SqlTransaction transaction)
+        {
+            ResultVM result = new() { Status = "Fail", Message = "Error" };
+
+            try
+            {
+                string inClause = string.Join(", ", vm.IDs.Select((id, index) => $"@Id{index}"));
+                string query = $@"
+                    UPDATE Ceilings
+                    SET IsPost = '1', PostedBy = @PostedBy, PostedFrom = @PostedFrom, PostedOn = GETDATE()
+                    WHERE Id IN ({inClause})";
+
+                using SqlCommand cmd = new(query, conn, transaction);
+                for (int i = 0; i < vm.IDs.Length; i++)
+                    cmd.Parameters.AddWithValue($"@Id{i}", vm.IDs[i]);
+
+                cmd.Parameters.AddWithValue("@PostedBy", vm.ModifyBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@PostedFrom", vm.ModifyFrom ?? (object)DBNull.Value);
+
+                int rows = await cmd.ExecuteNonQueryAsync();
+
+                if (rows > 0)
+                {
+                    result.Status = MessageModel.Success;
+                    result.Message =MessageModel.PostSuccess;
+                }
+                else
+                {
+                    throw new Exception("No rows posted.");
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+            }
+
+            return result;
+        }
+
+
 
 
     }
