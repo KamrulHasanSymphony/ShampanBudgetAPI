@@ -342,7 +342,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                                ISNULL(H.SL,'') AS SL,
                                ISNULL(H.CategoryOfPersonnel,'') AS CategoryOfPersonnel,
                                ISNULL(H.IsActive,0) AS IsActive,
-                               CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
+                               CASE WHEN ISNULL(H.IsActive,'')=1 THEN 'Active' ELSE 'Inactive' END AS Status,
                                ISNULL(H.CreatedBy,'') AS CreatedBy,
 							   ISNULL(H.CreatedFrom, '') AS CreatedFrom,
                                ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn,
@@ -350,7 +350,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                                ISNULL(FORMAT(H.LastUpdateOn,'yyyy-MM-dd HH:mm'),'') AS LastUpdateOn,
 							   ISNULL(H.LastUpdateFrom, '') AS LastUpdateFrom
                                FROM PersonnelCategories H
-                              WHERE H.IsActive = 1
+                              WHERE 1 = 1
                     " + (options.filter.Filters.Count > 0
                             ? " AND (" + GridQueryBuilder<PersonnelCategoriesVM>.FilterCondition(options.filter) + ")"
                             : "") + @"

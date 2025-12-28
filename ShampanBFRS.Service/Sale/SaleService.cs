@@ -180,6 +180,21 @@ namespace ShampanBFRS.Service.Sale
                 }
                 #endregion open connection and transaction
 
+                ResultVM rvm = await List(new[] { "M.Id" }, new[] { saleHeader.Id.ToString() }, null);
+
+                if (rvm.DataVM == null || !(rvm.DataVM is List<SaleHeaderVM>)) 
+                {
+                    throw new Exception("No data found for the given ID.");
+                }
+
+                List<SaleHeaderVM> mrvmList = (List<SaleHeaderVM>)rvm.DataVM;
+                SaleHeaderVM mrvm = mrvmList.FirstOrDefault();
+
+                // Check if the data is already posted
+                if (mrvm == null || mrvm.IsPost == "1")
+                {
+                    throw new Exception("Data already posted.Updates not allowed.");
+                }
 
 
                 var record = _commonRepo.DetailsDelete("SaleDetails", new[] { "SaleHeaderId" }, new[] { saleHeader.Id.ToString() }, conn, transaction);
