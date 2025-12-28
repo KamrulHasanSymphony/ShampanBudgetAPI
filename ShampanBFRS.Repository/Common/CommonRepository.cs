@@ -13,7 +13,7 @@ namespace ShampanBFRS.Repository.Common
     {
         protected SqlConnection _context;
         protected SqlTransaction _transaction;
-
+        
         #region
         public async Task<ResultVM> NextPrevious(string id, string status, string tableName, string type, SqlConnection conn = null, SqlTransaction transaction = null)
         {

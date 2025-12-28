@@ -170,5 +170,29 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
+        [HttpPost("MultiplePost")]
+        public async Task<ResultVM> MultiplePost(CommonVM vm)
+        {
+            var result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = null, DataVM = null };
+
+            try
+            {
+                result = await _CeilingService.MultiplePost(vm);
+                return result;
+            }
+            catch (System.Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
+                };
+            }
+        }
+
+
+
     }
 }

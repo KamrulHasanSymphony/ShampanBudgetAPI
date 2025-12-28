@@ -296,6 +296,8 @@ namespace ShampanBFRS.Service.Ceiling
 
                 string[] conditionalFields = new[] { "c.CreatedBy", "c.TransactionType", "c.BudgetType" };
                 string[] conditionalValues = new[] { options.vm.UserId, options.vm.TransactionType, options.vm.BudgetType };
+                //string[] conditionalFields = new[] { "c.TransactionType", "c.BudgetType" };
+                //string[] conditionalValues = new[] {  options.vm.TransactionType, options.vm.BudgetType };
 
                 result = await _repo.GetGridData(options, conditionalFields, conditionalValues, conn, transaction);
 
@@ -616,6 +618,51 @@ namespace ShampanBFRS.Service.Ceiling
                 if (isNewConnection && conn != null) conn.Close();
             }
         }
+
+        public async Task<ResultVM> MultiplePost(CommonVM vm, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
+        {
+            CeilingRepository _repo = new CeilingRepository();
+            ResultVM result = new() { Status = "Fail", Message = "Error", IDs = vm.IDs, DataVM = null };
+
+            SqlConnection conn = VcurrConn ?? new SqlConnection(DatabaseHelper.GetConnectionString());
+            SqlTransaction transaction = Vtransaction;
+
+            try
+            {
+                if (conn.State != ConnectionState.Open)
+                    conn.Open();
+
+                if (transaction == null)
+                    transaction = conn.BeginTransaction();
+
+                result = await _repo.MultiplePost(vm, conn, transaction);
+
+                if (Vtransaction == null && transaction != null)
+                {
+                    if (result.Status == "Success")
+                        transaction.Commit();
+                    else
+                        transaction.Rollback();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                if (transaction != null && Vtransaction == null)
+                    transaction.Rollback();
+
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+            }
+            finally
+            {
+                if (VcurrConn == null && conn != null && conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
+
+            return result;
+        }
+
+
 
 
     }
