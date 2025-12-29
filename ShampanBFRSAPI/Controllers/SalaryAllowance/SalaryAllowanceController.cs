@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Common;
 using ShampanBFRS.Service.SalaryAllowance;
+using ShampanBFRS.Service.Sale;
 using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.ExtensionMethods;
@@ -160,9 +161,24 @@ namespace ShampanBFRSAPI.Controllers.SalaryAllowance
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
-                resultVM = await _salaryAllowanceService.GetGridData(options, new[] { "" }, new[] { "" });
 
-                return resultVM;
+                List<string> conditionFields = new List<string>
+                {
+                    "M.BudgetType"
+                };
+
+                List<string> conditionValues = new List<string>
+                {
+                options.vm.BudgetType
+                };
+                string[] finalConditionFields = conditionFields.ToArray();
+                string[] finalConditionValues = conditionValues.ToArray();
+
+                return await _salaryAllowanceService.GetGridData(options, finalConditionFields, finalConditionValues);
+
+                //resultVM = await _salaryAllowanceService.GetGridData(options, new[] { "" }, new[] { "" });
+
+                //return resultVM;
             }
             catch (Exception ex)
             {

@@ -66,7 +66,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                     cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
 
                     // Ensure @IsPost is always provided, even if it's null
-                    cmd.Parameters.AddWithValue("@IsPost", vm.IsPost); // Default to "N" if IsPost is null
+                    cmd.Parameters.AddWithValue("@IsPost", false); // Default to "N" if IsPost is null
 
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? "ERP");
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -417,7 +417,7 @@ WHERE 1 = 1
     ISNULL(M.BudgetType, '') AS BudgetType,
     ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
     ISNULL(M.IsPost, '') AS IsPost,
-    CASE WHEN ISNULL(M.IsPost, '') = 'Y' THEN 'Posted' ELSE 'Not Posted' END AS Status,
+    CASE WHEN ISNULL(M.IsPost, '') = '1'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
     ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
     ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
     ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,

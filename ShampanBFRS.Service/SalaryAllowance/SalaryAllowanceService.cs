@@ -5,6 +5,7 @@ using ShampanBFRS.Repository.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.SalaryAllowance;
+using ShampanBFRS.ViewModel.Sale;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using System;
@@ -168,6 +169,22 @@ namespace ShampanBFRS.Service.SalaryAllowance
                     transaction = conn.BeginTransaction("");
                 }
                 #endregion open connection and transaction
+
+                ResultVM rvm = await List(new[] { "M.Id" }, new[] { salaryAllowanceHeader.Id.ToString() }, null);
+
+                if (rvm.DataVM == null || !(rvm.DataVM is List<SalaryAllowanceHeaderVM>))
+                {
+                    throw new Exception("No data found for the given ID.");
+                }
+
+                List<SalaryAllowanceHeaderVM> mrvmList = (List<SalaryAllowanceHeaderVM>)rvm.DataVM;
+                SalaryAllowanceHeaderVM mrvm = mrvmList.FirstOrDefault();
+
+                // Check if the data is already posted
+                if (mrvm == null || mrvm.IsPost == "1")
+                {
+                    throw new Exception("Data already posted.Updates not allowed.");
+                }
 
 
 

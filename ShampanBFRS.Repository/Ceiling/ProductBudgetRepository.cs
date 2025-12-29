@@ -308,6 +308,7 @@ where BLQuantityMT>0
 
                     sqlText += @"
 
+
 update #ProductBudgetTemp set 
  BLQuantityBBL = BLQuantityMT * ConversionFactor
 ,ReceiveQuantityMT = BLQuantityMT * (99.5 / 100)
@@ -342,7 +343,42 @@ where BLQuantityMT>0
 
 update #ProductBudgetTemp set 
  FreightBBL = FreightMT / ConversionFactor
-,
+,ServiceChargeValueUsd = FreightUsd * (ServiceCharge / 100) * 1.05
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ ServiceChargeBdt = ServiceChargeValueUsd * ExchangeRateUsd
+,LightChargeValueUsd = LightCharge * BLQuantityMT * 1.05
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+LightChargeValue = LightChargeValueUsd * ExchangeRateUsd
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+CfrPriceUsd = FobValueUsd + FreightUsd + LightChargeValueUsd + ServiceChargeValueUsd
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+CfrPriceBBL = CfrPriceUsd / BLQuantityBBL
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ CfrPriceBdt = FobValueBdt + FreightBdt + LightChargeValue + ServiceChargeBdt
+,DutyValue = FobValueBdt * (DutyPerLiter/100)
+where BLQuantityMT>0
+;
+
+update #ProductBudgetTemp set 
+ VATValue = (FobValueBdt + DutyValue) * (VATRate/100)
+,ATValue = (FobValueBdt + DutyValue) * (ATRate/100)
+,AITValue = FobValueBdt * (AITRate/100)
+,ArrearDuty = 1 * ProductionBBL * ConversionFactorFixedValue
 where BLQuantityMT>0
 ;
 
