@@ -9,10 +9,10 @@ using Microsoft.Extensions.Options;
 
 namespace ShampanBFRS.Repository.Ceiling
 {
-    public class ProductBudgetRepository : CommonRepository
+    public class BudgetRepository : CommonRepository
     {
 
-        public async Task<ResultVM> Insert(ProductBudgetMasterVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Insert(BudgetHeaderVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
@@ -25,19 +25,21 @@ namespace ShampanBFRS.Repository.Ceiling
                 int count = 0;
 
                 string checkQuery = @"
-SELECT COUNT(Id) FROM ProductBudgets WHERE BranchId = @BranchId 
-AND GLFiscalYearId = @GLFiscalYearId 
+SELECT COUNT(Id) FROM BudgetHeaders WHERE BranchId = @BranchId 
+AND FiscalYearId = @FiscalYearId 
 AND BudgetSetNo = @BudgetSetNo 
 AND BudgetType = @BudgetType 
-AND ChargeGroup = @ChargeGroup 
+AND TransactionDate = @TransactionDate 
+AND TransactionType = @TransactionType 
 
 ";
                 SqlCommand checkCommand = new SqlCommand(checkQuery, conn, transaction);
                 checkCommand.Parameters.Add("@BranchId", SqlDbType.NVarChar).Value = objMaster.BranchId;
-                checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.GLFiscalYearId;
+                checkCommand.Parameters.Add("@FiscalYearId", SqlDbType.NVarChar).Value = objMaster.FiscalYearId;
                 checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
                 checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType;
-                checkCommand.Parameters.Add("@ChargeGroup", SqlDbType.NVarChar).Value = objMaster.ChargeGroup;
+                checkCommand.Parameters.Add("@TransactionDate", SqlDbType.NVarChar).Value = objMaster.TransactionDate;
+                checkCommand.Parameters.Add("@TransactionType", SqlDbType.NVarChar).Value = objMaster.TransactionType;
                 count = Convert.ToInt32(checkCommand.ExecuteScalar());
 
                 if (count > 0)
@@ -48,7 +50,7 @@ AND ChargeGroup = @ChargeGroup
                 string TempTable = @"
 SELECT TOP 0 *
 INTO #ProductBudgetTemp
-FROM ProductBudgets;
+FROM BudgetHeaders;
 ";
 
                 #region TempInsert
@@ -148,7 +150,6 @@ update #ProductBudgetTemp set
 ,AbpTreatmentFeeValue = 0
 ,ProductImprovementFeeValue = 0
 ,FinancingCharge = 0
-,TotalDutyVat = 0
 ;
 
 UPDATE T
@@ -181,12 +182,8 @@ T.FobPriceBBL                    = cd.FobPriceBBL,
 T.FreightUsd                     = cd.FreightUsd,
 T.ServiceCharge                  = cd.ServiceCharge,
 T.ProcessFee                     = cd.ProcessFee,
-T.ProcessFeeRate                 = cd.ProcessFeeRate,
 T.RcoTreatmentFee                = cd.RcoTreatmentFee,
-T.RcoTreatmentFeeRate            = cd.RcoTreatmentFeeRate,
-T.AbpTreatmentFee                = cd.AbpTreatmentFee,
-T.AbpTreatmentFeeRate            = cd.AbpTreatmentFeeRate,
-T.ProductImprovementFee          = cd.ProductImprovementFee
+T.AbpTreatmentFee                = cd.AbpTreatmentFee
 
 FROM #ProductBudgetTemp T
 INNER JOIN Products P ON P.Id = T.ProductId
@@ -196,7 +193,7 @@ INNER JOIN ChargeHeaders ch ON ch.Id = cd.ChargeHeaderId and ch.ChargeGroup=T.Ch
 
 ";
 
-                if (objMaster.ChargeGroup.ToLower() == "importedrefined")
+                if (objMaster.BudgetType.ToLower() == "importedrefined")
                 {
                     #region Calculations    
 
@@ -254,7 +251,7 @@ where BLQuantityMT>0
 
                     #endregion
                 }
-                else if (objMaster.ChargeGroup.ToLower() == "localrefined")
+                else if (objMaster.BudgetType.ToLower() == "localrefined")
                 {
                     #region Calculations    
 
@@ -306,13 +303,12 @@ where BLQuantityMT>0
 
                     #endregion
                 }
-                else if (objMaster.ChargeGroup.ToLower() == "ImportedCrude".ToLower())
+
+                else if (objMaster.BudgetType.ToLower() == "ImportedCrude".ToLower())
                 {
                     #region Calculations    
 
                     sqlText += @"
-
-
 
 update #ProductBudgetTemp set 
  BLQuantityBBL = BLQuantityMT * ConversionFactor
@@ -348,173 +344,7 @@ where BLQuantityMT>0
 
 update #ProductBudgetTemp set 
  FreightBBL = FreightMT / ConversionFactor
-,ServiceChargeValueUsd = FreightUsd * (ServiceCharge / 100) * 1.05
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- ServiceChargeBdt = ServiceChargeValueUsd * ExchangeRateUsd
-,LightChargeValueUsd = LightCharge * BLQuantityMT * 1.05
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
-LightChargeValue = LightChargeValueUsd * ExchangeRateUsd
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
-CfrPriceUsd = FobValueUsd + FreightUsd + LightChargeValueUsd + ServiceChargeValueUsd
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
-CfrPriceBBL = CfrPriceUsd / BLQuantityBBL
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- CfrPriceBdt = FobValueBdt + FreightBdt + LightChargeValue + ServiceChargeBdt
-,DutyValue = FobValueBdt * (DutyPerLiter/100)
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- VATValue = (FobValueBdt + DutyValue) * (VATRate/100)
-,ATValue = (FobValueBdt + DutyValue) * (ATRate/100)
-,AITValue = FobValueBdt * (AITRate/100)
-,ArrearDuty = 1 * ProductionBBL * ConversionFactorFixedValue
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- TotalDutyVat = DutyValue + VATValue + ATValue + AITValue + ArrearDuty
-,InsuranceValue = FobValueBdt * (InsuranceRate/100) * 1.15
-,BankChargeValue = FobValueBdt * (BankCharge/100) * 1.15
-,OceanLossValue = FobValueBdt * (OceanLoss/100)
-,CPAChargeValue = BLQuantityMT * CPACharge * ExchangeRateUsd * 1.15
-,HandelingChargeValue = BLQuantityBBL * HandelingCharge * 1.15
-,SurveyValue = Survey * BLQuantityBBL * ConversionFactorFixedValue
-,ProcessFeeValue = ProcessQuantityBBL * (ProcessFeeRate/100) * ProcessFee
-,RcoTreatmentFeeValue = ProcessQuantityBBL * (RcoTreatmentFeeRate/100) * RcoTreatmentFee
-,AbpTreatmentFeeValue = ProcessQuantityBBL * (AbpTreatmentFeeRate/100) * AbpTreatmentFee
-,ProductImprovementFeeValue = ProductImprovementFee * ProcessQuantityBBL
-
-where BLQuantityMT>0
-;
-
-
-update #ProductBudgetTemp set 
- TotalCost = CfrPriceBdt + TotalDutyVat + InsuranceValue + BankChargeValue + OceanLossValue + CPAChargeValue + HandelingChargeValue + SurveyValue 
-			+ ProcessFeeValue + RcoTreatmentFeeValue + AbpTreatmentFeeValue + ProductImprovementFeeValue
-where BLQuantityMT>0
-;
-
-";
-
-                    #endregion
-                }
-                else if (objMaster.ChargeGroup.ToLower() == "ImportedCrude".ToLower())
-                {
-                    #region Calculations    
-
-                    sqlText += @"
-
-
-
-update #ProductBudgetTemp set 
- BLQuantityBBL = BLQuantityMT * ConversionFactor
-,ReceiveQuantityMT = BLQuantityMT * (99.5 / 100)
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
-ReceiveQuantityBBL = BLQuantityBBL * (99.5 / 100)
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- ProcessQuantityMT = ReceiveQuantityMT
-,ProcessQuantityBBL = ReceiveQuantityBBL
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- ProductionMT = ProcessQuantityMT * (97.2 / 100)
-,ProductionBBL = ProcessQuantityBBL * (97.2 / 100)
-,FobPriceMT = FobPriceBBL * ConversionFactor
-,FobValueUsd = FobPriceBBL * BLQuantityBBL
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- FobValueBdt = FobValueUsd * ExchangeRateUsd
-,FreightBdt = FreightUsd * ExchangeRateUsd
-,FreightMT = FreightUsd * BLQuantityMT
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- FreightBBL = FreightMT / ConversionFactor
-,ServiceChargeValueUsd = FreightUsd * (ServiceCharge / 100) * 1.05
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- ServiceChargeBdt = ServiceChargeValueUsd * ExchangeRateUsd
-,LightChargeValueUsd = LightCharge * BLQuantityMT * 1.05
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
-LightChargeValue = LightChargeValueUsd * ExchangeRateUsd
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
-CfrPriceUsd = FobValueUsd + FreightUsd + LightChargeValueUsd + ServiceChargeValueUsd
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
-CfrPriceBBL = CfrPriceUsd / BLQuantityBBL
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- CfrPriceBdt = FobValueBdt + FreightBdt + LightChargeValue + ServiceChargeBdt
-,DutyValue = FobValueBdt * (DutyPerLiter/100)
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- VATValue = (FobValueBdt + DutyValue) * (VATRate/100)
-,ATValue = (FobValueBdt + DutyValue) * (ATRate/100)
-,AITValue = FobValueBdt * (AITRate/100)
-,ArrearDuty = 1 * ProductionBBL * ConversionFactorFixedValue
-where BLQuantityMT>0
-;
-
-update #ProductBudgetTemp set 
- TotalDutyVat = DutyValue + VATValue + ATValue + AITValue + ArrearDuty
-,InsuranceValue = FobValueBdt * (InsuranceRate/100) * 1.15
-,BankChargeValue = FobValueBdt * (BankCharge/100) * 1.15
-,OceanLossValue = FobValueBdt * (OceanLoss/100)
-,CPAChargeValue = BLQuantityMT * CPACharge * ExchangeRateUsd * 1.15
-,HandelingChargeValue = BLQuantityBBL * HandelingCharge * 1.15
-,SurveyValue = Survey * BLQuantityBBL * ConversionFactorFixedValue
-,ProcessFeeValue = ProcessQuantityBBL * (ProcessFeeRate/100) * ProcessFee
-,RcoTreatmentFeeValue = ProcessQuantityBBL * (RcoTreatmentFeeRate/100) * RcoTreatmentFee
-,AbpTreatmentFeeValue = ProcessQuantityBBL * (AbpTreatmentFeeRate/100) * AbpTreatmentFee
-,ProductImprovementFeeValue = ProductImprovementFee * ProcessQuantityBBL
-
-where BLQuantityMT>0
-;
-
-
-update #ProductBudgetTemp set 
- TotalCost = CfrPriceBdt + TotalDutyVat + InsuranceValue + BankChargeValue + OceanLossValue + CPAChargeValue + HandelingChargeValue + SurveyValue 
-			+ ProcessFeeValue + RcoTreatmentFeeValue + AbpTreatmentFeeValue + ProductImprovementFeeValue
+,
 where BLQuantityMT>0
 ;
 
@@ -623,11 +453,6 @@ insert into ProductBudgets(
 ,[AbpTreatmentFeeValue]
 ,[ProductImprovementFeeValue]
 ,[FinancingCharge]
-,TotalDutyVat
-,ProcessFeeRate
-,RcoTreatmentFeeRate
-,AbpTreatmentFeeRate
-,ProductImprovementFee
 )
 
 SELECT 
@@ -725,11 +550,6 @@ SELECT
 ,[AbpTreatmentFeeValue]
 ,[ProductImprovementFeeValue]
 ,[FinancingCharge]
-,TotalDutyVat
-,ProcessFeeRate
-,RcoTreatmentFeeRate
-,AbpTreatmentFeeRate
-,ProductImprovementFee
 FROM #ProductBudgetTemp
 
 drop table #ProductBudgetTemp
@@ -748,14 +568,14 @@ drop table #ProductBudgetTemp
                 foreach (var item in objMaster.DetailList)
                 {
                     command = new SqlCommand(TempInsert, conn, transaction);
-                    command.Parameters.Add("@GLFiscalYearId", SqlDbType.NChar).Value = objMaster.GLFiscalYearId;
+                    command.Parameters.Add("@GLFiscalYearId", SqlDbType.NChar).Value = objMaster.FiscalYearId;
                     command.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
                     command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.BudgetType) ? (object)DBNull.Value : objMaster.BudgetType.Trim();
-                    command.Parameters.Add("@ChargeGroup", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.ChargeGroup) ? (object)DBNull.Value : objMaster.ChargeGroup.Trim();
+                    command.Parameters.Add("@TransactionType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.TransactionType) ? (object)DBNull.Value : objMaster.TransactionType.Trim();
                     command.Parameters.Add("@BranchId", SqlDbType.Int).Value = objMaster.BranchId;
                     command.Parameters.Add("@CompanyId", SqlDbType.Int).Value = objMaster.CompanyId;
-                    command.Parameters.Add("@ProductId", SqlDbType.Int).Value = item.ProductId;
-                    command.Parameters.Add("@BLQuantityMT", SqlDbType.Int).Value = item.BLQuantityMT;
+                   // command.Parameters.Add("@ProductId", SqlDbType.Int).Value = item.ProductId;
+                    //command.Parameters.Add("@BLQuantityMT", SqlDbType.Int).Value = item.BLQuantityMT;
                     ////command.Parameters.Add("@TransactionType", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.TransactionType) ? (object)DBNull.Value : objMaster.TransactionType.Trim();
 
                     command.ExecuteNonQuery();
@@ -783,7 +603,7 @@ drop table #ProductBudgetTemp
         }
 
 
-        public async Task<ResultVM> ExitCheck(ProductBudgetVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> ExitCheck(BudgetHeaderVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
@@ -795,17 +615,20 @@ drop table #ProductBudgetTemp
                 int count = 0;
 
                 string checkQuery = @"
-SELECT COUNT(Id) FROM ProductBudgets WHERE BranchId = @BranchId 
-AND GLFiscalYearId = @GLFiscalYearId 
+SELECT COUNT(Id) FROM BudgetHeaders WHERE BranchId = @BranchId 
+AND FiscalYearId = @FiscalYearId 
 AND BudgetSetNo = @BudgetSetNo 
-AND BudgetType = @BudgetType 
+AND BudgetType = @BudgetType
+AND TransactionType = @TransactionType 
+
 
 ";
                 SqlCommand checkCommand = new SqlCommand(checkQuery, conn, transaction);
                 checkCommand.Parameters.Add("@BranchId", SqlDbType.NVarChar).Value = objMaster.BranchId;
-                checkCommand.Parameters.Add("@GLFiscalYearId", SqlDbType.NVarChar).Value = objMaster.GLFiscalYearId;
+                checkCommand.Parameters.Add("@FiscalYearId", SqlDbType.NVarChar).Value = objMaster.FiscalYearId;
                 checkCommand.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
                 checkCommand.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType;
+                checkCommand.Parameters.Add("@TransactionType", SqlDbType.NVarChar).Value = objMaster.TransactionType;
                 count = Convert.ToInt32(checkCommand.ExecuteScalar());
 
                 result.Count = count;
@@ -824,7 +647,7 @@ AND BudgetType = @BudgetType
             }
         }
 
-        public async Task<ResultVM> ProductBudgetList(string[] conditionalFields, string[] conditionalValues, ProductBudgetMasterVM vm = null,
+        public async Task<ResultVM> BudgetList(string[] conditionalFields, string[] conditionalValues, BudgetHeaderVM vm = null,
            SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
@@ -843,55 +666,30 @@ AND BudgetType = @BudgetType
 ,ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId
 ,ISNULL(PB.BudgetSetNo, 0) AS BudgetSetNo
 ,ISNULL(PB.BudgetType, '') AS BudgetType
-,ISNULL(PB.ProductId, 0) AS ProductId
-,ISNULL(PB.ConversionFactor, 0) AS ConversionFactor
-,ISNULL(PB.BLQuantityMT, 0) AS BLQuantityMT
-,ISNULL(PB.BLQuantityBBL, 0) AS BLQuantityBBL
-,ISNULL(PB.ReceiveQuantityMT, 0) AS ReceiveQuantityMT
-,ISNULL(PB.ReceiveQuantityBBL, 0) AS ReceiveQuantityBBL
-,ISNULL(PB.CIFCharge, 0) AS CIFCharge
-,ISNULL(PB.CifBdt, 0) AS CifBdt
-,ISNULL(PB.CIFCharge, 0) AS CIFCharge
-,ISNULL(PB.CifUsdValue, 0) AS CifUsdValue
-,ISNULL(PB.InsuranceRate, 0) AS InsuranceRate
-,ISNULL(PB.InsuranceValue, 0) AS InsuranceValue
-,ISNULL(PB.BankCharge, 0) AS BankCharge
-,ISNULL(PB.BankChargeValue, 0) AS BankChargeValue
-,ISNULL(PB.OceanLoss, 0) AS OceanLoss
-,ISNULL(PB.OceanLossValue, 0) AS OceanLossValue
-,ISNULL(PB.CPACharge, 0) AS CPACharge
-,ISNULL(PB.CPAChargeValue, 0) AS CPAChargeValue
-,ISNULL(PB.HandelingCharge, 0) AS HandelingCharge
-,ISNULL(PB.HandelingChargeValue, 0) AS HandelingChargeValue
-,ISNULL(PB.LightCharge, 0) AS LightCharge
-,ISNULL(PB.LightChargeValue, 0) AS LightChargeValue
-,ISNULL(PB.Survey, 0) AS Survey
-,ISNULL(PB.SurveyValue, 0) AS SurveyValue
-,ISNULL(PB.TotalCost, 0) AS TotalCost
-,ISNULL(PB.CostBblExImport, 0) AS CostBblExImport
-,ISNULL(PB.CostLiterExImport, 0) AS CostLiterExImport
-,ISNULL(PB.CostLiterExErl, 0) AS CostLiterExErl
-,ISNULL(PB.ExERLRate, 0) AS ExERLRate
-,ISNULL(PB.DutyPerLiter, 0) AS DutyPerLiter
-,ISNULL(PB.DutyValue, 0) AS DutyValue
-,ISNULL(PB.SDRate, 0) AS SDRate
-,ISNULL(PB.SDValue, 0) AS SDValue
-,ISNULL(PB.DutyOnTariffValuePerLiter, 0) AS DutyOnTariffValuePerLiter
-,ISNULL(PB.DutyInTariff3, 0) AS DutyInTariff3
-,ISNULL(PB.DutyInTariff2, 0) AS DutyInTariff2
-,ISNULL(PB.DutyInTariff1, 0) AS DutyInTariff1
-,ISNULL(PB.DutyInTariff, 0) AS DutyInTariff
-,ISNULL(PB.ATRate, 0) AS ATRate
-,ISNULL(PB.ATValue, 0) AS ATValue
-,ISNULL(PB.VATRate, 0) AS VATRate
-,ISNULL(PB.VATValue, 0) AS VATValue
-,ISNULL(PB.VATPerLiterValue, 0) AS VATPerLiterValue
-,ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties
-,ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT
-,ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
-FROM ProductBudgets PB 
-left outer join Products p on p.Id = PB.ProductId
-left outer join ProductGroups pg on pg.Id = p.ProductGroupId
+,ISNULL(PB.Code, '') AS Code
+,ISNULL(PB.TransactionDate, 0) AS TransactionDate
+,ISNULL(PB.TransactionType, 0) AS TransactionType
+
+,ISNULL(PB.IsPost, 0) AS IsPost
+,ISNULL(PB.Remarks, 0) AS Remarks
+,ISNULL(PB.IsActive,0) IsActive
+,ISNULL(PB.IsArchive,0) IsArchive
+,ISNULL(PB.CreatedBy,'') CreatedBy
+,ISNULL(FORMAT(PB.CreatedOn,'yyyy-MM-dd HH:mm:ss'),'1900-01-01') CreatedOn
+,ISNULL(PB.CreatedFrom,'') CreatedFrom
+,ISNULL(PB.LastUpdateBy,'') LastUpdateBy
+,ISNULL(FORMAT(PB.LastUpdateOn,'yyyy-MM-dd HH:mm:ss'),'1900-01-01') LastUpdateOn
+,ISNULL(PB.LastUpdateFrom,'') LastUpdateFrom
+,ISNULL(PB.PostedBy,'') PostedBy
+,ISNULL(FORMAT(PB.PostedOn,'yyyy-MM-dd HH:mm:ss'),'1900-01-01') PostedOn
+,ISNULL(PB.PostedFrom,'') PostedFrom
+
+,ISNULL(PB.ApproveLevelRequired, 0) AS ApproveLevelRequired
+,ISNULL(PB.CompletedApproveLevel, 0) AS CompletedApproveLevel
+,ISNULL(PB.ApprovalStatus, '') AS ApprovalStatus
+,ISNULL(PB.IsApproveFinal, 0) AS IsApproveFinal
+
+FROM BudgetHeaders PB 
 
 WHERE 1 = 1
 
@@ -910,61 +708,17 @@ WHERE 1 = 1
 
                 adapter.Fill(dt);
 
-                var list = dt.AsEnumerable().Select(row => new ProductBudgetVM
+                var list = dt.AsEnumerable().Select(row => new BudgetHeaderVM
                 {
                     Id = row.Field<int>("Id"),
                     CompanyId = row.Field<int?>("CompanyId"),
                     BranchId = row.Field<int?>("BranchId"),
-                    GLFiscalYearId = row.Field<int?>("GLFiscalYearId"),
+
                     BudgetSetNo = row.Field<int?>("BudgetSetNo"),
                     BudgetType = row.Field<string>("BudgetType"),
-                    ProductId = row.Field<int?>("ProductId"),
 
-                    ConversionFactor = row.Field<decimal?>("ConversionFactor") ?? 0,
-                    BLQuantityMT = row.Field<decimal?>("BLQuantityMT") ?? 0,
-                    BLQuantityBBL = row.Field<decimal?>("BLQuantityBBL") ?? 0,
-                    ReceiveQuantityMT = row.Field<decimal?>("ReceiveQuantityMT") ?? 0,
-                    ReceiveQuantityBBL = row.Field<decimal?>("ReceiveQuantityBBL") ?? 0,
-                    CIFCharge = row.Field<decimal?>("CIFCharge") ?? 0,
-                    CifBdt = row.Field<decimal?>("CifBdt") ?? 0,
-                    ExchangeRateUsd = row.Field<decimal?>("ExchangeRateUsd") ?? 0,
-                    CifUsdValue = row.Field<decimal?>("CifUsdValue") ?? 0,
-                    InsuranceRate = row.Field<decimal?>("InsuranceRate") ?? 0,
-                    InsuranceValue = row.Field<decimal?>("InsuranceValue") ?? 0,
-                    BankCharge = row.Field<decimal?>("BankCharge") ?? 0,
-                    BankChargeValue = row.Field<decimal?>("BankChargeValue") ?? 0,
-                    OceanLoss = row.Field<decimal?>("OceanLoss") ?? 0,
-                    OceanLossValue = row.Field<decimal?>("OceanLossValue") ?? 0,
-                    CPACharge = row.Field<decimal?>("CPACharge") ?? 0,
-                    CPAChargeValue = row.Field<decimal?>("CPAChargeValue") ?? 0,
-                    HandelingCharge = row.Field<decimal?>("HandelingCharge") ?? 0,
-                    HandelingChargeValue = row.Field<decimal?>("HandelingChargeValue") ?? 0,
-                    LightCharge = row.Field<decimal?>("LightCharge") ?? 0,
-                    LightChargeValue = row.Field<decimal?>("LightChargeValue") ?? 0,
-                    Survey = row.Field<decimal?>("Survey") ?? 0,
-                    SurveyValue = row.Field<decimal?>("SurveyValue") ?? 0,
-                    TotalCost = row.Field<decimal?>("TotalCost") ?? 0,
-                    CostBblExImport = row.Field<decimal?>("CostBblExImport") ?? 0,
-                    CostLiterExImport = row.Field<decimal?>("CostLiterExImport") ?? 0,
-                    CostLiterExErl = row.Field<decimal?>("CostLiterExErl") ?? 0,
-                    ExERLRate = row.Field<decimal?>("ExERLRate") ?? 0,
-                    DutyPerLiter = row.Field<decimal?>("DutyPerLiter") ?? 0,
-                    DutyValue = row.Field<decimal?>("DutyValue") ?? 0,
-                    SDRate = row.Field<decimal?>("SDRate") ?? 0,
-                    SDValue = row.Field<decimal?>("SDValue") ?? 0,
-                    DutyOnTariffValuePerLiter = row.Field<decimal?>("DutyOnTariffValuePerLiter") ?? 0,
-                    DutyInTariff3 = row.Field<decimal?>("DutyInTariff3") ?? 0,
-                    DutyInTariff2 = row.Field<decimal?>("DutyInTariff2") ?? 0,
-                    DutyInTariff1 = row.Field<decimal?>("DutyInTariff1") ?? 0,
-                    DutyInTariff = row.Field<decimal?>("DutyInTariff") ?? 0,
-                    ATRate = row.Field<decimal?>("ATRate") ?? 0,
-                    ATValue = row.Field<decimal?>("ATValue") ?? 0,
-                    VATRate = row.Field<decimal?>("VATRate") ?? 0,
-                    VATValue = row.Field<decimal?>("VATValue") ?? 0,
-                    VATPerLiterValue = row.Field<decimal?>("VATPerLiterValue") ?? 0,
-                    TotalCostAfterDuties = row.Field<decimal?>("TotalCostAfterDuties") ?? 0,
-                    VATExcludingExtraVAT = row.Field<decimal?>("VATExcludingExtraVAT") ?? 0,
-                    TotalCostVATExcluded = row.Field<decimal?>("TotalCostVATExcluded") ?? 0
+
+                    
                 }).ToList();
 
 
@@ -983,7 +737,7 @@ WHERE 1 = 1
             }
         }
 
-        public async Task<ResultVM> ProductBudgetListForNew(string[] conditionalFields, string[] conditionalValues, ProductBudgetVM vm = null,
+        public async Task<ResultVM> BudgetListForNew(string[] conditionalFields, string[] conditionalValues, BudgetHeaderVM vm = null,
           SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
@@ -997,76 +751,23 @@ WHERE 1 = 1
                 string query = @"
  
  
- SELECT
-ROW_NUMBER() OVER (ORDER BY p.Id) AS Serial,
-ISNULL(PB.Id, 0) AS Id,
-ISNULL(PB.CompanyId, 0) AS CompanyId,
-ISNULL(PB.BranchId, 0) AS BranchId,
-ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId,
-ISNULL(PB.BudgetSetNo, 0) AS BudgetSetNo,
-ISNULL(PB.BudgetType, '') AS BudgetType,
-ISNULL(p.Code, '') AS ProductCode,
-ISNULL(p.Name, '') AS ProductName,
-ISNULL(p.ProductGroupId, 0) AS ProductGroupId,
-ISNULL(p.Id, 0) AS ProductId,
-ISNULL(PB.ConversionFactor, 0) AS ConversionFactor,
-ISNULL(PB.BLQuantityMT, 0) AS BLQuantityMT,
-ISNULL(PB.BLQuantityBBL, 0) AS BLQuantityBBL,
-ISNULL(PB.ReceiveQuantityMT, 0) AS ReceiveQuantityMT,
-ISNULL(PB.ReceiveQuantityBBL, 0) AS ReceiveQuantityBBL,
-ISNULL(PB.CIFCharge, 0) AS CIFCharge,
-ISNULL(PB.CifUsdValue, 0) AS CifUsdValue,
-ISNULL(PB.CifBdt, 0) AS CifBdt,
-ISNULL(PB.InsuranceRate, 0) AS InsuranceRate,
-ISNULL(PB.InsuranceValue, 0) AS InsuranceValue,
-ISNULL(PB.BankCharge, 0) AS BankCharge,
-ISNULL(PB.BankChargeValue, 0) AS BankChargeValue,
-ISNULL(PB.OceanLoss, 0) AS OceanLoss,
-ISNULL(PB.OceanLossValue, 0) AS OceanLossValue,
-ISNULL(PB.CPACharge, 0) AS CPACharge,
-ISNULL(PB.CPAChargeValue, 0) AS CPAChargeValue,
-ISNULL(PB.HandelingCharge, 0) AS HandelingCharge,
-ISNULL(PB.HandelingChargeValue, 0) AS HandelingChargeValue,
-ISNULL(PB.LightCharge, 0) AS LightCharge,
-ISNULL(PB.LightChargeValue, 0) AS LightChargeValue,
-ISNULL(PB.Survey, 0) AS Survey,
-ISNULL(PB.SurveyValue, 0) AS SurveyValue,
-ISNULL(PB.TotalCost, 0) AS TotalCost,
-ISNULL(PB.CostBblExImport, 0) AS CostBblExImport,
-ISNULL(PB.CostLiterExImport, 0) AS CostLiterExImport,
-ISNULL(PB.CostLiterExImportValue, 0) AS CostLiterExImportValue,
-ISNULL(PB.Crude, 0) AS Crude,
-ISNULL(PB.Refined, 0) AS Refined,
-ISNULL(PB.ExchangeRateUsd, 0) AS ExchangeRateUsd,
-ISNULL(PB.CostLiterExErl, 0) AS CostLiterExErl,
-ISNULL(PB.ExERLRate, 0) AS ExERLRate,
-ISNULL(PB.DutyPerLiter, 0) AS DutyPerLiter,
-ISNULL(PB.DutyValue, 0) AS DutyValue,
-ISNULL(PB.SDRate, 0) AS SDRate,
-ISNULL(PB.SDValue, 0) AS SDValue,
-ISNULL(PB.DutyOnTariffValuePerLiter, 0) AS DutyOnTariffValuePerLiter,
-ISNULL(PB.DutyInTariff3, 0) AS DutyInTariff3,
-ISNULL(PB.DutyInTariff2, 0) AS DutyInTariff2,
-ISNULL(PB.DutyInTariff1, 0) AS DutyInTariff1,
-ISNULL(PB.DutyInTariff, 0) AS DutyInTariff,
-ISNULL(PB.ATRate, 0) AS ATRate,
-ISNULL(PB.ATValue, 0) AS ATValue,
-ISNULL(PB.VATRate, 0) AS VATRate,
-ISNULL(PB.VATValue, 0) AS VATValue,
-ISNULL(PB.VATPerLiterValue, 0) AS VATPerLiterValue,
-ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties,
-ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT,
-ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
-FROM ChargeHeaders ch
-LEFT JOIN ChargeDetails cd ON ch.Id = cd.ChargeHeaderId
-LEFT JOIN Products p ON cd.ProductId = p.Id
-LEFT JOIN ProductGroups pg ON pg.Id = p.ProductGroupId
-LEFT JOIN ProductBudgets PB ON p.Id = PB.ProductId 
-       AND PB.GLFiscalYearId = @GLFiscalYearId
-       AND PB.BudgetType = @BudgetType
-       AND ch.ChargeGroup = PB.ChargeGroup
+ SELECT DISTINCT
+ ROW_NUMBER() OVER(ORDER BY (SELECT 1)) AS Serial
+,Sabres.Id SabreId
+,COAs.Code  iBASCode
+,COAs.Name  iBASName
+,Sabres.Code SabreCode
+,Sabres.[Name] SabreName
+,0 InputTotal
 
-WHERE 1 = 1
+FROM Sabres
+LEFT OUTER JOIN COAs on COAs.Id=Sabres.COAId
+INNER JOIN DepartmentSabres DS ON DS.SabreId = Sabres.Id
+INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
+
+where 1=1
+
+AND UI.UserName = 'erp'
 
  ";
 
@@ -1078,7 +779,7 @@ WHERE 1 = 1
                 SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
                 adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
 
-                adapter.SelectCommand.Parameters.AddWithValue("@GLFiscalYearId", vm.GLFiscalYearId);
+                adapter.SelectCommand.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId);
                 adapter.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
 
                 if (vm.Id > 0)
@@ -1086,9 +787,9 @@ WHERE 1 = 1
 
                 adapter.Fill(dt);
 
-                var data = new GridEntity<ProductBudgetVM>();
+                var data = new GridEntity<BudgetHeaderVM>();
 
-                data = KendoGrid<ProductBudgetVM>.GetGridDataFromTable(dt);
+                data = KendoGrid<BudgetHeaderVM>.GetGridDataFromTable(dt);
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
@@ -1105,7 +806,7 @@ WHERE 1 = 1
             }
         }
 
-        public async Task<ResultVM> ProductBudgeDistincttList(string[] conditionalFields, string[] conditionalValues, ProductBudgetMasterVM vm = null,
+        public async Task<ResultVM> BudgeDistincttList(string[] conditionalFields, string[] conditionalValues, ProductBudgetMasterVM vm = null,
            SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
@@ -1275,6 +976,103 @@ WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
             }
         }
 
+        public async Task<ResultVM> GetBudgetDataForDetailsNew(
+            GridOptions options,
+            string[] conditionalFields,
+            string[] conditionalValues,
+            SqlConnection conn,
+            SqlTransaction transaction)
+        {
+            bool isNewConnection = false;
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string sqlQuery = $@"
+        ---------------------------------------------
+        -- TOTAL COUNT
+        ---------------------------------------------
+        SELECT COUNT(DISTINCT Sabres.Id) AS totalcount
+        FROM Sabres
+        LEFT OUTER JOIN COAs ON COAs.Id = Sabres.COAId
+        INNER JOIN DepartmentSabres DS ON DS.SabreId = Sabres.Id
+        INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
+        WHERE 1 = 1
+          AND UI.UserName = 'erp'
+          {(options.filter.Filters.Count > 0
+                      ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")"
+                      : "")}
+          {ApplyConditions("", conditionalFields, conditionalValues, false)}
+
+        ---------------------------------------------
+        -- GRID DATA
+        ---------------------------------------------
+        SELECT *
+        FROM
+        (
+            SELECT
+                ROW_NUMBER() OVER
+                (
+                    ORDER BY
+                    {(options.sort.Count > 0
+                                ? options.sort[0].field + " " + options.sort[0].dir
+                                : "Sabres.Id DESC")}
+                ) AS rowindex,
+
+                ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS Serial,
+
+                Sabres.Id          AS SabreId,
+                COAs.Code          AS iBASCode,
+                COAs.Name          AS iBASName,
+                Sabres.Code        AS SabreCode,
+                Sabres.[Name]      AS SabreName,
+                0                  AS InputTotal
+
+            FROM Sabres
+            LEFT OUTER JOIN COAs ON COAs.Id = Sabres.COAId
+            INNER JOIN DepartmentSabres DS ON DS.SabreId = Sabres.Id
+            INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
+            WHERE 1 = 1
+              {(options.filter.Filters.Count > 0
+                          ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")"
+                          : "")}
+              {ApplyConditions("", conditionalFields, conditionalValues, false)}
+        ) t
+        WHERE t.rowindex > @skip
+          AND (@take = 0 OR t.rowindex <= @take);
+        ";
+
+                var data = KendoGrid<BudgetHeaderVM>
+                    .GetTransactionalGridData_CMD(
+                        options,
+                        sqlQuery,
+                        "Sabres.Id",
+                        conditionalFields,
+                        conditionalValues);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = data;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
     }
 }

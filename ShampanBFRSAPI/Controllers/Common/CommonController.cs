@@ -340,7 +340,6 @@ namespace ShampanBFRSAPI.Controllers.Common
         }
 
 
-
         [HttpPost("PersonnelCategoriesList")]
         public async Task<ResultVM> PersonnelCategoriesList(CommonVM Vm)
         {
