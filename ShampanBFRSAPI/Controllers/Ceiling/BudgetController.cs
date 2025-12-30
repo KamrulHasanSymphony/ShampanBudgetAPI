@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Ceiling;
 using ShampanBFRS.Service.Common;
+using ShampanBFRS.Service.SalaryAllowance;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
@@ -47,7 +48,26 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-
+        [HttpPost("List")]
+        public async Task<ResultVM> List(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                resultVM = await _Service.List(new[] { "M.Id" }, new[] { vm.Id.ToString() }, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
+                };
+            }
+        }
         [HttpPost("GetBudgetDataForDetailsNew")]
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
@@ -64,14 +84,14 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        //[HttpPost("GetBudgetDataForDetailsNew")]
-        //public async Task<ResultVM> GetBudgetDataForDetailsNew(BudgetHeaderVM model)
+        //[HttpPost("BudgetList")]
+        //public async Task<ResultVM> BudgetList(BudgetHeaderVM model)
         //{
         //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
         //    try
         //    {
         //        _Service = new BudgetService();
-        //        resultVM = await _Service.GetBudgetDataForDetailsNew(model);
+        //        resultVM = await _Service.BudgetList(model);
         //        return resultVM;
         //    }
         //    catch (Exception ex)
@@ -80,54 +100,80 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         //    }
         //}
 
-        [HttpPost("BudgetList")]
-        public async Task<ResultVM> BudgetList(BudgetHeaderVM model)
-        {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
-            try
-            {
-                _Service = new BudgetService();
-                resultVM = await _Service.BudgetList(model);
-                return resultVM;
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
-            }
-        }
-
-        [HttpPost("BudgeDistincttList")]
-        public async Task<ResultVM> BudgeDistincttList(BudgetHeaderVM model)
-        {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
-            try
-            {
-                _Service = new BudgetService();
-                resultVM = await _Service.BudgeDistincttList(model);
-                return resultVM;
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
-            }
-        }
+        //[HttpPost("BudgeDistincttList")]
+        //public async Task<ResultVM> BudgeDistincttList(BudgetHeaderVM model)
+        //{
+        //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
+        //    try
+        //    {
+        //        _Service = new BudgetService();
+        //        resultVM = await _Service.BudgeDistincttList(model);
+        //        return resultVM;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
+        //    }
+        //}
 
         [HttpPost("GetGridData")]
         public async Task<ResultVM> GetGridData(GridOptions options)
         {
-            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
-                _Service = new BudgetService();
-                resultVM = await _Service.GetGridData(options);
+
+                List<string> conditionFields = new List<string>
+                {
+                    "M.BudgetType"
+                };
+
+                List<string> conditionValues = new List<string>
+                {
+                options.vm.BudgetType
+                };
+                string[] finalConditionFields = conditionFields.ToArray();
+                string[] finalConditionValues = conditionValues.ToArray();
+
+                return await _Service.GetGridData(options, finalConditionFields, finalConditionValues);
+
+                //resultVM = await _salaryAllowanceService.GetGridData(options, new[] { "" }, new[] { "" });
+
+                //return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
+        [HttpPost("GetDetailDataById")]
+        public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+
+                resultVM = await _Service.GetDetailDataById(options, masterId);
                 return resultVM;
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
             }
         }
-
 
     }
 }

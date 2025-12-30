@@ -39,9 +39,12 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public string? iBASName { get; set; }
         public string? SabreCode { get; set; }
         public string? SabreName { get; set; }
+        public int? SabreId { get; set; }
+
+
 
         public string? Serial { get; set; }
-        public PeramModel PeramModel { get; set; }
+        public PeramModel? PeramModel { get; set; }
 
         public List<BudgetDetailVM> DetailList { get; set; }
     }

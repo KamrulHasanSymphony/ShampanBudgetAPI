@@ -9,6 +9,10 @@ using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.Metrics;
+using ShampanBFRS.Repository.SalaryAllowance;
+using System.Data;
+using Newtonsoft.Json;
+using ShampanBFRS.ViewModel.SalaryAllowance;
 
 namespace ShampanBFRS.Service.Ceiling
 {
@@ -55,6 +59,41 @@ namespace ShampanBFRS.Service.Ceiling
                 }
 
                 result = await _repo.Insert(model, conn, transaction);
+
+                if (result.Status == MessageModel.Fail)
+                    throw new Exception(result.Message);
+
+                foreach (var detail in model.DetailList)
+                {
+                    detail.BudgetHeaderId = model.Id;
+
+                    if (detail.InputTotal.HasValue)
+                    {
+                        decimal input = detail.InputTotal.Value;
+
+                        // Monthly
+                        decimal monthly = Math.Round(input / 12, 2);
+                        detail.M1 = detail.M2 = detail.M3 = detail.M4 =
+                        detail.M5 = detail.M6 = detail.M7 = detail.M8 =
+                        detail.M9 = detail.M10 = detail.M11 = detail.M12 = monthly;
+
+                        // Quarterly
+                        decimal quarterly = Math.Round(input / 4, 2);
+                        detail.Q1 = detail.Q2 = detail.Q3 = detail.Q4 = quarterly;
+
+                        // Half-Yearly
+                        decimal halfYearly = Math.Round(input / 2, 2);
+                        detail.H1 = detail.H2 = halfYearly;
+
+                        // Yearly
+                        detail.Yearly = input;
+                    }
+
+                    result = await _repo.InsertDetails(detail, conn, transaction);
+
+                    if (result.Status == MessageModel.Fail)
+                        throw new Exception(result.Message);
+                }
 
 
 
@@ -157,54 +196,97 @@ namespace ShampanBFRS.Service.Ceiling
                 if (isNewConnection && conn != null) conn.Close();
             }
         }
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
+        {
+            BudgetRepository _repo = new BudgetRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+            try
+            {
+                #region open connection and transaction
+                if (VcurrConn != null)
+                {
+                    conn = VcurrConn;
+                }
+                if (Vtransaction != null)
+                {
+                    transaction = Vtransaction;
+                }
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    if (conn.State != ConnectionState.Open)
+                    {
+                        conn.Open();
+                    }
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction("");
+                }
+                #endregion open connection and transaction
 
-        //public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
-        //{
-        //    ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+                result = await _repo.List(conditionalFields, conditionalValues, conn, transaction, vm);
 
-        //    bool isNewConnection = false;
-        //    SqlConnection conn = null;
-        //    SqlTransaction transaction = null;
+                var lst = new List<BudgetHeaderVM>();
 
-        //    try
-        //    {
-        //        #region Connection open
+                string data = JsonConvert.SerializeObject(result.DataVM);
 
-        //        conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-        //        conn.Open();
-        //        isNewConnection = true;
-        //        transaction = conn.BeginTransaction();
+                lst = JsonConvert.DeserializeObject<List<BudgetHeaderVM>>(data);
 
-        //        #endregion
+                var detailsDataList = await _repo.DetailsList(new[] { "D.BudgetHeaderId" }, conditionalValues, vm, conn, transaction);
 
-        //        string[] conditionalFields = new[] { "ch.FiscalYearId" };
-        //        string[] conditionalValues = new[] { options.vm.FiscalYearId };
+                if (detailsDataList.Status == "Success" && detailsDataList.DataVM is DataTable dt)
+                {
+                    string json = JsonConvert.SerializeObject(dt);
+                    var details = JsonConvert.DeserializeObject<List<BudgetDetailVM>>(json);
 
-        //        result = await new BudgetRepository().BudgetListForNew(conditionalFields, conditionalValues, null, conn, transaction);
+                    lst.FirstOrDefault().DetailList = details;
+                    result.DataVM = lst;
+                }
+                #region Commit
+                if (Vtransaction == null && transaction != null)
+                {
+                    if (result.Status == "Success")
+                    {
+                        transaction.Commit();
+                        return result;
+                    }
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
+                }
+                #endregion Commit
 
-        //        if (isNewConnection && result.Status == MessageModel.Success)
-        //        {
-        //            transaction.Commit();
-        //        }
-        //        else
-        //        {
-        //            throw new Exception(result.Message);
-        //        }
+            }
+            #region Catch & Finally
+            catch (Exception ex)
+            {
+                if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
 
-        //        result.Status = MessageModel.Success;
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex.InnerException;
-        //    }
-        //    finally
-        //    {
-        //        if (isNewConnection && conn != null) conn.Close();
-        //    }
-        //}
-
+                result.Message = ex.Message.ToString();
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (VcurrConn == null)
+                {
+                    if (conn != null)
+                    {
+                        if (conn.State == ConnectionState.Open)
+                        {
+                            conn.Close();
+                        }
+                    }
+                }
+            }
+            #endregion Catch & Finally
+            return result;
+        }
 
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
@@ -241,107 +323,10 @@ namespace ShampanBFRS.Service.Ceiling
                 if (isNewConnection && conn != null) conn.Close();
             }
         }
-
-
-
-
-        public async Task<ResultVM> BudgetList(BudgetHeaderVM model)
-        {
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-
-            try
-            {
-                #region Connection open
-
-                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-                conn.Open();
-                isNewConnection = true;
-                transaction = conn.BeginTransaction();
-
-                #endregion
-
-                string[] conditionalFields = new[] { "PB.FiscalYearId", "PB.BudgetType", "p.ProductGroupId", "PB.BranchId" };
-                string[] conditionalValues = new[] { model.FiscalYearId.ToString(), model.BudgetType, model.TransactionType.ToString(), model.BranchId.ToString() };
-
-                result = await new BudgetRepository().BudgetList(conditionalFields, conditionalValues, model, conn, transaction);
-
-
-                if (isNewConnection && result.Status == MessageModel.Success)
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                result.Status = MessageModel.Success;
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw ex.InnerException;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null) conn.Close();
-            }
-        }
-
-        public async Task<ResultVM> BudgeDistincttList(BudgetHeaderVM model)
-        {
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-
-            try
-            {
-                #region Connection open
-
-                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-                conn.Open();
-                isNewConnection = true;
-                transaction = conn.BeginTransaction();
-
-                #endregion
-
-                string[] conditionalFields = new[] { "UI.UserName" };
-                string[] conditionalValues = new[] { model.UserId.ToString() };
-
-                result = await new BudgetRepository().BudgetListForNew(conditionalFields, conditionalValues, model, conn, transaction);
-
-                if (isNewConnection && result.Status == MessageModel.Success)
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                result.Status = MessageModel.Success;
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw ex.InnerException;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null) conn.Close();
-            }
-        }
-
-        public async Task<ResultVM> GetGridData(GridOptions options)
+        public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues)
         {
             BudgetRepository _repo = new BudgetRepository();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            ResultVM result = new() { Status = "Fail", Message = "Error", Id = "0", DataVM = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -349,29 +334,117 @@ namespace ShampanBFRS.Service.Ceiling
 
             try
             {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
                 conn.Open();
                 isNewConnection = true;
-                transaction = conn.BeginTransaction();
 
-                string[] conditionalFields = new[] { "PB.BudgetType" };
-                string[] conditionalValues = new[] { options.vm.BudgetType };
+                transaction = conn.BeginTransaction();
 
                 result = await _repo.GetGridData(options, conditionalFields, conditionalValues, conn, transaction);
 
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
                 return result;
             }
             catch (Exception ex)
             {
-                if (transaction != null && isNewConnection) transaction.Rollback();
-                result.Message = ex.Message;
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+                result.Message = ex.ToString();
                 result.ExMessage = ex.ToString();
                 return result;
             }
             finally
             {
-                if (isNewConnection && conn != null) conn.Close();
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
             }
+
+            return result;
+        }
+        public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
+        {
+            BudgetRepository _repo = new BudgetRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = null, DataVM = null };
+
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                #region open connection and transaction
+                if (VcurrConn != null)
+                {
+                    conn = VcurrConn;
+                }
+                if (Vtransaction != null)
+                {
+                    transaction = Vtransaction;
+                }
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    if (conn.State != ConnectionState.Open)
+                    {
+                        conn.Open();
+                    }
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction("");
+                }
+                #endregion open connection and transaction
+
+                result = await _repo.GetDetailDataById(options, masterId, conn, transaction);
+
+                #region Commit
+                if (Vtransaction == null && transaction != null)
+                {
+                    if (result.Status == "Success")
+                    {
+                        transaction.Commit();
+                    }
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
+                }
+                #endregion Commit
+            }
+            #region Catch & Finally
+            catch (Exception ex)
+            {
+                if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
+
+                result.Message = ex.Message.ToString();
+                result.ExMessage = ex.ToString();
+            }
+            finally
+            {
+                if (VcurrConn == null)
+                {
+                    if (conn != null)
+                    {
+                        if (conn.State == ConnectionState.Open)
+                        {
+                            conn.Close();
+                        }
+                    }
+                }
+            }
+            #endregion Catch & Finally
+            return result;
         }
 
 
