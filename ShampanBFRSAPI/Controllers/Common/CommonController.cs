@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Common;
+using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.ExtensionMethods;
 using ShampanBFRS.ViewModel.SetUpVMs;
@@ -320,11 +321,28 @@ namespace ShampanBFRSAPI.Controllers.Common
         [HttpPost("ProductList")]
         public async Task<ResultVM> ProductList(CommonVM Vm)
         {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM resultVM = new ResultVM
+            {
+                Status = "Fail",
+                Message = "Error",
+                ExMessage = null,
+                Id = "0",
+                DataVM = null
+            };
+
             try
             {
-                CommonService _commonService = new CommonService();
-                resultVM = await _commonService.ProductList(new[] { "" }, new[] { "" }, null);
+                string[] conditionFields = null;
+                string[] conditionValues = null;
+
+                if (!string.IsNullOrEmpty(Vm.Value))
+                {
+                    conditionFields = new string[] { "Name" };
+                    conditionValues = new string[] { Vm.Value };
+                }
+
+                CommonService _service = new CommonService();
+                resultVM = await _service.ProductList(conditionFields, conditionValues, null);
                 return resultVM;
             }
             catch (Exception ex)
@@ -338,6 +356,28 @@ namespace ShampanBFRSAPI.Controllers.Common
                 };
             }
         }
+
+        //[HttpPost("ProductList")]
+        //public async Task<ResultVM> ProductList(CommonVM Vm)
+        //{
+        //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+        //    try
+        //    {
+        //        CommonService _commonService = new CommonService();
+        //        resultVM = await _commonService.ProductList(new[] { "" }, new[] { "" }, null);
+        //        return resultVM;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResultVM
+        //        {
+        //            Status = "Fail",
+        //            Message = "Data not fetched.",
+        //            ExMessage = ex.Message,
+        //            DataVM = null
+        //        };
+        //    }
+        //}
 
 
         [HttpPost("PersonnelCategoriesList")]
