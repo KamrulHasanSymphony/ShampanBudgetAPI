@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.SalaryAllowance;
 using ShampanBFRS.ViewModel.Utility;
+using ShampanBFRS.ViewModel.Sale;
 
 namespace ShampanBFRS.Repository.Ceiling
 {
@@ -109,6 +110,68 @@ namespace ShampanBFRS.Repository.Ceiling
             return result;
         }
 
+        public async Task<ResultVM> Update(BudgetHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+
+            try
+            {
+                if (conn == null)
+                    throw new Exception("Database connection fail!");
+
+                if (transaction == null)
+                    transaction = conn.BeginTransaction();
+
+                string query = @"
+                    UPDATE BudgetHeaders
+                    SET
+
+                        BudgetType = @BudgetType,
+                        FiscalYearId = @FiscalYearId,
+                        TransactionDate = @TransactionDate,
+
+                        LastUpdateBy = @LastUpdateBy,
+                        LastUpdateOn = GETDATE(),
+                        LastUpdateFrom = @LastUpdateFrom,
+                        BranchId = @BranchId
+
+                    WHERE ID = @ID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
+                {
+
+                    cmd.Parameters.AddWithValue("@ID", vm.Id);
+                    cmd.Parameters.AddWithValue("@BudgetType", vm.BudgetType ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BranchId", vm.BranchId);
+
+                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
+
+                    if (rowsAffected > 0)
+                    {
+                        result.Status = MessageModel.Success;
+                        result.Message = MessageModel.UpdateSuccess;
+                    }
+                    else
+                    {
+                        result.Message = "No rows were updated.";
+                        throw new Exception("No rows were updated.");
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = "Fail";
+                result.ExMessage = ex.Message;
+                return result;
+            }
+        }
+
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues
          , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
         {
@@ -164,6 +227,7 @@ WHERE 1 = 1
 
                 var modelList = dataTable.AsEnumerable().Select(row => new BudgetHeaderVM
                 {
+                    Id = row.Field<int>("Id"),
                     CompanyId = row.Field<int>("CompanyId"),
                     BranchId = row.Field<int>("BranchId"),
                     Code = row.Field<string>("Code"),
@@ -180,6 +244,9 @@ WHERE 1 = 1
                 }).ToList();
 
 
+
+
+
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = modelList;
@@ -192,6 +259,103 @@ WHERE 1 = 1
                 return result;
             }
         }
+
+//        public async Task<ResultVM> ListEdit(string[] conditionalFields, string[] conditionalValues
+//   , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
+//        {
+//            DataTable dataTable = new DataTable();
+//            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+//            try
+//            {
+//                string query = @"
+//SELECT
+//   Sabres.Id          AS SabreId,
+//    COAs.Code          AS iBASCode,
+//    COAs.Name          AS iBASName,
+//    Sabres.Code        AS SabreCode,
+//    Sabres.[Name]      AS SabreName,
+//	bd.InputTotal      As InputTotal,
+
+//    ISNULL(bh.Id, 0 AS Id,  
+//    ISNULL(bh.CompanyId, 0) AS CompanyId,
+//    ISNULL(bh.BranchId, 0) AS BranchId,
+//    ISNULL(bh.Code, '') AS Code,
+//    ISNULL(bh.FiscalYearId, 0) AS FiscalYearId,
+//    ISNULL(bh.BudgetType, '') AS BudgetType,
+//    ISNULL(bh.TransactionDate, '1900-01-01') AS TransactionDate,
+//    ISNULL(bh.IsPost, '') AS IsPost,
+//    CASE WHEN ISNULL(bh.IsPost, '') = '1'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
+//    ISNULL(bh.LastUpdateBy, '') AS LastUpdateBy,
+//    ISNULL(bh.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+//    ISNULL(bh.LastUpdateFrom, '') AS LastUpdateFrom,
+//    ISNULL(bh.PostedBy, '') AS PostedBy,
+//    ISNULL(bh.PostedOn, '1900-01-01') AS PostedOn,
+//    ISNULL(bh.PostedFrom, '') AS PostedFrom,  
+//    ISNULL(bh.CreatedBy, '') AS CreatedBy,
+//    ISNULL(bh.CreatedOn, '1900-01-01') AS CreatedOn,
+//    ISNULL(bh.CreatedFrom, '') AS CreatedFrom
+
+
+//FROM Sabres
+//LEFT OUTER JOIN COAs ON COAs.Id = Sabres.COAId
+//INNER JOIN DepartmentSabres DS ON DS.SabreId = Sabres.Id
+//INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
+//INNER JOIN BudgetDetails bd ON bd.SabreId = Sabres.Id
+//INNER JOIN BudgetHeaders bh ON bh.Id = bd.BudgetHeaderId
+//WHERE 1 = 1
+//                ";
+
+//                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+//                {
+//                    query += " AND M.Id = @Id ";
+//                }
+
+//                // Apply additional conditions
+//                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+//                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+//                // SET additional conditions param
+//                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+//                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+//                {
+//                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+//                }
+
+//                objComm.Fill(dataTable);
+
+//                var modelList = dataTable.AsEnumerable().Select(row => new BudgetHeaderVM
+//                {
+//                    CompanyId = row.Field<int>("CompanyId"),
+//                    BranchId = row.Field<int>("BranchId"),
+//                    Code = row.Field<string>("Code"),
+//                    FiscalYearId = row.Field<int>("FiscalYearId"),
+//                    BudgetType = row.Field<string>("BudgetType"),
+//                    TransactionDate = row.Field<DateTime?>("TransactionDate")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+//                    IsPost = row.Field<string>("IsPost"),
+//                    LastUpdateBy = row.Field<string>("LastUpdateBy"),
+//                    LastUpdateOn = row.Field<DateTime?>("LastUpdateOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+//                    LastUpdateFrom = row.Field<string>("LastUpdateFrom"),
+//                    PostedBy = row.Field<string>("PostedBy"),
+//                    PostedOn = row.Field<DateTime?>("PostedOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+//                    PostedFrom = row.Field<string>("PostedFrom")
+//                }).ToList();
+
+
+//                result.Status = MessageModel.Success;
+//                result.Message = MessageModel.RetrievedSuccess;
+//                result.DataVM = modelList;
+//                return result;
+//            }
+//            catch (Exception ex)
+//            {
+//                result.Message = ex.Message;
+//                result.ExMessage = ex.Message;
+//                return result;
+//            }
+//        }
 
 
 
@@ -422,33 +586,44 @@ WHERE 1 = 1
                 }
 
                 string query = @"
-             SELECT 
-             ISNULL(D.Id, 0) AS Id
-            ,D.BudgetHeaderId
-            ,D.SabreId
-            ,D.InputTotal
-            ,D.M1
-             ,D.M2
-             ,D.M3
-             ,D.M4
-             ,D.M5
-             ,D.M6
-             ,D.M7
-             ,D.M8
-             ,D.M9
-             ,D.M10
-             ,D.M11
-             ,D.M12
-             ,D.Q1
-             ,D.Q2
-             ,D.Q3
-             ,D.Q4
-             ,D.H1
-             ,D.H2
-             ,D.Yearly
-              FROM BudgetDetails D
+              SELECT 
+ ISNULL(D.Id, 0) AS Id
+,D.BudgetHeaderId
+,D.SabreId
+,D.InputTotal
+,D.M1
+ ,D.M2
+ ,D.M3
+ ,D.M4
+ ,D.M5
+ ,D.M6
+ ,D.M7
+ ,D.M8
+ ,D.M9
+ ,D.M10
+ ,D.M11
+ ,D.M12
+ ,D.Q1
+ ,D.Q2
+ ,D.Q3
+ ,D.Q4
+ ,D.H1
+ ,D.H2
+ ,D.Yearly
+ ,COAs.Code          AS iBASCode
+ ,COAs.Name          AS iBASName
+ ,S.Code        AS SabreCode
+ ,S.Name      AS SabreName
+  FROM BudgetDetails D
   
-                   WHERE 1 = 1 ";
+LEFT OUTER JOIN Sabres S ON S.Id = D.SabreId
+LEFT OUTER JOIN COAs ON COAs.Id = S.COAId
+INNER JOIN DepartmentSabres DS ON DS.SabreId = S.Id
+INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
+
+       WHERE 1 = 1
+  
+   ";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                 {
@@ -651,5 +826,47 @@ WHERE 1 = 1
 
 
         }
+
+        public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn, SqlTransaction transaction)
+        {
+            ResultVM result = new() { Status = "Fail", Message = "Error" };
+
+            try
+            {
+                string inClause = string.Join(", ", vm.IDs.Select((id, index) => $"@Id{index}"));
+                string query = $@"
+                    UPDATE BudgetHeaders
+                    SET IsPost = 'Y', PostedBy = @PostedBy, PostedFrom = @PostedFrom, PostedOn = GETDATE()
+                    WHERE Id IN ({inClause})";
+
+                using SqlCommand cmd = new(query, conn, transaction);
+                for (int i = 0; i < vm.IDs.Length; i++)
+                    cmd.Parameters.AddWithValue($"@Id{i}", vm.IDs[i]);
+
+                cmd.Parameters.AddWithValue("@PostedBy", vm.ModifyBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@PostedFrom", vm.ModifyFrom ?? (object)DBNull.Value);
+
+                int rows = await cmd.ExecuteNonQueryAsync();
+
+                if (rows > 0)
+                {
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.PostSuccess;
+                }
+                else
+                {
+                    throw new Exception("No rows posted.");
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+            }
+
+            return result;
+        }
+
     }
+
 }
