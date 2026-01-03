@@ -824,7 +824,7 @@ EXEC sp_executesql @SQL;
             }
         }
 
-        public async Task<ResultVM> BudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> xxxBudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
@@ -931,6 +931,268 @@ ORDER BY s.Code;';
 
 -- Execute
 EXEC sp_executesql @SQL;
+
+
+";
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand.Parameters.AddWithValue("@FYId", vm.YearId);
+
+                if (!string.IsNullOrEmpty(vm.BranchId))
+                    adapter.SelectCommand.Parameters.AddWithValue("@BId", vm.BranchId);
+
+                if (!string.IsNullOrEmpty(vm.ReportType))
+                    adapter.SelectCommand.Parameters.AddWithValue("@RType", vm.ReportType);
+
+                adapter.Fill(dt);
+
+                var list = new List<Dictionary<string, object>>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    var dict = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        dict[col.ColumnName] = row[col];
+                    }
+                    list.Add(dict);
+                }
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> BudgetFinalReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+
+
+DECLARE @BranchId INT = @BId;
+DECLARE @Year INT;               -- Base year (Estimated year)
+DECLARE @EstimatedYear INT;
+DECLARE @ApprovedYear INT;
+DECLARE @ActualYear INT;
+
+DECLARE @EstimatedYearName NVARCHAR(50);
+DECLARE @ApprovedYearName NVARCHAR(50);
+DECLARE @ActualYearName NVARCHAR(50);
+
+DECLARE @SQL NVARCHAR(MAX);
+DECLARE @ReportType NVARCHAR(50) = @RType;
+
+------------------------------------------------------------
+-- Get base year (Estimated)
+------------------------------------------------------------
+SELECT @Year = [Year]
+FROM FiscalYears
+WHERE Id = @FYId;
+
+SET @EstimatedYear = @Year;
+SET @ApprovedYear  = @Year - 1;
+SET @ActualYear    = @Year - 2;
+
+------------------------------------------------------------
+-- Get year names
+------------------------------------------------------------
+SELECT @EstimatedYearName = YearName FROM FiscalYears WHERE [Year] = @EstimatedYear;
+SELECT @ApprovedYearName  = YearName FROM FiscalYears WHERE [Year] = @ApprovedYear;
+SELECT @ActualYearName    = YearName FROM FiscalYears WHERE [Year] = @ActualYear;
+
+------------------------------------------------------------
+-- Start building SELECT
+------------------------------------------------------------
+SET @SQL = N'
+SELECT
+    COA.Code AS [iBAS Code],
+    COA.Name AS [iBAS Name],
+    s.Code   AS [Sabre Code],
+    s.Name   AS [Sabre Name],
+
+    -- Estimated (Base Year)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@EstimatedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Estimated'' 
+            THEN cd.Amount ELSE 0 
+        END) AS [Estimated(' + @EstimatedYearName + ')],
+
+    -- Revised (Previous Year)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Revised'' 
+            THEN cd.Amount ELSE 0 
+        END) AS [Revised(' + @ApprovedYearName + ')],
+
+    -- Approved (Previous Year)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Approved'' 
+            THEN cd.Amount ELSE 0 
+        END) AS [Approved(' + @ApprovedYearName + ')],
+
+    -- Actual Audited (Two Years Back)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ActualYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Actual_Audited'' 
+            THEN cd.Amount ELSE 0 
+        END) AS [Actual Audited(' + @ActualYearName + ')]';
+
+------------------------------------------------------------
+-- Conditionally add 1st / 2nd 6 months columns
+------------------------------------------------------------
+IF @ReportType <> '2nd_6months_actual'
+BEGIN
+    SET @SQL += ',
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''1st_6months_actual'' 
+            THEN cd.Amount ELSE 0 
+        END) AS [1st 6 Months Actual(' + @ApprovedYearName + ')]';
+END;
+
+IF @ReportType <> '1st_6months_actual'
+BEGIN
+    SET @SQL += ',
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''2nd_6months_actual'' 
+            THEN cd.Amount ELSE 0 
+        END) AS [2nd 6 Months Actual(' + @ApprovedYearName + ')]';
+END;
+
+
+SET @SQL += ',
+
+-- Estimated %
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@EstimatedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Estimated'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [Estimated %],
+
+-- Revised %
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Revised'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [Revised %],
+
+-- Actual Audited %
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ActualYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Actual_Audited'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [Actual Audited %]';
+
+
+IF @ReportType <> '2nd_6months_actual'
+BEGIN
+    SET @SQL += ',
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''1st_6months_actual'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [1st 6 Months Actual %]';
+END;
+
+IF @ReportType <> '1st_6months_actual'
+BEGIN
+    SET @SQL += ',
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''2nd_6months_actual'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Amount ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [2nd 6 Months Actual %]';
+END;
+
+
+SET @SQL += '
+FROM Ceilings c
+INNER JOIN CeilingDetails cd ON c.Id = cd.GLCeilingId
+INNER JOIN FiscalYears FY    ON c.GLFiscalYearId = FY.Id
+INNER JOIN Sabres s          ON cd.AccountId = s.Id
+INNER JOIN COAs COA          ON COA.Id = s.COAId
+WHERE c.BudgetType IN
+(
+    ''Estimated'',
+    ''Revised'',
+    ''Approved'',
+    ''1st_6months_actual'',
+    ''2nd_6months_actual'',
+    ''Actual_Audited''
+)
+AND FY.[Year] IN (' 
+    + CAST(@ActualYear AS NVARCHAR) + ',' 
+    + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+    + CAST(@EstimatedYear AS NVARCHAR) + ')';
+
+IF @BranchId IS NOT NULL
+BEGIN
+    SET @SQL += ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR);
+END;
+
+SET @SQL += '
+GROUP BY
+    s.Code, s.Name,
+    COA.Code, COA.Name
+ORDER BY s.Code;';
+
+
+EXEC sp_executesql @SQL;
+
 
 
 ";
@@ -1281,7 +1543,7 @@ INSERT INTO Ceilings (
                 command.Parameters.Add("@IsArchive", SqlDbType.Bit).Value = objMaster.IsArchive;
                 command.Parameters.Add("@Remarks", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.Remarks) ? (object)DBNull.Value : objMaster.Remarks.Trim();
                 command.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = objMaster.BudgetSetNo;
-                command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.ToBudgetType) ? (object)DBNull.Value : objMaster.BudgetType.Trim();
+                command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(objMaster.ToBudgetType) ? (object)DBNull.Value : objMaster.ToBudgetType.Trim();
                 command.Parameters.Add("@CreatedBy", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedBy) ? (object)DBNull.Value : objMaster.CreatedBy.Trim();
                 command.Parameters.Add("@CreatedFrom", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedFrom) ? (object)DBNull.Value : objMaster.CreatedFrom.Trim();
                 command.Parameters.Add("@CreatedOn", SqlDbType.NChar).Value = string.IsNullOrEmpty(objMaster.CreatedOn.ToString()) ? (object)DBNull.Value : objMaster.CreatedOn.ToString();

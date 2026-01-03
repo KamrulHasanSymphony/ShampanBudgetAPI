@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.Repository.Common;
 using ShampanBFRS.Repository.SalaryAllowance;
 using ShampanBFRS.Repository.SetUp;
@@ -8,13 +10,8 @@ using ShampanBFRS.ViewModel.SalaryAllowance;
 using ShampanBFRS.ViewModel.Sale;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShampanBFRS.Service.SalaryAllowance
 {
@@ -45,11 +42,6 @@ namespace ShampanBFRS.Service.SalaryAllowance
 
                 if (transaction == null) transaction = conn.BeginTransaction();
                 #endregion open connection and transaction
-                // check
-
-                
-
-                
 
                 string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
@@ -84,16 +76,12 @@ namespace ShampanBFRS.Service.SalaryAllowance
 
                         }
 
-
                     }
                     else
                     {
                         throw new Exception(result.Message);
                     }
                 }
-
-
-                
 
                 #region Commit
                 if (Vtransaction == null && transaction != null)
@@ -185,8 +173,6 @@ namespace ShampanBFRS.Service.SalaryAllowance
                 {
                     throw new Exception("Data already posted.Updates not allowed.");
                 }
-
-
 
                 var record = _commonRepo.DetailsDelete("SalaryAllowanceDetails", new[] { "SalaryAllowanceHeaderId" }, new[] { salaryAllowanceHeader.Id.ToString() }, conn, transaction);
 
@@ -628,93 +614,6 @@ namespace ShampanBFRS.Service.SalaryAllowance
             return result;
         }
 
-        // ReportPreview Method
-        public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
-        {
-            SalaryAllowanceRepository _repo = new SalaryAllowanceRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-
-            try
-            {
-                #region open connection and transaction
-                if (VcurrConn != null)
-                {
-                    conn = VcurrConn;
-                }
-                if (Vtransaction != null)
-                {
-                    transaction = Vtransaction;
-                }
-                if (conn == null)
-                {
-                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                    if (conn.State != ConnectionState.Open)
-                    {
-                        conn.Open();
-                    }
-                }
-                if (transaction == null)
-                {
-                    transaction = conn.BeginTransaction("");
-                }
-                #endregion open connection and transaction
-
-                result = await _repo.ReportPreview(conditionalFields, conditionalValues, conn, transaction, vm);
-
-                var companyData = await new CompanyProfileRepository().List(new[] { "H.Id" }, new[] { vm.CompanyId }, null, conn, transaction);
-                string companyName = string.Empty;
-                if (companyData.Status == "Success" && companyData.DataVM is List<CompanyProfileVM> company)
-                {
-                    companyName = company.FirstOrDefault()?.CompanyName;
-                }
-
-                if (result.Status == "Success" && !string.IsNullOrEmpty(companyName) && result.DataVM is DataTable dataTable)
-                {
-                    if (!dataTable.Columns.Contains("CompanyName"))
-                    {
-                        var CompanyName = new DataColumn("CompanyName") { DefaultValue = companyName };
-                        dataTable.Columns.Add(CompanyName);
-                    }
-
-                    if (!dataTable.Columns.Contains("ReportType"))
-                    {
-                        var ReportType = new DataColumn("ReportType") { DefaultValue = "PurchaseHeader" };
-                        dataTable.Columns.Add(ReportType);
-                    }
-
-                    result.DataVM = dataTable;
-                    transaction.Commit();
-                }
-
-            }
-            #region Catch & Finally
-            catch (Exception ex)
-            {
-                if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
-
-                result.Message = ex.Message.ToString();
-                result.ExMessage = ex.ToString();
-            }
-            finally
-            {
-                if (VcurrConn == null)
-                {
-                    if (conn != null)
-                    {
-                        if (conn.State == ConnectionState.Open)
-                        {
-                            conn.Close();
-                        }
-                    }
-                }
-            }
-            #endregion Catch & Finally
-            return result;
-        }
-
         // MultiplePost Method
         public async Task<ResultVM> MultiplePost(CommonVM vm, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
         {
@@ -864,8 +763,6 @@ namespace ShampanBFRS.Service.SalaryAllowance
             return result;
         }
 
-
-
         public async Task<ResultVM> GetDetailsGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
         {
             SalaryAllowanceRepository _repo = new SalaryAllowanceRepository();
@@ -939,7 +836,52 @@ namespace ShampanBFRS.Service.SalaryAllowance
             #endregion Catch & Finally
             return result;
         }
+
         //report
+        public async Task<ResultVM> ReportPreview(CommonVM vm)
+        {
+            SalaryAllowanceRepository _repo = new SalaryAllowanceRepository();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                string[] conditionalFields = new[] { "sah.BudgetType", "sah.FiscalYearId" };
+                string[] conditionalValues = new[] { vm.BudgetType, vm.FiscalYearId };
+
+                result = await _repo.ReportPreview(vm, conditionalFields, conditionalValues, conn, transaction);
+
+                if (isNewConnection && result.Status == MessageModel.Success)
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
+
+
+
     }
 }
 

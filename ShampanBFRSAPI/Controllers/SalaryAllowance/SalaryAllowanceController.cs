@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ShampanBFRS.Service.Ceiling;
 using ShampanBFRS.Service.Common;
 using ShampanBFRS.Service.SalaryAllowance;
 using ShampanBFRS.Service.Sale;
@@ -192,65 +193,6 @@ namespace ShampanBFRSAPI.Controllers.SalaryAllowance
             }
         }
 
-        // POST: api/SalaryAllowance/ReportPreview
-        [HttpPost("ReportPreview")]
-        public async Task<FileStreamResult> ReportPreview(CommonVM vm)
-        {
-            ResultVM settingResult = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-            try
-            {
-                string baseUrl = "";
-
-                settingResult = await _commonService.SettingsValue(new[] { "SettingGroup", "SettingName" }, new[] { "DMSReportUrl", "DMSReportUrl" }, null);
-
-                if (settingResult.Status == "Success" && settingResult.DataVM is DataTable settingValue)
-                {
-                    if (settingValue.Rows.Count > 0)
-                    {
-                        baseUrl = settingValue.Rows[0]["SettingValue"].ToString();
-                    }
-                }
-
-                if (string.IsNullOrEmpty(baseUrl))
-                {
-                    throw new Exception("Report API Url Not Found!");
-                }
-
-                PeramModel peramModel = new PeramModel { CompanyId = vm.CompanyId };
-                var resultVM = await _salaryAllowanceService.ReportPreview(new[] { "H.Id", "H.BranchId" }, new[] { vm.Id.ToString(), vm.BranchId.ToString() }, peramModel);
-
-                if (resultVM.Status == "Success" && resultVM.DataVM is DataTable dt && dt.Rows.Count > 0)
-                {
-                    string json = ExtensionMethods.DataTableToJson(dt);
-                    HttpRequestHelper httpRequestHelper = new HttpRequestHelper();
-
-                    var authModel = httpRequestHelper.GetAuthentication(new CredentialModel
-                    {
-                        ApiKey = DatabaseHelper.GetKey(),
-                        PathName = baseUrl
-                    });
-
-                    var stream = httpRequestHelper.PostDataReport(baseUrl + "/api/FeedPurchaseHeaders/GetFeedPurchase", authModel, json);
-
-                    if (stream == null)
-                    {
-                        throw new Exception("Failed to generate report.");
-                    }
-
-                    return new FileStreamResult(stream, "application/pdf")
-                    {
-                        FileDownloadName = "FeedPurchase.pdf"
-                    };
-                }
-
-                throw new Exception("No data found.");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error generating report: {ex.Message}");
-            }
-        }
-
         // POST: api/SalaryAllowance/MultiplePost
         [HttpPost("MultiplePost")]
         public async Task<ResultVM> MultiplePost(CommonVM vm)
@@ -317,6 +259,20 @@ namespace ShampanBFRSAPI.Controllers.SalaryAllowance
             }
         }
 
+        [HttpPost("ReportPreview")]
+        public async Task<ResultVM> ReportPreview(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            try
+            {
+                resultVM = await _salaryAllowanceService.ReportPreview(vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
+            }
+        }
 
     }
 }

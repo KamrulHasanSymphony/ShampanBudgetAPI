@@ -19,7 +19,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
         // Insert Method
         public async Task<ResultVM> Insert(SalaryAllowanceHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -95,7 +95,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
         // Update Method
         public async Task<ResultVM> Update(SalaryAllowanceHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
             try
             {
@@ -149,7 +149,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
             }
             catch (Exception ex)
             {
-                result.Status = "Fail";
+                result.Status = MessageModel.Fail;
                 result.ExMessage = ex.Message;
                 return result;
             }
@@ -158,7 +158,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
         // Delete Method
         public async Task<ResultVM> MultipleDelete(CommonVM vm, SqlConnection conn, SqlTransaction transaction)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
 
             try
             {
@@ -203,7 +203,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
             , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, DataVM = null };
 
             try
             {
@@ -279,7 +279,7 @@ WHERE 1 = 1
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues
            , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -339,7 +339,7 @@ WHERE 1 = 1
         // Dropdown Method
         public async Task<ResultVM> Dropdown(SqlConnection conn, SqlTransaction transaction)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             try
             {
@@ -375,7 +375,7 @@ WHERE 1 = 1
         // GetGridData Method
         public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -444,150 +444,11 @@ WHERE 1 = 1
                 return result;
             }
         }
-        //        public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
-        //        {
-        //            DataTable dataTable = new DataTable();
-        //            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-
-        //            try
-        //            {
-        //                if (conn == null)
-        //                {
-        //                    throw new Exception("Database connection fail!");
-        //                }
-
-        //                var data = new GridEntity<SalaryAllowanceHeaderVM>();
-
-        //                // Define your SQL query string
-        //                string sqlQuery = @"
-        //                -- Count query
-        //                SELECT COUNT(DISTINCT M.Id) AS totalcount
-        //FROM SalaryAllowanceHeaders M
-        //WHERE 1 = 1
-
-        //                -- Add the filter condition
-        //                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-        //                // Apply additional conditions
-        //                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
-
-        //                sqlQuery += @"
-        //                -- Data query with pagination and sorting
-        //                SELECT * 
-        //                FROM (
-        //                    SELECT 
-        //                    ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
-
-
-
-        //    ISNULL(M.Id, 0) AS Id,    
-        //    ISNULL(M.BranchId, 0) AS BranchId,
-        //    ISNULL(M.Code, '') AS Code,
-        //    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
-        //    ISNULL(M.BudgetType, '') AS BudgetType,
-        //    ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
-        //    ISNULL(M.IsPost, '') AS IsPost,
-        //    CASE WHEN ISNULL(M.IsPost, '') = '1'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
-        //    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-        //    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-        //    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-        //    ISNULL(M.PostedBy, '') AS PostedBy,
-        //    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-        //    ISNULL(M.PostedFrom, '') AS PostedFrom,  
-        //    ISNULL(M.CreatedBy, '') AS CreatedBy,
-        //    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-        //    ISNULL(M.CreatedFrom, '') AS CreatedFrom
-        //FROM SalaryAllowanceHeaders M
-        //WHERE 1 = 1
-
-        //                -- Add the filter condition
-        //                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-        //                // Apply additional conditions
-        //                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
-
-        //                sqlQuery += @"
-        //                ) AS a
-        //                WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-        //            ";
-
-        //                // Execute the query and get data
-        //                data = KendoGrid<SalaryAllowanceHeaderVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
-
-        //                result.Status = MessageModel.Success;
-        //                result.Message = MessageModel.RetrievedSuccess;
-        //                result.DataVM = data;
-
-        //                return result;
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                result.ExMessage = ex.Message;
-        //                result.Message = ex.Message;
-        //                return result;
-        //            }
-        //        }
-        // ReportPreview Method
-        public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValue
-            , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
-        {
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            try
-            {
-                string query = @"
-                SELECT 
-                    ISNULL(H.Id, 0) AS Id,
-                    ISNULL(H.Code, '') AS Code,
-                    ISNULL(H.TransactionDate, '') AS TransactionDate,
-                    ISNULL(H.TransactionType, '') AS TransactionType,
-                    ISNULL(H.SupplierId, 0) AS SupplierId,
-                    ISNULL(H.Status, '') AS Status,
-                    ISNULL(H.Notes, '') AS Notes,
-                    ISNULL(H.CreatedBy, '') AS CreatedBy,
-                    ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS CreatedOn
-                FROM FM_FeedPurchaseHeaders H
-                WHERE 1 = 1 ";
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    query += " AND H.Id = @Id ";
-                }
-
-                // Apply additional conditions
-                query = ApplyConditions(query, conditionalFields, conditionalValue, false);
-
-                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
-
-                // SET additional conditions param
-                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValue);
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
-                }
-
-                objComm.Fill(dataTable);
-
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
-                result.DataVM = dataTable;
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.ExMessage = ex.Message;
-                result.Message = ex.Message;
-                return result;
-            }
-        }
-
+        
         // MultiplePost Method
         public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn, SqlTransaction transaction)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.IDs.ToString(), DataVM = null };
 
             try
             {
@@ -629,7 +490,7 @@ WHERE 1 = 1
         // InsertDetails Method
         public async Task<ResultVM> InsertDetails(SalaryAllowanceDetailVM details, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -991,6 +852,72 @@ WHERE 1 = 1
                 throw ex;
             }
         }
+
+        public async Task<ResultVM> ReportPreview(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+
+select
+ sah.BudgetType 
+,pc.CategoryOfPersonnel as 'Category of personnel  (Note 1)'
+,sad.TotalPostSanctioned as 'Total Post Sanctioned'
+,sad.ActualPresentStrength  as 'Actual present strength'
+,sad.ExpectedNumber as 'Expected number at end of budgeted year *'
+,sad.BasicWagesSalaries as 'Basic wages & salaries (Lakh Taka)'
+,sad.OtherCash as 'Other cash benefits (Lakh Taka)'
+,sad.TotalSalary as 'Total salary & all ces (Lakh Taka)'
+,sad.PersonnelSentForTraining as 'No of personnel sent for training during the year'
+from SalaryAllowanceHeaders sah
+left outer join SalaryAllowanceDetails sad on sah.Id=sad.SalaryAllowanceHeaderId
+left outer join PersonnelCategories pc on pc.Id=sad.PersonnelCategoriesId
+
+where 1=1
+
+";
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                adapter.Fill(dt);
+
+                var list = new List<Dictionary<string, object>>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    var dict = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        dict[col.ColumnName] = row[col];
+                    }
+                    list.Add(dict);
+                }
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+
 
     }
 }
