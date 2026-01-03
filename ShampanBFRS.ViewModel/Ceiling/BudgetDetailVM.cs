@@ -48,6 +48,8 @@ namespace ShampanBFRS.ViewModel.Ceiling
 
         public string? SabreName { get; set; }
         public string? SabreCode { get; set; }
+        public string? iBASName { get; set; }
+        public string? iBASCode { get; set; }
 
         public string? Operation { get; set; }  
     }

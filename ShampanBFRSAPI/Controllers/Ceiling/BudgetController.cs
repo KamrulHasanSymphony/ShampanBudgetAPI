@@ -68,6 +68,28 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 };
             }
         }
+
+        //new list
+        //[HttpPost("ListEdit")]
+        //public async Task<ResultVM> ListEdit(CommonVM vm)
+        //{
+        //    ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+        //    try
+        //    {
+        //        resultVM = await _Service.ListEdit(new[] { "M.Id" }, new[] { vm.Id.ToString() }, null);
+        //        return resultVM;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResultVM
+        //        {
+        //            Status = MessageModel.Fail,
+        //            Message = ex.Message,
+        //            ExMessage = ex.Message,
+        //            DataVM = vm
+        //        };
+        //    }
+        //}
         [HttpPost("GetBudgetDataForDetailsNew")]
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
@@ -171,6 +193,28 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                     Message = ex.Message,
                     ExMessage = ex.Message,
                     DataVM = null
+                };
+            }
+        }
+
+        [HttpPost("MultiplePost")]
+        public async Task<ResultVM> MultiplePost(CommonVM vm)
+        {
+            var result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, IDs = null, DataVM = null };
+
+            try
+            {
+                result = await _Service.MultiplePost(vm);
+                return result;
+            }
+            catch (System.Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
                 };
             }
         }
