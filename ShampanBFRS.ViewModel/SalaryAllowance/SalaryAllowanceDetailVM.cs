@@ -21,5 +21,6 @@ namespace ShampanBFRS.ViewModel.SalaryAllowance
         public decimal? OtherCash { get; set; }
         public decimal? TotalSalary { get; set; }
         public decimal? PersonnelSentForTraining { get; set; }
+        public string? CategoryOfPersonnel { get; set; }
     }
 }

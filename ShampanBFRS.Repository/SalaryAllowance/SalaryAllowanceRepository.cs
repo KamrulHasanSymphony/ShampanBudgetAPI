@@ -554,7 +554,7 @@ WHERE 1 = 1
              ISNULL(D.Id, 0) AS Id
             ,D.SalaryAllowanceHeaderId
             ,D.PersonnelCategoriesId
-            ,P.CategoryOfPersonnel AS PersonnelCategoriesName
+            ,P.CategoryOfPersonnel AS CategoryOfPersonnel
             ,D.TotalPostSanctioned
             ,D.ActualPresentStrength
             ,D.ExpectedNumber

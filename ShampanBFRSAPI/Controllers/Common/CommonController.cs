@@ -357,6 +357,44 @@ namespace ShampanBFRSAPI.Controllers.Common
             }
         }
 
+        [HttpPost("PersonnelCategoriesList")]
+        public async Task<ResultVM> PersonnelCategoriesList(CommonVM Vm)
+        {
+            ResultVM resultVM = new ResultVM
+            {
+                Status = "Fail",
+                Message = "Error",
+                ExMessage = null,
+                Id = "0",
+                DataVM = null
+            };
+
+            try
+            {
+                string[] conditionFields = null;
+                string[] conditionValues = null;
+
+                if (!string.IsNullOrEmpty(Vm.Value))
+                {
+                    conditionFields = new string[] { "Name" };
+                    conditionValues = new string[] { Vm.Value };
+                }
+
+                CommonService _service = new CommonService();
+                resultVM = await _service.PersonnelCategoriesList(conditionFields, conditionValues, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = "Data not fetched.",
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
         //[HttpPost("ProductList")]
         //public async Task<ResultVM> ProductList(CommonVM Vm)
         //{
@@ -380,27 +418,27 @@ namespace ShampanBFRSAPI.Controllers.Common
         //}
 
 
-        [HttpPost("PersonnelCategoriesList")]
-        public async Task<ResultVM> PersonnelCategoriesList(CommonVM Vm)
-        {
-            ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-            try
-            {
-                CommonService _commonService = new CommonService();
-                resultVM = await _commonService.PersonnelCategoriesList(new[] { "" }, new[] { "" }, null);
-                return resultVM;
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM
-                {
-                    Status = "Fail",
-                    Message = "Data not fetched.",
-                    ExMessage = ex.Message,
-                    DataVM = null
-                };
-            }
-        }
+        //[HttpPost("PersonnelCategoriesList")]
+        //public async Task<ResultVM> PersonnelCategoriesList(CommonVM Vm)
+        //{
+        //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+        //    try
+        //    {
+        //        CommonService _commonService = new CommonService();
+        //        resultVM = await _commonService.PersonnelCategoriesList(new[] { "" }, new[] { "" }, null);
+        //        return resultVM;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResultVM
+        //        {
+        //            Status = "Fail",
+        //            Message = "Data not fetched.",
+        //            ExMessage = ex.Message,
+        //            DataVM = null
+        //        };
+        //    }
+        //}
 
 
         [HttpPost("GetChargeGroupList")]

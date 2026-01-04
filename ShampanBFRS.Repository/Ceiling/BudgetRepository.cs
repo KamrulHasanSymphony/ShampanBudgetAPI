@@ -360,12 +360,7 @@ WHERE 1 = 1
 
 
 
-        public async Task<ResultVM> GetBudgetDataForDetailsNew(
-            GridOptions options,
-            string[] conditionalFields,
-            string[] conditionalValues,
-            SqlConnection conn,
-            SqlTransaction transaction)
+        public async Task<ResultVM> GetBudgetDataForDetailsNew( GridOptions options,string[] conditionalFields,string[] conditionalValues,SqlConnection conn,SqlTransaction transaction)
         {
             bool isNewConnection = false;
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
