@@ -866,8 +866,7 @@ WHERE 1 = 1
                 string query = @"
 
 select
- sah.BudgetType 
-,pc.CategoryOfPersonnel as 'Category of personnel  (Note 1)'
+ pc.CategoryOfPersonnel as 'Category of personnel  (Note 1)'
 ,sad.TotalPostSanctioned as 'Total Post Sanctioned'
 ,sad.ActualPresentStrength  as 'Actual present strength'
 ,sad.ExpectedNumber as 'Expected number at end of budgeted year *'
@@ -883,6 +882,8 @@ where 1=1
 
 ";
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                 query += @" order by pc.SL";
 
                 SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
 
