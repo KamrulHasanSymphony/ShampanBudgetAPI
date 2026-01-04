@@ -47,5 +47,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public PeramModel? PeramModel { get; set; }
 
         public List<BudgetDetailVM> DetailList { get; set; }
+
+        public string? MenuType { get; set; }
     }
 }

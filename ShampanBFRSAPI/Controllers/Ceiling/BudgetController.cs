@@ -69,27 +69,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        //new list
-        //[HttpPost("ListEdit")]
-        //public async Task<ResultVM> ListEdit(CommonVM vm)
-        //{
-        //    ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-        //    try
-        //    {
-        //        resultVM = await _Service.ListEdit(new[] { "M.Id" }, new[] { vm.Id.ToString() }, null);
-        //        return resultVM;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResultVM
-        //        {
-        //            Status = MessageModel.Fail,
-        //            Message = ex.Message,
-        //            ExMessage = ex.Message,
-        //            DataVM = vm
-        //        };
-        //    }
-        //}
+        
         [HttpPost("GetBudgetDataForDetailsNew")]
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
@@ -139,7 +119,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         //}
 
         [HttpPost("GetGridData")]
-        public async Task<ResultVM> GetGridData(GridOptions options)
+        public async Task<ResultVM> GetGridData(GridOptions options )
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
@@ -147,12 +127,15 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
 
                 List<string> conditionFields = new List<string>
                 {
-                    "M.BudgetType"
+                    "M.CreatedBy",
+                    "M.BudgetType",         
+                    "M.TransactionType"
+
                 };
 
                 List<string> conditionValues = new List<string>
                 {
-                options.vm.BudgetType
+                    options.vm.UserId.ToString(), options.vm.BudgetType.ToString(),options.vm.TransactionType.ToString()
                 };
                 string[] finalConditionFields = conditionFields.ToArray();
                 string[] finalConditionValues = conditionValues.ToArray();

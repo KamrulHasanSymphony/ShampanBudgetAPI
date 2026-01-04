@@ -260,102 +260,7 @@ WHERE 1 = 1
             }
         }
 
-//        public async Task<ResultVM> ListEdit(string[] conditionalFields, string[] conditionalValues
-//   , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
-//        {
-//            DataTable dataTable = new DataTable();
-//            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
 
-//            try
-//            {
-//                string query = @"
-//SELECT
-//   Sabres.Id          AS SabreId,
-//    COAs.Code          AS iBASCode,
-//    COAs.Name          AS iBASName,
-//    Sabres.Code        AS SabreCode,
-//    Sabres.[Name]      AS SabreName,
-//	bd.InputTotal      As InputTotal,
-
-//    ISNULL(bh.Id, 0 AS Id,  
-//    ISNULL(bh.CompanyId, 0) AS CompanyId,
-//    ISNULL(bh.BranchId, 0) AS BranchId,
-//    ISNULL(bh.Code, '') AS Code,
-//    ISNULL(bh.FiscalYearId, 0) AS FiscalYearId,
-//    ISNULL(bh.BudgetType, '') AS BudgetType,
-//    ISNULL(bh.TransactionDate, '1900-01-01') AS TransactionDate,
-//    ISNULL(bh.IsPost, '') AS IsPost,
-//    CASE WHEN ISNULL(bh.IsPost, '') = '1'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
-//    ISNULL(bh.LastUpdateBy, '') AS LastUpdateBy,
-//    ISNULL(bh.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-//    ISNULL(bh.LastUpdateFrom, '') AS LastUpdateFrom,
-//    ISNULL(bh.PostedBy, '') AS PostedBy,
-//    ISNULL(bh.PostedOn, '1900-01-01') AS PostedOn,
-//    ISNULL(bh.PostedFrom, '') AS PostedFrom,  
-//    ISNULL(bh.CreatedBy, '') AS CreatedBy,
-//    ISNULL(bh.CreatedOn, '1900-01-01') AS CreatedOn,
-//    ISNULL(bh.CreatedFrom, '') AS CreatedFrom
-
-
-//FROM Sabres
-//LEFT OUTER JOIN COAs ON COAs.Id = Sabres.COAId
-//INNER JOIN DepartmentSabres DS ON DS.SabreId = Sabres.Id
-//INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
-//INNER JOIN BudgetDetails bd ON bd.SabreId = Sabres.Id
-//INNER JOIN BudgetHeaders bh ON bh.Id = bd.BudgetHeaderId
-//WHERE 1 = 1
-//                ";
-
-//                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-//                {
-//                    query += " AND M.Id = @Id ";
-//                }
-
-//                // Apply additional conditions
-//                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
-
-//                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
-
-//                // SET additional conditions param
-//                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
-
-//                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-//                {
-//                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
-//                }
-
-//                objComm.Fill(dataTable);
-
-//                var modelList = dataTable.AsEnumerable().Select(row => new BudgetHeaderVM
-//                {
-//                    CompanyId = row.Field<int>("CompanyId"),
-//                    BranchId = row.Field<int>("BranchId"),
-//                    Code = row.Field<string>("Code"),
-//                    FiscalYearId = row.Field<int>("FiscalYearId"),
-//                    BudgetType = row.Field<string>("BudgetType"),
-//                    TransactionDate = row.Field<DateTime?>("TransactionDate")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
-//                    IsPost = row.Field<string>("IsPost"),
-//                    LastUpdateBy = row.Field<string>("LastUpdateBy"),
-//                    LastUpdateOn = row.Field<DateTime?>("LastUpdateOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
-//                    LastUpdateFrom = row.Field<string>("LastUpdateFrom"),
-//                    PostedBy = row.Field<string>("PostedBy"),
-//                    PostedOn = row.Field<DateTime?>("PostedOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
-//                    PostedFrom = row.Field<string>("PostedFrom")
-//                }).ToList();
-
-
-//                result.Status = MessageModel.Success;
-//                result.Message = MessageModel.RetrievedSuccess;
-//                result.DataVM = modelList;
-//                return result;
-//            }
-//            catch (Exception ex)
-//            {
-//                result.Message = ex.Message;
-//                result.ExMessage = ex.Message;
-//                return result;
-//            }
-//        }
 
 
 
@@ -688,7 +593,7 @@ WHERE 1 = 1
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
                 // Apply additional conditions
-                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
                 -- Data query with pagination and sorting
@@ -696,35 +601,33 @@ WHERE 1 = 1
                 FROM (
                     SELECT 
                     ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
-
-                   
-    
-    ISNULL(M.Id, 0) AS Id,  
-    ISNULL(M.CompanyId, 0) AS CompanyId,
-    ISNULL(M.BranchId, 0) AS BranchId,
-    ISNULL(M.Code, '') AS Code,
-    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
-    ISNULL(M.BudgetType, '') AS BudgetType,
-    ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
-    ISNULL(M.IsPost, '') AS IsPost,
-    CASE WHEN ISNULL(M.IsPost, '') = 'Y'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
-    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-    ISNULL(M.PostedBy, '') AS PostedBy,
-    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-    ISNULL(M.PostedFrom, '') AS PostedFrom,  
-    ISNULL(M.CreatedBy, '') AS CreatedBy,
-    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-    ISNULL(M.CreatedFrom, '') AS CreatedFrom
-FROM BudgetHeaders M
-WHERE 1 = 1
+   
+                        ISNULL(M.Id, 0) AS Id,  
+                        ISNULL(M.CompanyId, 0) AS CompanyId,
+                        ISNULL(M.BranchId, 0) AS BranchId,
+                        ISNULL(M.Code, '') AS Code,
+                        ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
+                        ISNULL(M.BudgetType, '') AS BudgetType,
+                        ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
+                        ISNULL(M.IsPost, '') AS IsPost,
+                        CASE WHEN ISNULL(M.IsPost, '') = 'Y'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
+                        ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+                        ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+                        ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
+                        ISNULL(M.PostedBy, '') AS PostedBy,
+                        ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
+                        ISNULL(M.PostedFrom, '') AS PostedFrom,  
+                        ISNULL(M.CreatedBy, '') AS CreatedBy,
+                        ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
+                        ISNULL(M.CreatedFrom, '') AS CreatedFrom
+                    FROM BudgetHeaders M
+                    WHERE 1 = 1
 
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
                 // Apply additional conditions
-                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
                 ) AS a
@@ -732,7 +635,7 @@ WHERE 1 = 1
             ";
 
                 // Execute the query and get data
-                data = KendoGrid<BudgetHeaderVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
+                data = KendoGrid<BudgetHeaderVM>.GetTransactionalGridData_CMD(options, sqlQuery, "M.Id", conditionalFields, conditionalValues);
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
@@ -748,10 +651,84 @@ WHERE 1 = 1
             }
         }
 
+        //public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
+        //{
+        //    DataTable dataTable = new DataTable();
+        //    ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+        //    try
+        //    {
+        //        var data = new GridEntity<BudgetDetailVM>();
+
+        //        string sqlQuery = @"
+        //        -- Count query
+        //        SELECT COUNT(DISTINCT D.Id) AS totalcount
+        //FROM BudgetDetails D
+
+        //WHERE D.BudgetHeaderId = @masterId
+        //        -- Add the filter condition
+        //        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+
+        //        -- Data query with pagination and sorting
+        //        SELECT *
+        //        FROM (
+        //            SELECT
+        //                ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "D.Id DESC ") + @") AS rowindex,
+        //     ISNULL(D.Id, 0) AS Id
+        //    ,D.BudgetHeaderId
+        //    ,D.SabreId
+        //    ,D.InputTotal
+        //    ,D.M1
+        //    ,D.M2
+        //    ,D.M3
+        //    ,D.M4
+        //    ,D.M5
+        //    ,D.M6
+        //    ,D.M7
+        //    ,D.M8
+        //    ,D.M9
+        //    ,D.M10
+        //    ,D.M11
+        //    ,D.M12
+        //    ,D.Q1
+        //    ,D.Q2
+        //    ,D.Q3
+        //    ,D.Q4
+        //    ,D.H1
+        //    ,D.H2
+        //    ,D.Yearly
+        //   FROM BudgetDetails D
+        //   Where D.BudgetHeaderId = @masterId
+
+
+        //            -- Add the filter condition
+        //            " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+        //        ) AS a
+        //        WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+        //        ";
+        //        sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
+        //        data = KendoGrid<BudgetDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
+
+        //        result.Status = MessageModel.Success;
+        //        result.Message = MessageModel.RetrievedSuccess;
+        //        result.DataVM = data;
+
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        result.ExMessage = ex.Message;
+        //        result.Message = ex.Message;
+        //        return result;
+        //    }
+
+
+        //}
+
         public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
         {
             DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             try
             {
@@ -759,48 +736,30 @@ WHERE 1 = 1
 
                 string sqlQuery = @"
                 -- Count query
-                SELECT COUNT(DISTINCT D.Id) AS totalcount
-        FROM BudgetDetails D
-     
-        WHERE D.BudgetHeaderId = @masterId
+                SELECT COUNT(DISTINCT D.SabreId) AS totalcount
+                FROM BudgetDetails D
+                left outer join Sabres s on s.Id= D.SabreId
+                left outer join COAs C ON s.COAId = C.Id
+                WHERE D.BudgetHeaderId = @masterId
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
 
                 -- Data query with pagination and sorting
-                SELECT *
+                SELECT s.Code SabreCode,s.Name SabreName,SabreId,InputTotal,C.Code iBASCode, C.Name iBASName
                 FROM (
                     SELECT
-                        ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "D.Id DESC ") + @") AS rowindex,
-             ISNULL(D.Id, 0) AS Id
-            ,D.BudgetHeaderId
-            ,D.SabreId
-            ,D.InputTotal
-            ,D.M1
-            ,D.M2
-            ,D.M3
-            ,D.M4
-            ,D.M5
-            ,D.M6
-            ,D.M7
-            ,D.M8
-            ,D.M9
-            ,D.M10
-            ,D.M11
-            ,D.M12
-            ,D.Q1
-            ,D.Q2
-            ,D.Q3
-            ,D.Q4
-            ,D.H1
-            ,D.H2
-            ,D.Yearly
-           FROM BudgetDetails D
-           Where D.BudgetHeaderId = @masterId
-
-
+                                ROW_NUMBER() OVER (ORDER BY MAX(D.Id) DESC) AS rowindex,
+                                ISNULL(D.SabreId, 0) AS SabreId,
+                                SUM(ISNULL(D.InputTotal, 0)) AS InputTotal
+                                FROM BudgetDetails D
+                                Where D.BudgetHeaderId = @masterId
+                                GROUP BY D.SabreId
                     -- Add the filter condition
                     " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
                 ) AS a
+                left outer join Sabres s on s.Id=a.SabreId
+                left outer join COAs C ON s.COAId = C.Id
+                
                 WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
                 ";
                 sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
@@ -821,6 +780,62 @@ WHERE 1 = 1
 
 
         }
+        //public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
+        //{
+        //    DataTable dataTable = new DataTable();
+        //    ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+        //    try
+        //    {
+        //        var data = new GridEntity<BudgetDetailVM>();
+
+        //        string sqlQuery = @"
+        //        -- Count query
+        //      SELECT COUNT(DISTINCT D.BudgetHeaderId) AS totalcount
+        //FROM BudgetDetails D
+        //left outer join Sabres s on s.Id=D.BudgetHeaderId
+        //left outer join COAs C ON s.COAId = C.Id
+        //WHERE D.BudgetHeaderId = @masterId
+        //        -- Add the filter condition
+        //        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+
+        //        -- Data query with pagination and sorting
+        //        SELECT s.Code AccountCode,s.Name AccountName,InputTotal,C.Code COACode,C.Name COAName
+        //        FROM (
+        //            SELECT
+        //                        ROW_NUMBER() OVER (ORDER BY MAX(D.Id) DESC) AS rowindex,
+        //                        ISNULL(D.BudgetHeaderId, 0) AS BudgetHeaderId,
+        //                        SUM(ISNULL(D.InputTotal, 0)) AS InputTotal
+        //                        FROM BudgetDetails D
+        //                        Where D.BudgetHeaderId = @masterId
+        //                        GROUP BY D.BudgetHeaderId
+        //            -- Add the filter condition
+        //            " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
+        //        ) AS a
+        //         left outer join Sabres s on s.Id=a.BudgetHeaderId
+        //        left outer join COAs C ON s.COAId = C.Id
+                
+        //        WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+        //        ";
+        //        sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
+        //        data = KendoGrid<BudgetDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
+
+        //        result.Status = MessageModel.Success;
+        //        result.Message = MessageModel.RetrievedSuccess;
+        //        result.DataVM = data;
+
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        result.ExMessage = ex.Message;
+        //        result.Message = ex.Message;
+        //        return result;
+        //    }
+
+
+        //}
+
 
         public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn, SqlTransaction transaction)
         {
