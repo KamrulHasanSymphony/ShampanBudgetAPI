@@ -448,7 +448,7 @@ namespace ShampanBFRSAPI.Controllers.Common
             try
             {
                 CommonService _commonService = new CommonService();
-                resultVM = await _commonService.GetChargeGroupList(new[] { "" }, new[] { "" }, null);
+                resultVM = await _commonService.GetChargeGroupList(new[] { "H.ChargeGroupValue" }, new[] { Vm.ChargeGroup }, null);
                 return resultVM;
             }
             catch (Exception ex)

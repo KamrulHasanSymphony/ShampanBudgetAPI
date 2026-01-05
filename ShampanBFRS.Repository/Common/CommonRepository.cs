@@ -2568,6 +2568,7 @@ WHERE
          ,ISNULL(H.ChargeGroupValue, '') ChargeGroupValue
          ,ISNULL(H.ChargeGroupText, '') ChargeGroupText
          FROM ChargeGroups H
+where 1=1 
          ";
 
 

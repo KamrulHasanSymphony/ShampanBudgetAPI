@@ -1218,9 +1218,10 @@ FROM (
            t.BudgetSetNo,
            t.BudgetType,
            t.ProductGroupId,
-           t.ProductGroupName,
            t.ChargeGroup as ChargeGroup,
-           t.ChargeGroupText as ChargeGroupText
+           t.ChargeGroupText as ChargeGroupText,
+           t.ProductGroupName
+
     FROM (
         SELECT DISTINCT
                ISNULL(PB.CompanyId,0) AS CompanyId,
@@ -1230,9 +1231,10 @@ FROM (
                ISNULL(PB.BudgetSetNo,0) AS BudgetSetNo,
                ISNULL(PB.BudgetType,'') AS BudgetType,
                ISNULL(p.ProductGroupId,'') AS ProductGroupId,
-               ISNULL(pg.Name,'') AS ProductGroupName,
                ISNULL(PB.ChargeGroup,0) AS ChargeGroup,
-               ISNULL(CG.ChargeGroupText, '') AS ChargeGroupText
+               ISNULL(CG.ChargeGroupText, '') AS ChargeGroupText,
+               ISNULL(pg.Name,'') AS ProductGroupName
+
         FROM ProductBudgets PB
         LEFT OUTER JOIN ChargeGroups CG 
             ON CG.Id = PB.ChargeGroup
@@ -1275,7 +1277,7 @@ WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
             }
         }
 
-        public async Task<ResultVM> ReportPreview(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> ReportPreview(CommonVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
@@ -1285,31 +1287,158 @@ WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
                 if (conn == null) throw new Exception(MessageModel.DBConnFail);
                 if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
-                string query = @"
+                string query = "";
 
-select
- pc.CategoryOfPersonnel as 'Category of personnel  (Note 1)'
-,sad.TotalPostSanctioned as 'Total Post Sanctioned'
-,sad.ActualPresentStrength  as 'Actual present strength'
-,sad.ExpectedNumber as 'Expected number at end of budgeted year *'
-,sad.BasicWagesSalaries as 'Basic wages & salaries (Lakh Taka)'
-,sad.OtherCash as 'Other cash benefits (Lakh Taka)'
-,sad.TotalSalary as 'Total salary & all ces (Lakh Taka)'
-,sad.PersonnelSentForTraining as 'No of personnel sent for training during the year'
-from SalaryAllowanceHeaders sah
-left outer join SalaryAllowanceDetails sad on sah.Id=sad.SalaryAllowanceHeaderId
-left outer join PersonnelCategories pc on pc.Id=sad.PersonnelCategoriesId
+                #region Imported Refined
 
-where 1=1
+                string query_ImportedRefined = @"
+
+--DECLARE @GLFiscalYearId INT = 7;
+--DECLARE @BudgetType NVARCHAR(20) = 'Estimated';
+DECLARE @ChargeGroup VARCHAR(200) = 'ImportedRefined';
+
+DECLARE @cols NVARCHAR(MAX);
+DECLARE @sumCols NVARCHAR(MAX);
+DECLARE @query NVARCHAR(MAX);
+
+--------------------------------------------------------------------------------
+-- STAGE 1: Prepare Data in Temp Table
+--------------------------------------------------------------------------------
+IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
+
+SELECT 
+    v.Particulars, 
+    p.Name AS ProductName, 
+    ISNULL(v.Value, 0) AS Value
+INTO #TempProductBudget
+FROM ProductBudgets pb
+LEFT JOIN Products p ON pb.ProductId = p.Id
+CROSS APPLY (VALUES
+    ('CONVERSION', pb.ConversionFactor),
+    ('B/L QUANTITY (M.TON)', pb.BLQuantityMT),
+    ('B/L QUANTITY (BBL)', pb.BLQuantityBBL),
+    ('Received Quantity (M.TON)', pb.ReceiveQuantityMT),
+    ('Received Quantity (BBL)', pb.ReceiveQuantityBBL),
+    ('CIF PRICE (USD /BBL)', pb.CIFCharge),
+    ('CIF Cost (USD)', pb.CifUsdValue),
+    ('CIF Cost (Taka)', pb.CifBdt),
+    ('Duty (Taka)', pb.DutyValue),
+    ('VAT (Taka)', pb.VATValue),
+    ('AT (Taka)', pb.ATValue),
+    ('AIT (Taka)', pb.AITValue),
+    ('Arrear Duty (Taka)', pb.ArrearDuty),
+    ('Handling Commission (TK 100/MT) (Taka)', pb.HandelingChargeValue),
+    ('River Dues (0.443 USD/M TON) (Taka)', pb.RiverDuesValue),
+    ('Survey Fee (Taka)', pb.SurveyValue),
+    ('Ocean Loss (Taka)', pb.OceanLossValue),
+    ('Bank Charge (LC Commission)(Taka)', pb.BankChargeValue),
+    ('Total Cost (Taka)', pb.TotalCost),
+    ('COST/BBL (Taka)', pb.CostBblValue),
+    ('COST/LITRE (Taka)', pb.CostLiterValue)
+) v(Particulars, Value)
+WHERE pb.GLFiscalYearId = @GLFiscalYearId
+  AND pb.BudgetType = @BudgetType
+  AND pb.ChargeGroup = @ChargeGroup;
+
+--------------------------------------------------------------------------------
+-- STAGE 2: Build Dynamic Columns
+--------------------------------------------------------------------------------
+
+-- 1. List of Columns for Pivot: [Product A], [Product B]
+SELECT @cols = STRING_AGG(QUOTENAME(ProductName), ',') WITHIN GROUP (ORDER BY ProductName)
+FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
+
+-- 2. Expression for Summing: [Product A] + [Product B]
+SELECT @sumCols = STRING_AGG(QUOTENAME(ProductName), ' + ') WITHIN GROUP (ORDER BY ProductName)
+FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
+
+IF @cols IS NULL
+BEGIN
+    PRINT 'No data found for the provided parameters.';
+END
+ELSE
+BEGIN
+    --------------------------------------------------------------------------------
+    -- STAGE 3: Build and Execute the Final Query with Custom Formulas
+    --------------------------------------------------------------------------------
+    SET @query = N'
+    ;WITH PivotData AS (
+        SELECT *, 
+            -- Calculate the standard horizontal sum for all rows first
+            (' + @sumCols + ') AS RowTotal
+        FROM #TempProductBudget
+        PIVOT (
+            SUM(Value) FOR ProductName IN (' + @cols + ')
+        ) pvt
+    ),
+    CalculatedTotals AS (
+        SELECT *,
+            -- Extract the specific totals we need for our formulas using Window Functions
+            MAX(CASE WHEN Particulars = ''B/L QUANTITY (BBL)'' THEN RowTotal END) OVER () AS Total_BL_BBL,
+            MAX(CASE WHEN Particulars = ''B/L QUANTITY (M.TON)''  THEN RowTotal END) OVER () AS Total_BL_MT,
+            MAX(CASE WHEN Particulars = ''CIF Cost (USD)''   THEN RowTotal END) OVER () AS Total_CIF_USD
+        FROM PivotData
+    )
+    SELECT 
+        Particulars, 
+        ' + @cols + ', 
+        -- Apply the custom logic for the ""Total"" column
+        CASE 
+            WHEN Particulars = ''CONVERSION'' THEN 
+                CASE WHEN ISNULL(Total_BL_MT, 0) = 0 THEN 0 ELSE Total_BL_BBL / Total_BL_MT END
+            
+            WHEN Particulars = ''CIF PRICE (USD /BBL)'' THEN 
+                CASE WHEN ISNULL(Total_BL_BBL, 0) = 0 THEN 0 ELSE Total_CIF_USD / Total_BL_BBL END
+            
+            ELSE RowTotal 
+        END AS Total
+    FROM CalculatedTotals
+    ORDER BY CASE Particulars
+        WHEN ''CONVERSION'' THEN 1 
+        WHEN ''B/L QUANTITY (M.TON)'' THEN 2
+        WHEN ''B/L QUANTITY (BBL)'' THEN 3
+        WHEN ''Received Quantity (M.TON)'' THEN 4
+        WHEN ''Received Quantity (BBL)'' THEN 5
+        WHEN ''CIF PRICE (USD /BBL)'' THEN 6
+        WHEN ''CIF Cost (USD)'' THEN 7
+        WHEN ''CIF Cost (Taka)'' THEN 8
+        WHEN ''Duty (Taka)'' THEN 9
+        WHEN ''VAT (Taka)'' THEN 10
+        WHEN ''AT (Taka)'' THEN 11
+        WHEN ''AIT (Taka)'' THEN 12
+        WHEN ''Arrear Duty (Taka)'' THEN 13
+        WHEN ''Handling Commission (TK 100/MT) (Taka)'' THEN 14
+        WHEN ''River Dues (0.443 USD/M TON) (Taka)'' THEN 15
+        WHEN ''Survey Fee (Taka)'' THEN 16
+        WHEN ''Ocean Loss (Taka)'' THEN 17
+        WHEN ''Bank Charge (LC Commission)(Taka)'' THEN 18
+        WHEN ''Total Cost (Taka)'' THEN 19
+        WHEN ''COST/BBL (Taka)'' THEN 20
+        WHEN ''COST/LITRE (Taka)'' THEN 21
+        ELSE 100 
+    END;';
+
+    EXEC sp_executesql @query;
+END
+
+-- Cleanup
+IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
+
+
+
 
 ";
-                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
-                query += @" order by pc.SL";
+                #endregion
+
+                if (!string.IsNullOrWhiteSpace(vm.ChargeGroup) && vm.ChargeGroup.ToLower() == "importedrefined")
+                {
+                    query = query_ImportedRefined;
+                }
 
                 SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
-
-                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+                adapter.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
+                adapter.SelectCommand.Parameters.AddWithValue("@GLFiscalYearId", vm.YearId);
 
                 adapter.Fill(dt);
 

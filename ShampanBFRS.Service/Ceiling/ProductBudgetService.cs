@@ -8,6 +8,7 @@ using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
 using Microsoft.Extensions.Options;
+using ShampanBFRS.Repository.SalaryAllowance;
 
 namespace ShampanBFRS.Service.Ceiling
 {
@@ -326,6 +327,46 @@ namespace ShampanBFRS.Service.Ceiling
                 if (isNewConnection && conn != null) conn.Close();
             }
         }
+
+        public async Task<ResultVM> ReportPreview(CommonVM vm)
+        {
+            ProductBudgetRepository _repo = new ProductBudgetRepository();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.ReportPreview(vm, conn, transaction);
+
+                if (isNewConnection && result.Status == MessageModel.Success)
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
+
 
 
     }

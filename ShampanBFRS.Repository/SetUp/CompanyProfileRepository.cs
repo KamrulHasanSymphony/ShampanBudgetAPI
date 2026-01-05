@@ -738,8 +738,6 @@ WHERE 1 = 1
             }
         }
 
-
-
         public async Task<ResultVM> AuthCompanyInsert(CompanyProfileVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
