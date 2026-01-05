@@ -46,8 +46,6 @@ namespace ShampanBFRS.Service.Ceiling
 
                 #endregion
 
-                //string CodeGroup = "Ceiling";
-                //string CodeName = "Ceiling";
 
                 if (model == null)
                 {
@@ -156,21 +154,7 @@ namespace ShampanBFRS.Service.Ceiling
                 }
                 #endregion open connection and transaction
 
-                //ResultVM rvm = await List(new[] { "M.Id" }, new[] { bugetHeader.Id.ToString() }, null);
-
-                //if (rvm.DataVM == null || !(rvm.DataVM is List<BudgetHeaderVM>))
-                //{
-                //    throw new Exception("No data found for the given ID.");
-                //}
-
-                //List<BudgetHeaderVM> mrvmList = (List<BudgetHeaderVM>)rvm.DataVM;
-                //BudgetHeaderVM mrvm = mrvmList.FirstOrDefault();
-
-                //// Check if the data is already posted
-                //if (mrvm == null || mrvm.IsPost == "1")
-                //{
-                //    throw new Exception("Data already posted.Updates not allowed.");
-                //}
+               
 
 
                 var record = _commonRepo.DetailsDelete("BudgetDetails", new[] { "BudgetHeaderId" }, new[] { bugetHeader.Id.ToString() }, conn, transaction);
@@ -242,79 +226,6 @@ namespace ShampanBFRS.Service.Ceiling
             #endregion Catch & Finally
             return result;
         }
-        //public async Task<ResultVM> Update(BudgetHeaderVM master)
-        //{
-        //    CeilingRepository _repo = new CeilingRepository();
-        //    _commonRepo = new CommonRepository();
-        //    ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
-
-        //    bool isNewConnection = false;
-        //    SqlConnection conn = null;
-        //    SqlTransaction transaction = null;
-
-
-        //    try
-        //    {
-        //        conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-        //        conn.Open();
-        //        isNewConnection = true;
-        //        transaction = conn.BeginTransaction();
-
-
-        //        result = await new FiscalYearDetailRepository().List("", new[] { "FiscalYearId" }, new[] { master.FiscalYearId.ToString() }, null, conn, transaction);
-
-        //        var FiscalYearDetailVM = (List<FiscalYearDetailVM>)result.DataVM;
-
-        //        //result = await _repo.Update(master, conn, transaction);
-
-        //        if (result.Status == MessageModel.Fail)
-        //        {
-        //            throw new Exception(MessageModel.UpdateFail);
-        //        }
-
-        //        if (master.Id > 0)
-        //        {
-        //            //result = await _repo.DeleteDetails(master, conn, transaction);
-
-        //            if (result.Status == MessageModel.Fail)
-        //            {
-        //                throw new Exception(MessageModel.DeleteFail);
-
-        //            }
-
-        //            //SplitCeilingByFiscalPeriods(master, FiscalYearDetailVM);
-
-        //            //foreach (var detail in master.CeilingDetailList)
-        //            //{
-        //            //    detail.GLCeilingId = master.Id;
-
-        //            //    result = await _repo.InsertDetails(detail, conn, transaction);
-
-        //            //    if (result.Status == MessageModel.Fail)
-        //            //        throw new Exception(result.Message);
-        //            //}
-
-        //        }
-
-        //        if (isNewConnection && result.Status == "Success")
-        //            transaction.Commit();
-        //        else
-        //            throw new Exception(result.Message);
-
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        if (transaction != null && isNewConnection) transaction.Rollback();
-        //        result.Message = ex.Message;
-        //        result.ExMessage = ex.ToString();
-        //        return result;
-        //    }
-        //    finally
-        //    {
-        //        if (isNewConnection && conn != null) conn.Close();
-        //    }
-        //}
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
         {
             BudgetRepository _repo = new BudgetRepository();
@@ -406,97 +317,7 @@ namespace ShampanBFRS.Service.Ceiling
             #endregion Catch & Finally
             return result;
         }
-        //public async Task<ResultVM> ListEdit(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
-        //{
-        //    BudgetRepository _repo = new BudgetRepository();
-        //    ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
-        //    SqlConnection conn = null;
-        //    SqlTransaction transaction = null;
-        //    try
-        //    {
-        //        #region open connection and transaction
-        //        if (VcurrConn != null)
-        //        {
-        //            conn = VcurrConn;
-        //        }
-        //        if (Vtransaction != null)
-        //        {
-        //            transaction = Vtransaction;
-        //        }
-        //        if (conn == null)
-        //        {
-        //            conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-        //            if (conn.State != ConnectionState.Open)
-        //            {
-        //                conn.Open();
-        //            }
-        //        }
-        //        if (transaction == null)
-        //        {
-        //            transaction = conn.BeginTransaction("");
-        //        }
-        //        #endregion open connection and transaction
-
-        //        result = await _repo.ListEdit(conditionalFields, conditionalValues, conn, transaction, vm);
-
-        //        var lst = new List<BudgetHeaderVM>();
-
-        //        string data = JsonConvert.SerializeObject(result.DataVM);
-
-        //        lst = JsonConvert.DeserializeObject<List<BudgetHeaderVM>>(data);
-
-        //        var detailsDataList = await _repo.DetailsList(new[] { "D.BudgetHeaderId" }, conditionalValues, vm, conn, transaction);
-
-        //        if (detailsDataList.Status == "Success" && detailsDataList.DataVM is DataTable dt)
-        //        {
-        //            string json = JsonConvert.SerializeObject(dt);
-        //            var details = JsonConvert.DeserializeObject<List<BudgetDetailVM>>(json);
-
-        //            lst.FirstOrDefault().DetailList = details;
-        //            result.DataVM = lst;
-        //        }
-        //        #region Commit
-        //        if (Vtransaction == null && transaction != null)
-        //        {
-        //            if (result.Status == "Success")
-        //            {
-        //                transaction.Commit();
-        //                return result;
-        //            }
-        //            else
-        //            {
-        //                throw new Exception(result.Message);
-        //            }
-        //        }
-        //        #endregion Commit
-
-        //    }
-        //    #region Catch & Finally
-        //    catch (Exception ex)
-        //    {
-        //        if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
-
-        //        result.Message = ex.Message.ToString();
-        //        result.ExMessage = ex.ToString();
-        //        return result;
-        //    }
-        //    finally
-        //    {
-        //        if (VcurrConn == null)
-        //        {
-        //            if (conn != null)
-        //            {
-        //                if (conn.State == ConnectionState.Open)
-        //                {
-        //                    conn.Close();
-        //                }
-        //            }
-        //        }
-        //    }
-        //    #endregion Catch & Finally
-        //    return result;
-        //}
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
             BudgetRepository _repo = new BudgetRepository();
