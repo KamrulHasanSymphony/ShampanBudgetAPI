@@ -1275,6 +1275,71 @@ WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
             }
         }
 
+        public async Task<ResultVM> ReportPreview(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+
+select
+ pc.CategoryOfPersonnel as 'Category of personnel  (Note 1)'
+,sad.TotalPostSanctioned as 'Total Post Sanctioned'
+,sad.ActualPresentStrength  as 'Actual present strength'
+,sad.ExpectedNumber as 'Expected number at end of budgeted year *'
+,sad.BasicWagesSalaries as 'Basic wages & salaries (Lakh Taka)'
+,sad.OtherCash as 'Other cash benefits (Lakh Taka)'
+,sad.TotalSalary as 'Total salary & all ces (Lakh Taka)'
+,sad.PersonnelSentForTraining as 'No of personnel sent for training during the year'
+from SalaryAllowanceHeaders sah
+left outer join SalaryAllowanceDetails sad on sah.Id=sad.SalaryAllowanceHeaderId
+left outer join PersonnelCategories pc on pc.Id=sad.PersonnelCategoriesId
+
+where 1=1
+
+";
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                query += @" order by pc.SL";
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+
+                adapter.SelectCommand = ApplyParameters(adapter.SelectCommand, conditionalFields, conditionalValues);
+
+                adapter.Fill(dt);
+
+                var list = new List<Dictionary<string, object>>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    var dict = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        dict[col.ColumnName] = row[col];
+                    }
+                    list.Add(dict);
+                }
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
 
     }
 }

@@ -16,7 +16,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
 {
     public class SalaryAllowanceRepository : CommonRepository
     {
-        // Insert Method
+        // Insert Method 
         public async Task<ResultVM> Insert(SalaryAllowanceHeaderVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
