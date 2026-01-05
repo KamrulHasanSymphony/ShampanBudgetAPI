@@ -651,79 +651,7 @@ WHERE 1 = 1
             }
         }
 
-        //public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
-        //{
-        //    DataTable dataTable = new DataTable();
-        //    ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-        //    try
-        //    {
-        //        var data = new GridEntity<BudgetDetailVM>();
-
-        //        string sqlQuery = @"
-        //        -- Count query
-        //        SELECT COUNT(DISTINCT D.Id) AS totalcount
-        //FROM BudgetDetails D
-
-        //WHERE D.BudgetHeaderId = @masterId
-        //        -- Add the filter condition
-        //        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
-
-        //        -- Data query with pagination and sorting
-        //        SELECT *
-        //        FROM (
-        //            SELECT
-        //                ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "D.Id DESC ") + @") AS rowindex,
-        //     ISNULL(D.Id, 0) AS Id
-        //    ,D.BudgetHeaderId
-        //    ,D.SabreId
-        //    ,D.InputTotal
-        //    ,D.M1
-        //    ,D.M2
-        //    ,D.M3
-        //    ,D.M4
-        //    ,D.M5
-        //    ,D.M6
-        //    ,D.M7
-        //    ,D.M8
-        //    ,D.M9
-        //    ,D.M10
-        //    ,D.M11
-        //    ,D.M12
-        //    ,D.Q1
-        //    ,D.Q2
-        //    ,D.Q3
-        //    ,D.Q4
-        //    ,D.H1
-        //    ,D.H2
-        //    ,D.Yearly
-        //   FROM BudgetDetails D
-        //   Where D.BudgetHeaderId = @masterId
-
-
-        //            -- Add the filter condition
-        //            " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
-        //        ) AS a
-        //        WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-        //        ";
-        //        sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
-        //        data = KendoGrid<BudgetDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
-
-        //        result.Status = MessageModel.Success;
-        //        result.Message = MessageModel.RetrievedSuccess;
-        //        result.DataVM = data;
-
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        result.ExMessage = ex.Message;
-        //        result.Message = ex.Message;
-        //        return result;
-        //    }
-
-
-        //}
+        
 
         public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
         {
@@ -780,61 +708,7 @@ WHERE 1 = 1
 
 
         }
-        //public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
-        //{
-        //    DataTable dataTable = new DataTable();
-        //    ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-        //    try
-        //    {
-        //        var data = new GridEntity<BudgetDetailVM>();
-
-        //        string sqlQuery = @"
-        //        -- Count query
-        //      SELECT COUNT(DISTINCT D.BudgetHeaderId) AS totalcount
-        //FROM BudgetDetails D
-        //left outer join Sabres s on s.Id=D.BudgetHeaderId
-        //left outer join COAs C ON s.COAId = C.Id
-        //WHERE D.BudgetHeaderId = @masterId
-        //        -- Add the filter condition
-        //        " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
-
-        //        -- Data query with pagination and sorting
-        //        SELECT s.Code AccountCode,s.Name AccountName,InputTotal,C.Code COACode,C.Name COAName
-        //        FROM (
-        //            SELECT
-        //                        ROW_NUMBER() OVER (ORDER BY MAX(D.Id) DESC) AS rowindex,
-        //                        ISNULL(D.BudgetHeaderId, 0) AS BudgetHeaderId,
-        //                        SUM(ISNULL(D.InputTotal, 0)) AS InputTotal
-        //                        FROM BudgetDetails D
-        //                        Where D.BudgetHeaderId = @masterId
-        //                        GROUP BY D.BudgetHeaderId
-        //            -- Add the filter condition
-        //            " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")" : "") + @"
-        //        ) AS a
-        //         left outer join Sabres s on s.Id=a.BudgetHeaderId
-        //        left outer join COAs C ON s.COAId = C.Id
-                
-        //        WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-        //        ";
-        //        sqlQuery = sqlQuery.Replace("@masterId", "" + masterId + "");
-        //        data = KendoGrid<BudgetDetailVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
-
-        //        result.Status = MessageModel.Success;
-        //        result.Message = MessageModel.RetrievedSuccess;
-        //        result.DataVM = data;
-
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        result.ExMessage = ex.Message;
-        //        result.Message = ex.Message;
-        //        return result;
-        //    }
-
-
-        //}
+        
 
 
         public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn, SqlTransaction transaction)

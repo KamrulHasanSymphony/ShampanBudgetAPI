@@ -86,37 +86,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        //[HttpPost("BudgetList")]
-        //public async Task<ResultVM> BudgetList(BudgetHeaderVM model)
-        //{
-        //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
-        //    try
-        //    {
-        //        _Service = new BudgetService();
-        //        resultVM = await _Service.BudgetList(model);
-        //        return resultVM;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
-        //    }
-        //}
-
-        //[HttpPost("BudgeDistincttList")]
-        //public async Task<ResultVM> BudgeDistincttList(BudgetHeaderVM model)
-        //{
-        //    ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
-        //    try
-        //    {
-        //        _Service = new BudgetService();
-        //        resultVM = await _Service.BudgeDistincttList(model);
-        //        return resultVM;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
-        //    }
-        //}
+        
 
         [HttpPost("GetGridData")]
         public async Task<ResultVM> GetGridData(GridOptions options )
