@@ -617,7 +617,9 @@ ORDER BY Name";
              ISNULL(M.Id, 0) AS Id,
              ISNULL(M.Code, '') AS Code,
              ISNULL(M.Name, '') AS Name,
+             ISNULL(pg.Name, '') AS ProductGroupName,            
              ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
+
              --ISNULL(M.CIFCharge, 0) AS CIFCharge,
              --ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
              --ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
@@ -641,7 +643,8 @@ ORDER BY Name";
              ISNULL(FORMAT(M.CreatedAt, 'yyyy-MM-dd HH:mm'), '') AS CreatedAt,
              ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
              ISNULL(FORMAT(M.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '') AS LastUpdateAt
-         FROM Products M
+             FROM Products M
+             LEFT OUTER JOIN  ProductGroups pg on pg.Id = M.ProductGroupId
             WHERE 1= 1
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductVM>.FilterCondition(options.filter) + ")" : "") + @"

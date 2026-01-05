@@ -1235,7 +1235,7 @@ FROM (
                ISNULL(CG.ChargeGroupText, '') AS ChargeGroupText
         FROM ProductBudgets PB
         LEFT OUTER JOIN ChargeGroups CG 
-            ON CG.Id = PB.ChargeGroup
+            ON CG.ChargeGroupValue = PB.ChargeGroup
         LEFT JOIN FiscalYears fy 
             ON fy.Id = PB.GLFiscalYearId
         LEFT JOIN Products p 
