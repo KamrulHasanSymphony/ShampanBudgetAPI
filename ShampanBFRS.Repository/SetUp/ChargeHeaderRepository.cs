@@ -308,7 +308,7 @@ namespace ShampanBFRS.Repository.SetUp
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ChargeHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
                 // Apply additional conditions
-                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
                 -- Data query with pagination and sorting
@@ -330,7 +330,7 @@ namespace ShampanBFRS.Repository.SetUp
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ChargeHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
                 // Apply additional conditions
-                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
                 ) AS a
@@ -498,7 +498,12 @@ namespace ShampanBFRS.Repository.SetUp
             ServiceCharge,
             ProcessFee,
             RcoTreatmentFee,
-            AbpTreatmentFee
+            AbpTreatmentFee,
+
+            ProcessFeeRate,
+            RcoTreatmentFeeRate,
+            AbpTreatmentFeeRate,
+            ProductImprovementFee
 
         )
         VALUES
@@ -534,7 +539,12 @@ namespace ShampanBFRS.Repository.SetUp
             @ServiceCharge,
             @ProcessFee,
             @RcoTreatmentFee,
-            @AbpTreatmentFee
+            @AbpTreatmentFee,
+
+            @ProcessFeeRate,
+            @RcoTreatmentFeeRate,
+            @AbpTreatmentFeeRate,
+            @ProductImprovementFee
                
         );
 
@@ -575,6 +585,12 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@ProcessFee", details.ProcessFee);
                     cmd.Parameters.AddWithValue("@RcoTreatmentFee", details.RcoTreatmentFee);
                     cmd.Parameters.AddWithValue("@AbpTreatmentFee", details.AbpTreatmentFee);
+
+                    cmd.Parameters.AddWithValue("@ProcessFeeRate", details.ProcessFeeRate);
+                    cmd.Parameters.AddWithValue("@RcoTreatmentFeeRate", details.RcoTreatmentFeeRate);
+                    cmd.Parameters.AddWithValue("@AbpTreatmentFeeRate", details.AbpTreatmentFeeRate);
+                    cmd.Parameters.AddWithValue("@ProductImprovementFee", details.ProductImprovementFee);
+
 
                     object newId = await cmd.ExecuteScalarAsync();
                     details.Id = Convert.ToInt32(newId);
@@ -648,6 +664,13 @@ namespace ShampanBFRS.Repository.SetUp
             ,D.ProcessFee
             ,D.RcoTreatmentFee
             ,D.AbpTreatmentFee
+
+            ,D.ProcessFeeRate
+            ,D.RcoTreatmentFeeRate
+            ,D.AbpTreatmentFeeRate
+            ,D.ProductImprovementFee
+
+            
 
         FROM ChargeDetails D
         LEFT JOIN Products P ON D.ProductId = P.Id
@@ -751,7 +774,12 @@ namespace ShampanBFRS.Repository.SetUp
                                 ISNULL(D.ServiceCharge, 0) AS ServiceCharge,
                                 ISNULL(D.ProcessFee, 0) AS ProcessFee,
                                 ISNULL(D.RcoTreatmentFee, 0) AS RcoTreatmentFee,
-                                ISNULL(D.AbpTreatmentFee, 0) AS AbpTreatmentFee
+                                ISNULL(D.AbpTreatmentFee, 0) AS AbpTreatmentFee,
+
+                                ISNULL(D.ProcessFeeRate, 0) AS ProcessFeeRate,
+                                ISNULL(D.RcoTreatmentFeeRate, 0) AS RcoTreatmentFeeRate,
+                                ISNULL(D.AbpTreatmentFeeRate, 0) AS AbpTreatmentFeeRate,
+                                ISNULL(D.ProductImprovementFee, 0) AS ProductImprovementFee
 
                                 FROM ChargeDetails D
                                 LEFT OUTER JOIN Products P ON D.ProductId =P.Id
@@ -849,7 +877,13 @@ namespace ShampanBFRS.Repository.SetUp
                                 ISNULL(D.ServiceCharge, 0) AS ServiceCharge,
                                 ISNULL(D.ProcessFee, 0) AS ProcessFee,
                                 ISNULL(D.RcoTreatmentFee, 0) AS RcoTreatmentFee,
-                                ISNULL(D.AbpTreatmentFee, 0) AS AbpTreatmentFee
+                                ISNULL(D.AbpTreatmentFee, 0) AS AbpTreatmentFee,
+
+                                ISNULL(D.ProcessFeeRate, 0) AS ProcessFeeRate,
+                                ISNULL(D.RcoTreatmentFeeRate, 0) AS RcoTreatmentFeeRate,
+                                ISNULL(D.AbpTreatmentFeeRate, 0) AS AbpTreatmentFeeRate,
+                                ISNULL(D.ProductImprovementFee, 0) AS ProductImprovementFee
+
 
                                 FROM ChargeDetails H
                                LEFT OUTER JOIN Products P ON D.ProductId =P.Id
