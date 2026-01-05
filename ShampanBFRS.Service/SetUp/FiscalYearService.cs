@@ -205,7 +205,7 @@ namespace ShampanBFRS.Service.SetUp
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
             bool isNewConnection = false;
-            SqlConnection conn = null;
+            SqlConnection conn = null; 
             SqlTransaction transaction = null;
             try
             {

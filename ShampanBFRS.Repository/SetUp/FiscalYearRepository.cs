@@ -262,19 +262,20 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 string query = @"
-            SELECT
-            ISNULL(M.Id, 0) AS Id,
-            ISNULL(M.Year, 0) AS Year,
-            ISNULL(FORMAT(M.YearStart, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearStart,
-            ISNULL(FORMAT(M.YearEnd, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearEnd,
-            ISNULL(M.YearLock, 0) AS YearLock,
-            ISNULL(M.Remarks, '') AS Remarks,
-            ISNULL(M.CreatedBy, '') AS CreatedBy,
-            ISNULL(FORMAT(M.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') CreatedOn,           
-            ISNULL(M.LastModifiedBy, '') AS LastModifiedBy,
-            ISNULL(FORMAT(M.LastModifiedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') LastModifiedOn
-            FROM FiscalYears M
-            WHERE 1=1";
+SELECT
+ISNULL(M.Id, 0) AS Id,
+ISNULL(M.Year, 0) AS Year,
+ISNULL(FORMAT(M.YearStart, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearStart,
+ISNULL(FORMAT(M.YearEnd, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearEnd,
+ISNULL(M.YearLock, 0) AS YearLock,
+ISNULL(M.Remarks, '') AS Remarks,
+ISNULL(M.YearName, '') AS YearName,
+ISNULL(M.CreatedBy, '') AS CreatedBy,
+ISNULL(FORMAT(M.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') CreatedOn,           
+ISNULL(M.LastModifiedBy, '') AS LastModifiedBy,
+ISNULL(FORMAT(M.LastModifiedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') LastModifiedOn
+FROM FiscalYears M
+WHERE 1=1";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                 {
@@ -303,6 +304,7 @@ namespace ShampanBFRS.Repository.SetUp
                         YearEnd = row.Field<string>("YearEnd"),
                         YearLock = row.Field<bool>("YearLock"),
                         Remarks = row.Field<string?>("Remarks"),
+                        YearName = row.Field<string?>("YearName"),
                         CreatedBy = row.Field<string?>("CreatedBy"),
                         CreatedOn = row.Field<string>("CreatedOn"),
                         LastModifiedBy = row.Field<string?>("LastModifiedBy"),
