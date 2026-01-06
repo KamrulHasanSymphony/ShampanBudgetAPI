@@ -302,7 +302,7 @@ namespace ShampanBFRS.Repository.SetUp
                 -- Count query
                 SELECT COUNT(DISTINCT H.Id) AS totalcount
                   FROM ChargeHeaders H
-                LEFT OUTER JOIN ChargeGroups CG ON CG.Id = H.ChargeGroup
+                LEFT OUTER JOIN ChargeGroups CG ON CG.ChargeGroupValue = H.ChargeGroup
             WHERE 1 = 1
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ChargeHeaderVM>.FilterCondition(options.filter) + ")" : "");
@@ -320,10 +320,10 @@ namespace ShampanBFRS.Repository.SetUp
                    
     
                  ISNULL(H.Id, 0) AS Id,
-                 ISNULL(CG.ChargeGroupText, '') AS ChargeGroup
+                 ISNULL(CG.ChargeGroupText, 0) AS ChargeGroup
   
                 FROM ChargeHeaders H
-                LEFT OUTER JOIN ChargeGroups CG ON CG.Id = H.ChargeGroup
+                LEFT OUTER JOIN ChargeGroups CG ON CG.ChargeGroupValue = H.ChargeGroup
                 WHERE 1 = 1
 
                 -- Add the filter condition
