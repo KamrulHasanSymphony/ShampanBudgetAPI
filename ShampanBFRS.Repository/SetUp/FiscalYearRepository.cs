@@ -30,17 +30,18 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
                 INSERT INTO FiscalYears
                 (
-                 Year, YearStart, YearEnd, YearLock, Remarks, CreatedBy, CreatedOn
+                 Year,YearName ,YearStart, YearEnd, YearLock, Remarks, CreatedBy, CreatedOn
                 )
                 VALUES 
                 (
-                 @Year, @YearStart, @YearEnd, @YearLock, @Remarks, @CreatedBy, GETDATE()
+                 @Year, @YearName,@YearStart, @YearEnd, @YearLock, @Remarks, @CreatedBy, GETDATE()
                 );
                 SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Year", vm.Year);
+                    cmd.Parameters.AddWithValue("@YearName", vm.YearName );
                     cmd.Parameters.AddWithValue("@YearStart", vm.YearStart);
                     cmd.Parameters.AddWithValue("@YearEnd", vm.YearEnd);
                     cmd.Parameters.AddWithValue("@YearLock", vm.YearLock);
@@ -123,7 +124,7 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
                 UPDATE FiscalYears
                 SET 
-                 Year = @Year, YearStart = @YearStart, YearEnd = @YearEnd, YearLock = @YearLock, 
+                 Year = @Year,YearName=@YearName, YearStart = @YearStart, YearEnd = @YearEnd, YearLock = @YearLock, 
                  Remarks = @Remarks, LastModifiedBy = @LastModifiedBy, LastModifiedOn = GETDATE()
                 WHERE Id = @Id";
 
@@ -131,6 +132,7 @@ namespace ShampanBFRS.Repository.SetUp
                 {
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
                     cmd.Parameters.AddWithValue("@Year", vm.Year);
+                    cmd.Parameters.AddWithValue("@YearName", vm.YearName);
                     cmd.Parameters.AddWithValue("@YearStart", vm.YearStart);
                     cmd.Parameters.AddWithValue("@YearEnd", vm.YearEnd);
                     cmd.Parameters.AddWithValue("@YearLock", vm.YearLock);
@@ -265,11 +267,11 @@ namespace ShampanBFRS.Repository.SetUp
 SELECT
 ISNULL(M.Id, 0) AS Id,
 ISNULL(M.Year, 0) AS Year,
+ISNULL(M.YearName, '') AS YearName,
 ISNULL(FORMAT(M.YearStart, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearStart,
 ISNULL(FORMAT(M.YearEnd, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearEnd,
 ISNULL(M.YearLock, 0) AS YearLock,
 ISNULL(M.Remarks, '') AS Remarks,
-ISNULL(M.YearName, '') AS YearName,
 ISNULL(M.CreatedBy, '') AS CreatedBy,
 ISNULL(FORMAT(M.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') CreatedOn,           
 ISNULL(M.LastModifiedBy, '') AS LastModifiedBy,
@@ -300,11 +302,11 @@ WHERE 1=1";
                     {
                         Id = row.Field<int>("Id"),
                         Year = row.Field<int>("Year"),
+                        YearName = row.Field<string?>("YearName"),
                         YearStart = row.Field<string>("YearStart"),
                         YearEnd = row.Field<string>("YearEnd"),
                         YearLock = row.Field<bool>("YearLock"),
-                        Remarks = row.Field<string?>("Remarks"),
-                        YearName = row.Field<string?>("YearName"),
+                        Remarks = row.Field<string?>("Remarks"),                
                         CreatedBy = row.Field<string?>("CreatedBy"),
                         CreatedOn = row.Field<string>("CreatedOn"),
                         LastModifiedBy = row.Field<string?>("LastModifiedBy"),
@@ -350,6 +352,7 @@ WHERE 1=1";
 SELECT
             ISNULL(M.Id, 0) AS Id,
             ISNULL(M.Year, 0) AS Year,
+            ISNULL(M.YearName, '') AS YearName,
             ISNULL(M.YearStart, '1900-01-01') AS YearStart,
             ISNULL(M.YearEnd, '1900-01-01') AS YearEnd,
             ISNULL(M.YearLock, 0) AS YearLock,
@@ -458,6 +461,7 @@ ORDER BY Name";
         
             ,ISNULL(H.Id, 0) AS Id,
             ISNULL(H.Year, 0) AS Year,
+            ISNULL(H.YearName, '') AS YearName,
             ISNULL(FORMAT(H.YearStart, 'yyyy-MM-dd'),'1900-01-01') AS YearStart,
             ISNULL(FORMAT(H.YearEnd, 'yyyy-MM-dd'),'1900-01-01') AS YearEnd,
             ISNULL(H.YearLock, 0) AS YearLock,
@@ -607,47 +611,58 @@ ORDER BY Name";
                     throw new Exception("Database connection fail!");
                 }
 
-            //    string query = @"
-            //SELECT
-            //ISNULL(M.Id, 0) AS Id,
-            //ISNULL(M.Year, 0) AS Year,
-            //ISNULL(FORMAT(M.YearStart, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearStart,
-            //ISNULL(FORMAT(M.YearEnd, 'yyyy-MM-dd HH:mm'), '1900-01-01') YearEnd,
-            //ISNULL(M.YearLock, 0) AS YearLock,
-            //ISNULL(M.Remarks, '') AS Remarks,
-            //ISNULL(M.CreatedBy, '') AS CreatedBy,
-            //ISNULL(FORMAT(M.CreatedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') CreatedOn,           
-            //ISNULL(M.LastModifiedBy, '') AS LastModifiedBy,
-            //ISNULL(FORMAT(M.LastModifiedOn, 'yyyy-MM-dd HH:mm'), '1900-01-01') LastModifiedOn
-            //FROM FiscalYears M
-            //WHERE 1=1";
+                string query = @"
+                
+SELECT
+    YEAR(DATEADD(YEAR, 1, NewStartDate)) AS [Year],
+    CAST(YEAR(NewStartDate) AS VARCHAR(4)) + '-' + 
+    CAST(YEAR(DATEADD(YEAR, 1, NewStartDate)) AS VARCHAR(4)) AS YearName,
+    NewStartDate AS YearStart,
+    DATEADD(DAY, -1, DATEADD(YEAR, 1, NewStartDate)) AS YearEnd
+FROM
+(
+    SELECT
+        CASE 
+            WHEN MONTH(MAX(YearEnd)) = 6 
+                THEN DATEFROMPARTS(YEAR(MAX(YearEnd)), 7, 1)
+            WHEN MONTH(MAX(YearEnd)) = 12
+                THEN DATEFROMPARTS(YEAR(MAX(YearEnd)) + 1, 1, 1)
+            ELSE
+                DATEADD(DAY, 1, MAX(YearEnd)) -- fallback (safe default)
+        END AS NewStartDate
+    FROM FiscalYears
+) A
 
-            //    if (vm != null && !string.IsNullOrEmpty(vm.Id))
-            //    {
-            //        query += " AND M.Id = @Id ";
-            //    }
+";
 
-            //    query = ApplyConditions(query, conditionalFields, conditionalValues, false);
-            //    SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
 
-            //    objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
 
-            //    if (vm != null && !string.IsNullOrEmpty(vm.Id))
-            //    {
-            //        objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
-            //    }
 
-            //    objComm.Fill(dataTable);
+                objComm.Fill(dataTable);
 
-                FiscalYearVM YearVM = new FiscalYearVM();
 
-                YearVM.Year = 2026;
-                YearVM.YearName = "2026-2027";
-                YearVM.YearStart = "2026-07-01";
-                YearVM.YearEnd = "2027-06-30";            
-                YearVM.YearLock = false;
-                YearVM.Remarks = "ok";
- 
+                var YearVM = dataTable.AsEnumerable().Select(row => new FiscalYearVM
+                {
+                    Year = Convert.ToInt32(row["Year"]),
+                    YearName = row["YearName"]?.ToString(),
+                    YearStart = (row["YearStart"] as DateTime?)?.ToString("yyyy-MM-dd"),
+                    YearEnd = (row["YearEnd"] as DateTime?)?.ToString("yyyy-MM-dd"),
+                    YearLock = false,
+                    Remarks = "-"
+                }).ToList();
+
+                //FiscalYearVM YearVM = new FiscalYearVM();
+
+                //YearVM.Year = 2026;
+                //YearVM.YearName = "2026-2027";
+                //YearVM.YearStart = "2026-07-01";
+                //YearVM.YearEnd = "2027-06-30";
+                //YearVM.YearLock = false;
+                //YearVM.Remarks = "-";
+
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = YearVM;
