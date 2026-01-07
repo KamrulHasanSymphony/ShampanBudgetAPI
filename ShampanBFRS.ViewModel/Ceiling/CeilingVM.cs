@@ -57,7 +57,6 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public string? FromDate { get; set; }
         [Display(Name = "To Date")]
         public string? ToDate { get; set; }
-        public string? Operation { get; set; }
         public string? BranchName { get; set; }
         public string? CompanyName { get; set; }
         public string? CompanyAddress { get; set; }
