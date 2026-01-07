@@ -7,6 +7,7 @@ using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.QuestionVM;
+using ShampanBFRS.ViewModel.Sale;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using System;
@@ -15,6 +16,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 using static ShampanBFRS.ViewModel.KendoCommon.UtilityCommon;
@@ -159,7 +161,7 @@ namespace ShampanBFRS.Service.Ceiling
                 {
                     throw new Exception(MessageModel.UpdateFail);
                 }
-
+             
                 if (master.Id > 0)
                 {
                     result = await _repo.DeleteDetails(master, conn, transaction);
