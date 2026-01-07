@@ -8,9 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShampanBFRS.Repository.Sale
 {
@@ -525,70 +522,7 @@ WHERE 1 = 1
             //                return result;
             //            }
         }
-        // ReportPreview Method
-        public async Task<ResultVM> ReportPreview(string[] conditionalFields, string[] conditionalValue
-            , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
-        {
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            try
-            {
-                string query = @"
-select
-    ISNULL(M.Id, 0) AS Id,    
-    ISNULL(M.BranchId, 0) AS BranchId,
-    ISNULL(M.Code, '') AS Code,
-    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
-    ISNULL(M.BudgetType, '') AS BudgetType,
-    ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
-    ISNULL(M.IsPost, '') AS IsPost,
-    CASE WHEN ISNULL(M.IsPost, '') = 'Y' THEN 'Active' ELSE 'In Active' END AS Status,
-    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-    ISNULL(M.PostedBy, '') AS PostedBy,
-    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-    ISNULL(M.PostedFrom, '') AS PostedFrom,  
-    ISNULL(M.CreatedBy, '') AS CreatedBy,
-    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-    ISNULL(M.CreatedFrom, '') AS CreatedFrom
-FROM SaleHeaders M
-WHERE 1 = 1 ";
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    query += " AND M.Id = @Id ";
-                }
-
-                // Apply additional conditions
-                query = ApplyConditions(query, conditionalFields, conditionalValue, false);
-
-                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
-
-                // SET additional conditions param
-                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValue);
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
-                }
-
-                objComm.Fill(dataTable);
-
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.PostSuccess;
-                result.DataVM = dataTable;
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.ExMessage = ex.Message;
-                result.Message = ex.Message;
-                return result;
-            }
-        }
-
+        
         // MultiplePost Method
         public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn, SqlTransaction transaction)
         {
@@ -1007,6 +941,75 @@ WHERE 1 = 1 ";
                 throw ex;
             }
         }
+    
+        public async Task<ResultVM> ReportPreview(CommonVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dt = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                string query = @"
+
+select 
+ p.Name Products
+,sd.ProductionMT as 'Production (M.Ton)'
+,sd.ConversionFactor as 'Conversion (LTR/Gallon per M.Ton)'
+,sd.PriceMT as 'Price /M.Ton'
+,sd.PriceLTR as 'Price /LTR'
+,sd.SalesExERLValue as 'Sales (Ex-ERL) Value'
+,sd.SalesExImport_LocalMT as 'Sales (Ex-Import+Local) M.Ton'
+,sd.SalesExImport_LocalValue as 'Sales (Ex-Import+Local) Value'
+,sd.TotalMT as 'Total M.Ton'
+,sd.TotalValueTK_LAC as 'Total Value  TK/LAC'
+
+from SaleHeaders sh
+left outer join SaleDetails sd on sd.SaleHeaderId=sh.Id
+left outer join Products p on sd.ProductId=p.Id
+where 1=1
+and sh.FiscalYearId=@FiscalYearId
+and sh.BudgetType=@BudgetType
+
+";
+
+
+                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
+                adapter.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
+                adapter.SelectCommand.Parameters.AddWithValue("@FiscalYearId", vm.YearId);
+
+                adapter.Fill(dt);
+
+                var list = new List<Dictionary<string, object>>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    var dict = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        dict[col.ColumnName] = row[col];
+                    }
+                    list.Add(dict);
+                }
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = list;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+
     }
 }
 
