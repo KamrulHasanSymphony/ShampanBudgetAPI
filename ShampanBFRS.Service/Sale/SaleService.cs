@@ -49,10 +49,6 @@ namespace ShampanBFRS.Service.Sale
                 #endregion open connection and transaction
                 // check
 
-
-
-
-
                 string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
                 string[] conditionField = { "Code" };

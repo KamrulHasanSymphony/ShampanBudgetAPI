@@ -344,12 +344,12 @@ namespace ShampanBFRS.Repository.SetUp
                 FROM (
                     SELECT ROW_NUMBER() OVER(ORDER BY " +
                         (options.sort.Count > 0
-                            ? "H." + options.sort[0].field + " " + options.sort[0].dir
+                            ?  options.sort[0].field + " " + options.sort[0].dir
                             : "H.Id DESC") + @") AS rowindex,
                            ISNULL(H.Id,0) AS Id,
-                           ISNULL(H.Code,'') AS Code,
-                           ISNULL(H.Length,'') AS Length,
+                           ISNULL(H.Code,'') AS Code,                    
                            ISNULL(H.Name,'') AS Name,
+                           ISNULL(H.Length,'') AS Length,
                            ISNULL(H.Remarks,0) AS Remarks,
                            ISNULL(H.IsActive,0) AS IsActive,
                            CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
