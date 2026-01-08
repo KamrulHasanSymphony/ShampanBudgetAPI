@@ -432,7 +432,7 @@ namespace ShampanBFRS.Repository.SetUp
                 FROM (
                     SELECT ROW_NUMBER() OVER(ORDER BY " +
                         (options.sort.Count > 0
-                            ? "C." + options.sort[0].field + " " + options.sort[0].dir
+                            ? " " + options.sort[0].field + " " + options.sort[0].dir
                             : "C.Id DESC") + @") AS rowindex,
                              ISNULL(C.Id,0) Id
                             ,ISNULL(C.PID,0) PID

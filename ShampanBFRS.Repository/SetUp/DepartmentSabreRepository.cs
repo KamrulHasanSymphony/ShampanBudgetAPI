@@ -406,7 +406,7 @@ namespace ShampanBFRS.Repository.SetUp
 
     -- Data
     SELECT * FROM (
-        SELECT ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? "H." + options.sort[0].field + " " + options.sort[0].dir : "H.DepartmentId DESC") + @") AS rowindex,
+        SELECT ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? " " + options.sort[0].field + " " + options.sort[0].dir : "H.DepartmentId DESC") + @") AS rowindex,
                
                H.Id,
                 H.DepartmentId,

@@ -360,7 +360,7 @@ where  Id=@Id  ";
                 FROM (
                     SELECT ROW_NUMBER() OVER(ORDER BY " +
                         (options.sort.Count > 0
-                            ? "c." + options.sort[0].field + " " + options.sort[0].dir
+                            ?" " + options.sort[0].field + " " + options.sort[0].dir
                             : "c.Id DESC") + @") AS rowindex,
                            ISNULL(c.Id,0) AS Id
                            ,ISNULL(c.CompanyId,0) AS CompanyId

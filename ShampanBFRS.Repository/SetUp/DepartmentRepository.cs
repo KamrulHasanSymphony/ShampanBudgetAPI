@@ -345,7 +345,7 @@ namespace ShampanBFRS.Repository.SetUp
                 FROM (
                     SELECT ROW_NUMBER() OVER(ORDER BY " +
                         (options.sort.Count > 0
-                            ? "H." + options.sort[0].field + " " + options.sort[0].dir
+                            ? " " + options.sort[0].field + " " + options.sort[0].dir
                             : "H.Id DESC") + @") AS rowindex,
                            ISNULL(H.Id,0) AS Id,
                            ISNULL(H.Name,'') AS Name,

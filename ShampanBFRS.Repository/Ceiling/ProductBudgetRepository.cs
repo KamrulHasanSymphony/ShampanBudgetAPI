@@ -1231,14 +1231,14 @@ WHERE 1 = 1
 FROM (
     SELECT ROW_NUMBER() OVER(ORDER BY " +
         (options.sort.Count > 0
-            ? "t." + options.sort[0].field + " " + options.sort[0].dir
+            ? " " + options.sort[0].field + " " + options.sort[0].dir
             : "t.GLFiscalYearId DESC") + @") AS rowindex,
         t.CompanyId,
            t.BranchId,
            t.GLFiscalYearId,
-           t.YearName,
+           t.YearName as YearName,
            t.BudgetSetNo,
-           t.BudgetType,
+           t.BudgetType as BudgetType,
            t.ProductGroupId,
            t.ChargeGroup as ChargeGroup,
            t.ChargeGroupText as ChargeGroupText,
