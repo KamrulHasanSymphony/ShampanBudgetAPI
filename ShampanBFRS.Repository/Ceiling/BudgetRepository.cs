@@ -172,8 +172,7 @@ namespace ShampanBFRS.Repository.Ceiling
             }
         }
 
-        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues
-         , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
         {
             DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
@@ -259,11 +258,6 @@ WHERE 1 = 1
                 return result;
             }
         }
-
-
-
-
-
 
         public async Task<ResultVM> GetBudgetDataForDetailsNew( GridOptions options,string[] conditionalFields,string[] conditionalValues,SqlConnection conn,SqlTransaction transaction)
         {
@@ -373,57 +367,57 @@ WHERE 1 = 1
                 sqlText = @" INSERT INTO BudgetDetails (
 
  
- BudgetHeaderId
-,SabreId
-,InputTotal
-,M1
-,M2
-,M3
-,M4
-,M5
-,M6
-,M7
-,M8
-,M9
-,M10
-,M11
-,M12
-,Q1
-,Q2
-,Q3
-,Q4
-,H1
-,H2
-,Yearly
-,IsPost
+                 BudgetHeaderId
+                ,SabreId
+                ,InputTotal
+                ,M1
+                ,M2
+                ,M3
+                ,M4
+                ,M5
+                ,M6
+                ,M7
+                ,M8
+                ,M9
+                ,M10
+                ,M11
+                ,M12
+                ,Q1
+                ,Q2
+                ,Q3
+                ,Q4
+                ,H1
+                ,H2
+                ,Yearly
+                ,IsPost
           
-) VALUES (
+                ) VALUES (
 
- @BudgetHeaderId
-,@SabreId
-,@InputTotal
-,@M1
-,@M2
-,@M3
-,@M4
-,@M5
-,@M6
-,@M7
-,@M8
-,@M9
-,@M10
-,@M11
-,@M12
-,@Q1
-,@Q2
-,@Q3
-,@Q4
-,@H1
-,@H2
-,@Yearly
-,@IsPost
+                 @BudgetHeaderId
+                ,@SabreId
+                ,@InputTotal
+                ,@M1
+                ,@M2
+                ,@M3
+                ,@M4
+                ,@M5
+                ,@M6
+                ,@M7
+                ,@M8
+                ,@M9
+                ,@M10
+                ,@M11
+                ,@M12
+                ,@Q1
+                ,@Q2
+                ,@Q3
+                ,@Q4
+                ,@H1
+                ,@H2
+                ,@Yearly
+                ,@IsPost
 
-)SELECT SCOPE_IDENTITY() ";
+                )SELECT SCOPE_IDENTITY() ";
 
                 SqlCommand commands = new SqlCommand(sqlText, conn, transaction);
 
