@@ -68,8 +68,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 };
             }
         }
-
-        
+    
         [HttpPost("GetBudgetDataForDetailsNew")]
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
@@ -85,9 +84,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
             }
         }
-
-        
-
+      
         [HttpPost("GetGridData")]
         public async Task<ResultVM> GetGridData(GridOptions options )
         {

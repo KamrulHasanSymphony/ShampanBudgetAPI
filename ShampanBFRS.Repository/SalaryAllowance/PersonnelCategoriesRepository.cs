@@ -326,7 +326,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                 -- Count
                 SELECT COUNT(DISTINCT H.Id) AS totalcount
                 FROM PersonnelCategories H
-                WHERE H.IsActive = 1
+                WHERE 1 = 1
                 " + (options.filter.Filters.Count > 0
                         ? " AND (" + GridQueryBuilder<PersonnelCategoriesVM>.FilterCondition(options.filter) + ")"
                         : "") + @"
