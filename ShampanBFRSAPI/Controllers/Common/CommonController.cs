@@ -463,6 +463,45 @@ namespace ShampanBFRSAPI.Controllers.Common
             }
         }
 
+        [HttpPost("SegmentList")]
+        public async Task<ResultVM> SegmentList(CommonVM Vm)
+        {
+            ResultVM resultVM = new ResultVM
+            {
+                Status = "Fail",
+                Message = "Error",
+                ExMessage = null,
+                Id = "0",
+                DataVM = null
+            };
+
+            try
+            {
+                string[] conditionFields = null;
+                string[] conditionValues = null;
+
+                if (!string.IsNullOrEmpty(Vm.Value))
+                {
+                    conditionFields = new string[] { "Name" };
+                    conditionValues = new string[] { Vm.Value };
+                }
+
+                CommonService _service = new CommonService();
+                resultVM = await _service.SegmentList(conditionFields, conditionValues, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = "Fail",
+                    Message = "Data not fetched.",
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
 
 
 
