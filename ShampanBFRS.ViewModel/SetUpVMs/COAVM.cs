@@ -49,6 +49,9 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [Display(Name = "Is Depreciation")]
         public bool IsDepreciation { get; set; }
 
+        [Display(Name = "Non Operating Income")]
+        public bool IsNonOperatingIncome { get; set; }
+
         public string? Segement01 { get; set; }
         public string? Segement02 { get; set; }
         public string? Segement03 { get; set; }

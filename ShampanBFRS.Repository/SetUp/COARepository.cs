@@ -45,6 +45,7 @@ namespace ShampanBFRS.Repository.SetUp
 ,IsRetainedEarning
 ,IsNetProfit
 ,IsDepreciation
+,IsNonOperatingIncome
 ,CreatedBy
 ,CreatedAt
 ,CreatedFrom
@@ -66,6 +67,7 @@ namespace ShampanBFRS.Repository.SetUp
 ,@IsRetainedEarning
 ,@IsNetProfit
 ,@IsDepreciation
+,@IsNonOperatingIncome
 ,@CreatedBy
 ,@CreatedAt
 ,@CreatedFrom
@@ -90,6 +92,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@IsRetainedEarning", vm.IsRetainedEarning );
                     cmd.Parameters.AddWithValue("@IsNetProfit",vm.IsNetProfit );
                     cmd.Parameters.AddWithValue("@IsDepreciation", vm.IsDepreciation );
+                    cmd.Parameters.AddWithValue("@IsNonOperatingIncome", vm.IsNonOperatingIncome);
 
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedAt", vm.CreatedAt ?? (object)DBNull.Value);
@@ -139,6 +142,7 @@ namespace ShampanBFRS.Repository.SetUp
                 ,IsRetainedEarning= @IsRetainedEarning
                 ,IsNetProfit= @IsNetProfit
                 ,IsDepreciation= @IsDepreciation
+                ,IsNonOperatingIncome= @IsNonOperatingIncome
                 ,LastUpdateBy= @LastUpdateBy
                 ,LastUpdateAt= @LastUpdateAt
                 ,LastUpdateFrom= @LastUpdateFrom
@@ -163,6 +167,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@IsRetainedEarning", vm.IsRetainedEarning);
                     cmd.Parameters.AddWithValue("@IsNetProfit", vm.IsNetProfit );
                     cmd.Parameters.AddWithValue("@IsDepreciation", vm.IsDepreciation);
+                    cmd.Parameters.AddWithValue("@IsNonOperatingIncome", vm.IsNonOperatingIncome);
 
                     cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateAt", vm.LastUpdateAt ?? (object)DBNull.Value);
@@ -270,6 +275,7 @@ namespace ShampanBFRS.Repository.SetUp
                     ,ISNULL(C.IsRetainedEarning,0) IsRetainedEarning
                     ,ISNULL(C.IsNetProfit,0) IsNetProfit
                     ,ISNULL(C.IsDepreciation,0) IsDepreciation
+                    ,ISNULL(C.IsNonOperatingIncome,0) IsNonOperatingIncome
                     ,ISNULL(C.CreatedBy,'') CreatedBy
                     ,Isnull(FORMAT(C.CreatedAt,'yyyy-MM-dd HH:mm:ss'),'1900-01-01')CreatedAt
                     ,Isnull(FORMAT(C.LastUpdateAt,'yyyy-MM-dd HH:mm:ss'),'1900-01-01')LastUpdateAt
@@ -309,6 +315,7 @@ namespace ShampanBFRS.Repository.SetUp
                     IsRetainedEarning = row.Field<bool>("IsRetainedEarning"),
                     IsNetProfit = row.Field<bool>("IsNetProfit"),
                     IsDepreciation = row.Field<bool>("IsDepreciation"),
+                    IsNonOperatingIncome = row.Field<bool>("IsNonOperatingIncome"),
                     CreatedBy = row.Field<string>("CreatedBy"),
                     LastUpdateBy = row.Field<string>("LastUpdateBy"),
                     LastUpdateAt = row.Field<string>("LastUpdateAt")
@@ -341,7 +348,7 @@ namespace ShampanBFRS.Repository.SetUp
                 if (conn == null) throw new Exception("Database connection failed!");
 
                 string query = @"
-                SELECT Id,PID,COASL,StructureId,COAGroupId,Code,Name,Nature,COAType,ReportType,Remarks,IsActive,IsArchive,IsRetainedEarning,IsNetProfit,IsDepreciation,CreatedBy,CreatedAt,CreatedFrom
+                SELECT Id,PID,COASL,StructureId,COAGroupId,Code,Name,Nature,COAType,ReportType,Remarks,IsActive,IsArchive,IsRetainedEarning,IsNetProfit,IsDepreciation,IsNonOperatingIncome,CreatedBy,CreatedAt,CreatedFrom
                 FROM COAs
                 WHERE 1=1";
 

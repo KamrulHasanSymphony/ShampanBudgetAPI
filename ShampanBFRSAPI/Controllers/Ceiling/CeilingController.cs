@@ -114,6 +114,21 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
             }
         }
+        [HttpPost("BudgetLoadFinalReport")]
+        public async Task<ResultVM> BudgetLoadFinalReport(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            try
+            {
+                _CeilingService = new CeilingService();
+                resultVM = await _CeilingService.BudgetLoadFinalReport(vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
+            }
+        }
 
         [HttpPost("GridDataReportType")]
         public async Task<ResultVM> GridDataReportType(CommonVM vm)
