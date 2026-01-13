@@ -562,7 +562,7 @@ INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
 
 
         public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
-        {
+       {
             DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 

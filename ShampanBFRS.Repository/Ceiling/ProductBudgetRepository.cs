@@ -1217,9 +1217,11 @@ WHERE 1 = 1
                 string sqlQuery = $@"
                     
                     SELECT COUNT(DISTINCT PB.ChargeGroup) AS totalcount
-                FROM ProductBudgets PB 
-               LEFT OUTER JOIN ChargeGroups CG 
-    ON CG.ChargeGroupValue = PB.ChargeGroup
+                    FROM ProductBudgets PB 
+                    LEFT OUTER JOIN ChargeGroups CG ON CG.ChargeGroupValue = PB.ChargeGroup
+                    LEFT JOIN FiscalYears fy ON fy.Id = PB.GLFiscalYearId
+                    LEFT JOIN Products p  ON p.Id = PB.ProductId
+                    LEFT JOIN ProductGroups pg ON pg.Id = p.ProductGroupId
                 WHERE 1=1
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductBudgetMasterVM>.FilterCondition(options.filter) + ")" : "");
 
@@ -1258,14 +1260,10 @@ FROM (
                ISNULL(pg.Name,'') AS ProductGroupName
 
         FROM ProductBudgets PB
-        LEFT OUTER JOIN ChargeGroups CG 
-            ON CG.ChargeGroupValue = PB.ChargeGroup
-        LEFT JOIN FiscalYears fy 
-            ON fy.Id = PB.GLFiscalYearId
-        LEFT JOIN Products p 
-            ON p.Id = PB.ProductId
-        LEFT JOIN ProductGroups pg 
-            ON pg.Id = p.ProductGroupId
+        LEFT OUTER JOIN ChargeGroups CG ON CG.ChargeGroupValue = PB.ChargeGroup
+        LEFT JOIN FiscalYears fy ON fy.Id = PB.GLFiscalYearId
+        LEFT JOIN Products p  ON p.Id = PB.ProductId
+        LEFT JOIN ProductGroups pg ON pg.Id = p.ProductGroupId
         WHERE 1=1
         " + (options.filter.Filters.Count > 0
                ? " AND (" + GridQueryBuilder<ProductBudgetMasterVM>.FilterCondition(options.filter) + ")"

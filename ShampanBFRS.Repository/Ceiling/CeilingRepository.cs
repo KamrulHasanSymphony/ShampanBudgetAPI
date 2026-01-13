@@ -349,7 +349,8 @@ where  Id=@Id  ";
                     -- Count query
                     SELECT COUNT(DISTINCT c.Id) AS totalcount
                 FROM Ceilings c
-                WHERE c.IsArchive != 1
+                left outer join FiscalYears fy on fy.Id = c.GLFiscalYearId
+                WHERE 1 = 1
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingVM>.FilterCondition(options.filter) + ")" : "");
 
                 sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
@@ -366,10 +367,10 @@ where  Id=@Id  ";
                            ,ISNULL(c.CompanyId,0) AS CompanyId
                            ,ISNULL(c.BranchId,0) AS BranchId
                            ,ISNULL(c.GLFiscalYearId,0) AS GLFiscalYearId
+                           ,ISNULL(c.Code,0) AS Code
                            ,ISNULL(fy.YearName,0) AS YearName
                            ,ISNULL(c.BudgetSetNo,0) AS BudgetSetNo
-                           ,ISNULL(c.BudgetType,'') AS BudgetType
-                           ,ISNULL(c.Code,0) AS Code
+                           ,ISNULL(c.BudgetType,'') AS BudgetType                         
                            ,ISNULL(FORMAT(c.TransactionDate,'yyyy-MM-dd HH:mm'),'') AS TransactionDate
                            ,ISNULL(c.IsPost ,'') AS IsPost
                            ,ISNULL(c.Remarks,'') AS Remarks
@@ -377,11 +378,11 @@ where  Id=@Id  ";
                            ,ISNULL(c.IsArchive,0) AS IsArchive
                            ,ISNULL(c.CreatedBy,'') AS CreatedBy
                            ,ISNULL(FORMAT(c.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn
-                           ,CASE WHEN ISNULL(c.IsPost, 'N') = '1' THEN 'Posted' ELSE 'Not-posted' END AS Status
+                           ,CASE WHEN ISNULL(c.IsPost, '') = 'Y'  THEN 'Posted' ELSE 'Not Posted' END AS Status
                            ,ISNULL(c.TransactionType,'') AS TransactionType
                              FROM Ceilings c
                             left outer join FiscalYears fy on fy.Id = c.GLFiscalYearId
-                    WHERE c.IsArchive != 1
+                    WHERE 1 = 1
 
             -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CeilingVM>.FilterCondition(options.filter) + ")" : "");
@@ -394,7 +395,7 @@ where  Id=@Id  ";
             WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
         ";
 
-                data = KendoGrid<CeilingVM>.GetTransactionalGridData_CMD(options, sqlQuery, "CO.Id", conditionalFields, conditionalValues);
+                data = KendoGrid<CeilingVM>.GetTransactionalGridData_CMD(options, sqlQuery, "c.Id", conditionalFields, conditionalValues);
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;

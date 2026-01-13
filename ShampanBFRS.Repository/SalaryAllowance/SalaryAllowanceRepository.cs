@@ -407,16 +407,16 @@ WHERE 1 = 1
                     ISNULL(M.BudgetType, '') AS BudgetType,
                     ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
                     ISNULL(M.IsPost, '') AS IsPost,
-                    CASE WHEN ISNULL(M.IsPost, '') = '1'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
-                        ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-                        ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-                        ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-                        ISNULL(M.PostedBy, '') AS PostedBy,
-                        ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-                        ISNULL(M.PostedFrom, '') AS PostedFrom,
-                        ISNULL(M.CreatedBy, '') AS CreatedBy,
-                        ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-                        ISNULL(M.CreatedFrom, '') AS CreatedFrom
+                    CASE WHEN ISNULL(M.IsPost, '') = 'Y'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
+                    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+                    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+                    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
+                    ISNULL(M.PostedBy, '') AS PostedBy,
+                    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
+                    ISNULL(M.PostedFrom, '') AS PostedFrom,
+                    ISNULL(M.CreatedBy, '') AS CreatedBy,
+                    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
+                    ISNULL(M.CreatedFrom, '') AS CreatedFrom
                     FROM SalaryAllowanceHeaders M
                     WHERE 1 = 1        
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SalaryAllowanceHeaderVM>.FilterCondition(options.filter) + ")" : "");
