@@ -401,6 +401,7 @@ WHERE 1 = 1
             ISNULL(M.BranchId, 0) AS BranchId,
             ISNULL(M.Code, '') AS Code,
             ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
+            ISNULL(fy.YearName,'') AS YearName,
             ISNULL(M.BudgetType, '') AS BudgetType,
             ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
             ISNULL(M.IsPost, '') AS IsPost,
@@ -415,6 +416,7 @@ WHERE 1 = 1
                 ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
                 ISNULL(M.CreatedFrom, '') AS CreatedFrom
             FROM SaleHeaders M
+            LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
             WHERE 1 = 1             
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
@@ -427,7 +429,7 @@ WHERE 1 = 1
     WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
     ";
 
-                data = KendoGrid<SaleHeaderVM>.GetDataWithBetween_CMD(options, sqlQuery, "M.ID", conditionalFields, conditionalValues);
+                data = KendoGrid<SaleHeaderVM>.GetDataWithBetween_CMD(options, sqlQuery, "M.Id", conditionalFields, conditionalValues);
 
                 result.Status = "Success";
                 result.Message = "Data retrieved successfully.";
