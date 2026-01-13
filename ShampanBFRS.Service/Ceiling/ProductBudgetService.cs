@@ -367,6 +367,45 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
+         public async Task<ResultVM> NonOperatingIncomeReport(CommonVM vm)
+        {
+            ProductBudgetRepository _repo = new ProductBudgetRepository();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.NonOperatingIncomeReport(vm, conn, transaction);
+
+                if (isNewConnection && result.Status == MessageModel.Success)
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
+
 
 
     }

@@ -127,5 +127,23 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
+
+        [HttpPost("NonOperatingIncomeReport")]
+        public async Task<ResultVM> NonOperatingIncomeReport(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            try
+            {
+                resultVM = await _Service.NonOperatingIncomeReport(vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
+            }
+        }
+
+
+
     }
 }
