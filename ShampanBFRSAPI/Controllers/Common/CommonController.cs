@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Common;
-using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.ExtensionMethods;
 using ShampanBFRS.ViewModel.SetUpVMs;

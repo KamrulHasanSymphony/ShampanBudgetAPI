@@ -1,11 +1,8 @@
 ﻿using ShampanBFRS.Repository.Common;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
-using ShampanBFRS.ViewModel.SalaryAllowance;
 using ShampanBFRS.ViewModel.Sale;
 using ShampanBFRS.ViewModel.Utility;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 

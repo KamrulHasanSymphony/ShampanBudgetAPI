@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Ceiling;
 using ShampanBFRS.Service.Common;
-using ShampanBFRS.Service.Question;
-using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
-using ShampanBFRS.ViewModel.QuestionVM;
 
 namespace ShampanBFRSAPI.Controllers.Ceiling
 {
