@@ -79,7 +79,7 @@ namespace ShampanBFRS.Repository.Ceiling
                     cmd.Parameters.AddWithValue("@TransactionDate", DateTime.Now);
 
                     // Flags
-                    cmd.Parameters.AddWithValue("@IsPost",false);
+                    cmd.Parameters.AddWithValue("@IsPost",'N');
                     cmd.Parameters.AddWithValue("@IsApproveFinal", vm.IsApproveFinal ?? false);
 
                     // Approval

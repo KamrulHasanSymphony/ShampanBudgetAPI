@@ -64,7 +64,7 @@ namespace ShampanBFRS.Repository.Sale
                     cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
 
                    
-                    cmd.Parameters.AddWithValue("@IsPost", false); 
+                    cmd.Parameters.AddWithValue("@IsPost", 'N'); 
 
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? "ERP");
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -74,8 +74,8 @@ namespace ShampanBFRS.Repository.Sale
 
                     vm.Id = Convert.ToInt32(newId);
 
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
                 }
@@ -383,8 +383,9 @@ WHERE 1 = 1
                 var data = new GridEntity<SaleHeaderVM>();
 
                 string sqlQuery = @"
-                SELECT COUNT(DISTINCT M.ID) AS totalcount
+                SELECT COUNT(DISTINCT M.Id) AS totalcount
                 FROM SaleHeaders M
+                LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
                 WHERE 1 = 1 
     " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
 
@@ -397,7 +398,7 @@ WHERE 1 = 1
     FROM (
         SELECT
             ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
-				 ISNULL(M.Id, 0) AS Id,
+		    ISNULL(M.Id, 0) AS Id,
             ISNULL(M.BranchId, 0) AS BranchId,
             ISNULL(M.Code, '') AS Code,
             ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
@@ -405,16 +406,16 @@ WHERE 1 = 1
             ISNULL(M.BudgetType, '') AS BudgetType,
             ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
             ISNULL(M.IsPost, '') AS IsPost,
-            CASE WHEN ISNULL(M.IsPost, '') = 1 THEN 'Posted' ELSE 'Not Posted' END AS Status,
-                ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-                ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-                ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-                ISNULL(M.PostedBy, '') AS PostedBy,
-                ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-                ISNULL(M.PostedFrom, '') AS PostedFrom,
-                ISNULL(M.CreatedBy, '') AS CreatedBy,
-                ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-                ISNULL(M.CreatedFrom, '') AS CreatedFrom
+            CASE WHEN ISNULL(M.IsPost, '') ='Y' THEN 'Posted' ELSE 'Not Posted' END AS Status,
+            ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+            ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+            ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
+            ISNULL(M.PostedBy, '') AS PostedBy,
+            ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
+            ISNULL(M.PostedFrom, '') AS PostedFrom,
+            ISNULL(M.CreatedBy, '') AS CreatedBy,
+            ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
+            ISNULL(M.CreatedFrom, '') AS CreatedFrom
             FROM SaleHeaders M
             LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
             WHERE 1 = 1             
@@ -431,8 +432,8 @@ WHERE 1 = 1
 
                 data = KendoGrid<SaleHeaderVM>.GetDataWithBetween_CMD(options, sqlQuery, "M.Id", conditionalFields, conditionalValues);
 
-                result.Status = "Success";
-                result.Message = "Data retrieved successfully.";
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = data;
                 return result;
             }
@@ -442,87 +443,7 @@ WHERE 1 = 1
                 result.ExMessage = ex.Message;
                 return result;
             }
-            //            DataTable dataTable = new DataTable();
-            //            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-
-            //            try
-            //            {
-            //                if (conn == null)
-            //                {
-            //                    throw new Exception("Database connection fail!");
-            //                }
-
-            //                var data = new GridEntity<SaleHeaderVM>();
-
-            //                // Define your SQL query string
-            //                string sqlQuery = @"
-            //                -- Count query
-            //                SELECT COUNT(DISTINCT M.Id) AS totalcount
-            //FROM SaleHeaders M
-            //WHERE 1 = 1
-
-            //                -- Add the filter condition
-            //                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-            //                // Apply additional conditions
-            //                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
-
-            //                sqlQuery += @"
-            //                -- Data query with pagination and sorting
-            //                SELECT * 
-            //                FROM (
-            //                    SELECT 
-            //                    ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "M.Id DESC") + @") AS rowindex,
-
-
-
-            //ISNULL(M.Id, 0) AS Id,
-            //ISNULL(M.BranchId, 0) AS BranchId,
-            //ISNULL(M.Code, '') AS Code,
-            //ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
-            //ISNULL(M.BudgetType, '') AS BudgetType,
-            //ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
-            //ISNULL(M.IsPost, '') AS IsPost,
-            //CASE WHEN ISNULL(M.IsPost, '') = 'Y' THEN 'Posted' ELSE 'Not Posted' END AS Status,
-            //    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-            //    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-            //    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-            //    ISNULL(M.PostedBy, '') AS PostedBy,
-            //    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-            //    ISNULL(M.PostedFrom, '') AS PostedFrom,
-            //    ISNULL(M.CreatedBy, '') AS CreatedBy,
-            //    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-            //    ISNULL(M.CreatedFrom, '') AS CreatedFrom
-            //FROM SaleHeaders M
-            //WHERE 1 = 1
-
-            //                -- Add the filter condition
-            //                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SaleHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-            //                // Apply additional conditions
-            //                //sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
-
-            //                sqlQuery += @"
-            //                ) AS a
-            //                WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-            //            ";
-
-            //                // Execute the query and get data
-            //                data = KendoGrid<SaleHeaderVM>.GetGridData_CMD(options, sqlQuery, "M.Id");
-
-            //                result.Status = MessageModel.Success;
-            //                result.Message = MessageModel.RetrievedSuccess;
-            //                result.DataVM = data;
-
-            //                return result;
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                result.ExMessage = ex.Message;
-            //                result.Message = ex.Message;
-            //                return result;
-            //            }
+            
         }
         
         // MultiplePost Method

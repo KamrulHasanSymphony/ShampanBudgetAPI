@@ -64,9 +64,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                     cmd.Parameters.AddWithValue("@BudgetType", vm.BudgetType ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
-
-                    // Ensure @IsPost is always provided, even if it's null
-                    cmd.Parameters.AddWithValue("@IsPost", false); // Default to "N" if IsPost is null
+                    cmd.Parameters.AddWithValue("@IsPost",'N'); // Default to "N" if IsPost is null
 
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? "ERP");
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
