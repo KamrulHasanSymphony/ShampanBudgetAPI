@@ -21,8 +21,9 @@ namespace ShampanBFRS.ViewModel.SalaryAllowance
 
         [Display(Name = "Year")]
         public int? FiscalYearId { get; set; }
-        [DisplayName("Budget Type")]
 
+        public string? YearName { get; set; }
+        [DisplayName("Budget Type")]
         public string BudgetType { get; set; }
         [Display(Name = "Branch")]
         public int BranchId { get; set; }
