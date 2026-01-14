@@ -64,7 +64,7 @@ namespace ShampanBFRS.Repository.Sale
                     cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
 
                    
-                    cmd.Parameters.AddWithValue("@IsPost", false); 
+                    cmd.Parameters.AddWithValue("@IsPost", 'N'); 
 
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? "ERP");
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -74,8 +74,8 @@ namespace ShampanBFRS.Repository.Sale
 
                     vm.Id = Convert.ToInt32(newId);
 
-                    result.Status = "Success";
-                    result.Message = "Data inserted successfully.";
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
                 }
