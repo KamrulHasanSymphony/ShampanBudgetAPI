@@ -1,18 +1,12 @@
 ﻿using ShampanBFRS.Repository.Common;
-using ShampanBFRS.Repository.SetUp;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.Utility;
 using System.Data.SqlClient;
-using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
-using Microsoft.Extensions.Options;
-using System.Diagnostics.Metrics;
-using ShampanBFRS.Repository.SalaryAllowance;
 using System.Data;
 using Newtonsoft.Json;
-using ShampanBFRS.ViewModel.SalaryAllowance;
 
 namespace ShampanBFRS.Service.Ceiling
 {
@@ -518,6 +512,45 @@ namespace ShampanBFRS.Service.Ceiling
             }
 
             return result;
+        }
+
+        public async Task<ResultVM> BudgetFinalReport(CommonVM vm, string[] conditionalFields = null, string[] conditionalValues = null)
+        {
+            BudgetRepository _repo = new BudgetRepository();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.BudgetFinalReport(vm, conditionalFields, conditionalValues, conn, transaction);
+
+                if (isNewConnection && result.Status == "Success")
+                    transaction.Commit();
+                else
+                    throw new Exception(result.Message);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
         }
 
 
