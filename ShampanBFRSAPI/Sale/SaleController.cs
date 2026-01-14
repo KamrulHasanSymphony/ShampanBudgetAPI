@@ -2,13 +2,8 @@
 using ShampanBFRS.Service.Common;
 using ShampanBFRS.Service.Sale;
 using ShampanBFRS.ViewModel.CommonVMs;
-using ShampanBFRS.ViewModel.ExtensionMethods;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.Sale;
-using ShampanBFRS.ViewModel.Utility;
-using ShampanBFRSAPI.Configuration;
-using System.Data;
-using static ShampanBFRSAPI.Configuration.HttpRequestHelper;
 
 namespace ShampanBFRSAPI.Sale
 {

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Ceiling;
 using ShampanBFRS.Service.Common;
-using ShampanBFRS.Service.SalaryAllowance;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;

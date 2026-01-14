@@ -2,15 +2,9 @@
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.SalaryAllowance;
-using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShampanBFRS.Repository.SalaryAllowance
 {

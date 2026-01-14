@@ -2,9 +2,6 @@
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
-using ShampanBFRS.ViewModel.QuestionVM;
-using ShampanBFRS.ViewModel.SetUpVMs;
-using ShampanBFRS.ViewModel.Utility;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -1189,12 +1186,10 @@ SET @SQL += '
 GROUP BY
     s.Code, s.Name,
     COA.Code, COA.Name
-ORDER BY s.Code;';
-
+ORDER BY s.Code;
+';
 
 EXEC sp_executesql @SQL;
-
-
 
 ";
 

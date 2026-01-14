@@ -7,8 +7,6 @@ using System.Data.SqlClient;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
-using Microsoft.Extensions.Options;
-using ShampanBFRS.Repository.SalaryAllowance;
 
 namespace ShampanBFRS.Service.Ceiling
 {
