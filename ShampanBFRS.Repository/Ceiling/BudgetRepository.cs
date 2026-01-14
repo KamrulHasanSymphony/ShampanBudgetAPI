@@ -1167,6 +1167,7 @@ INSERT INTO BudgetDetails (
 )
 select 
  @BudgetHeaderId
+,cd.SabreId
 ,sum(cd.InputTotal)
 ,sum(cd.M1)
 ,sum(cd.M2)

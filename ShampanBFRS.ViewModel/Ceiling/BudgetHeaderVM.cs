@@ -10,7 +10,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
 {
     public class BudgetHeaderVM :AuditVM
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         public int? CompanyId { get; set; }
         public int? BranchId { get; set; }
@@ -49,7 +49,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public string? Serial { get; set; }
         public PeramModel? PeramModel { get; set; }
 
-        public List<BudgetDetailVM> DetailList { get; set; }
+        public List<BudgetDetailVM>? DetailList { get; set; }
 
         public string? MenuType { get; set; }
     }
