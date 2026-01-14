@@ -1,22 +1,12 @@
 ﻿using Newtonsoft.Json;
-using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.Repository.Common;
-using ShampanBFRS.Repository.SalaryAllowance;
 using ShampanBFRS.Repository.Sale;
-using ShampanBFRS.Repository.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
-using ShampanBFRS.ViewModel.SalaryAllowance;
 using ShampanBFRS.ViewModel.Sale;
-using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShampanBFRS.Service.Sale
 {
