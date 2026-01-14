@@ -353,14 +353,16 @@ namespace ShampanBFRS.Repository.SetUp
                 // Define your SQL query string
                 string sqlQuery = @"
             -- Count query to get total number of records
-            SELECT COUNT(DISTINCT H.ID) AS totalcount
+            SELECT COUNT(DISTINCT H.Id) AS totalcount
             FROM Sabres H
-            WHERE 1 = 1";
-
+            LEFT OUTER JOIN COAs C ON H.Id =C.Id
+            WHERE 1 = 1
+            " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SabresVM>.FilterCondition(options.filter) + ")" : "");
                 // Add additional filtering conditions if present
                 sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
 
                 sqlQuery += @"
+
             -- Data query with pagination and sorting
             SELECT * 
             FROM (
@@ -379,7 +381,8 @@ namespace ShampanBFRS.Repository.SetUp
                         ISNULL(FORMAT(H.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS LastUpdateAt
                         FROM Sabres H
                         LEFT OUTER JOIN COAs C ON H.Id =C.Id
-                WHERE 1 = 1";
+                WHERE 1 = 1
+              " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SabresVM>.FilterCondition(options.filter) + ")" : "");
 
                 // Apply any dynamic conditions
                 sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);

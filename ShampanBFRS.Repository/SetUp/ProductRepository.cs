@@ -605,6 +605,7 @@ ORDER BY Name";
             -- Count query
             SELECT COUNT(DISTINCT M.Id) AS totalcount
             FROM Products M
+            LEFT OUTER JOIN  ProductGroups pg on pg.Id = M.ProductGroupId
             WHERE 1= 1
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<ProductVM>.FilterCondition(options.filter) + ")" : "") + @"

@@ -429,6 +429,7 @@ namespace ShampanBFRS.Repository.SetUp
                 -- Count
                 SELECT COUNT(DISTINCT C.Id) AS totalcount
                 FROM COAs C
+                LEFT OUTER JOIN COAGroups CG ON C.COAGroupId =CG.Id
                 WHERE C.IsArchive != 1
                 " + (options.filter.Filters.Count > 0
                         ? " AND (" + GridQueryBuilder<COAVM>.FilterCondition(options.filter) + ")"
