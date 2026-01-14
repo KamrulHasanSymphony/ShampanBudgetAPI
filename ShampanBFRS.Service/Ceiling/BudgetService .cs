@@ -553,6 +553,89 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
+        public async Task<ResultVM> BudgetTransfer(BudgetHeaderVM model)
+        {
+            BudgetRepository _repo = new BudgetRepository();
+            _commonRepo = new CommonRepository();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn.Open();
+                isNewConnection = true;
+                transaction = conn.BeginTransaction();
+
+                string CodeGroup = "Budget";
+                string CodeName = "Budget";
+
+                if (model == null)
+                {
+                    return new ResultVM()
+                    {
+                        Status = MessageModel.Fail,
+                        Message = MessageModel.NotFoundForSave,
+                    };
+                }
+                
+                string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
+
+                if (code != "" || code != null)
+                {
+                    model.Code = code;
+
+                    result = await _repo.BudgetTransferHeader(model, conn, transaction);
+
+                    if (result.Status == MessageModel.Fail)
+                        throw new Exception(result.Message);
+
+                    model.Id = Convert.ToInt32(result.Id);
+
+                    result = await _repo.BudgetTransferDetails(model, conn, transaction);
+
+                    if (result.Status == MessageModel.Fail)
+                        throw new Exception(result.Message);
+
+                }
+                else
+                {
+                    return new ResultVM()
+                    {
+                        Status = MessageModel.Fail,
+                        Message = MessageModel.DataLoadedFailed,
+
+                    };
+                }
+
+                if (isNewConnection && result.Status == MessageModel.Success)
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
+                result.DataVM = model;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection) transaction.Rollback();
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null) conn.Close();
+            }
+        }
 
     }
 }

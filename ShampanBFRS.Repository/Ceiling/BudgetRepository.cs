@@ -1110,7 +1110,6 @@ INSERT INTO BudgetHeaders (
 
                 objMaster.Id = Convert.ToInt32(command.ExecuteScalar());
 
-
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.InsertSuccess;
                 result.Id = objMaster.Id.ToString();

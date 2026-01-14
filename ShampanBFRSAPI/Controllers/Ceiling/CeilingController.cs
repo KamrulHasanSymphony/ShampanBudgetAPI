@@ -95,8 +95,8 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        [HttpPost("BudgetFinalReport")]
-        public async Task<ResultVM> BudgetFinalReport(CommonVM vm)
+        [HttpPost("xxBudgetFinalReport")]
+        public async Task<ResultVM> xxBudgetFinalReport(CommonVM vm)
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try
@@ -142,7 +142,6 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-
         [HttpPost("GetCeilingDetailDataById")]
         public async Task<ResultVM> GetCeilingDetailDataById(GridOptions options, int masterId)
         {
@@ -165,8 +164,8 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        [HttpPost("BudgetTransfer")]
-        public async Task<ResultVM> BudgetTransfer(CeilingVM vm)
+        [HttpPost("xxxBudgetTransfer")]
+        public async Task<ResultVM> xxBudgetTransfer(CeilingVM vm)
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
             try

@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.Ceiling;
 using ShampanBFRS.Service.Common;
-using ShampanBFRS.Service.SalaryAllowance;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;
@@ -184,5 +182,22 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
             }
         }
+
+        [HttpPost("BudgetTransfer")]
+        public async Task<ResultVM> BudgetTransfer(BudgetHeaderVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+            try
+            {
+                _Service = new BudgetService();
+                resultVM = await _Service.BudgetTransfer(vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
+            }
+        }
+
     }
 }
