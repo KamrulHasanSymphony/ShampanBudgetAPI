@@ -4,8 +4,6 @@ using System.Data.SqlClient;
 using System.Data;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Options;
 
 namespace ShampanBFRS.Repository.Ceiling
 {
@@ -803,7 +801,6 @@ drop table #ProductBudgetTemp
                 return result;
             }
         }
-
 
         public async Task<ResultVM> ExitCheck(ProductBudgetVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
         {
@@ -1810,8 +1807,7 @@ IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBu
             }
         }
 
-        
-        public async Task<ResultVM> NonOperatingIncomeReport(CommonVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> NonOperatingIncomeReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dt = new DataTable();
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
@@ -1821,476 +1817,226 @@ IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBu
                 if (conn == null) throw new Exception(MessageModel.DBConnFail);
                 if (transaction == null) throw new Exception(MessageModel.DBConnFail);
 
-                string query = "";
+                string query = @"
 
-                #region Imported Refined
+DECLARE @BranchId INT = @BId;
+DECLARE @Year INT;               -- Base year (Estimated year)
+DECLARE @EstimatedYear INT;
+DECLARE @ApprovedYear INT;
+DECLARE @ActualYear INT;
 
-                string query_ImportedRefined = @"
+DECLARE @EstimatedYearName NVARCHAR(50);
+DECLARE @ApprovedYearName NVARCHAR(50);
+DECLARE @ActualYearName NVARCHAR(50);
 
---DECLARE @GLFiscalYearId INT = 7;
---DECLARE @BudgetType NVARCHAR(20) = 'Estimated';
---DECLARE @ChargeGroup VARCHAR(200) = 'ImportedRefined';
+DECLARE @SQL NVARCHAR(MAX);
+DECLARE @ReportType NVARCHAR(50) = @RType;
 
-DECLARE @cols NVARCHAR(MAX);
-DECLARE @sumCols NVARCHAR(MAX);
-DECLARE @query NVARCHAR(MAX);
+------------------------------------------------------------
+-- Get base year (Estimated)
+------------------------------------------------------------
+SELECT @Year = [Year]
+FROM FiscalYears
+WHERE Id = @FYId;
 
---------------------------------------------------------------------------------
--- STAGE 1: Prepare Data in Temp Table
---------------------------------------------------------------------------------
-IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
+SET @EstimatedYear = @Year;
+SET @ApprovedYear  = @Year - 1;
+SET @ActualYear    = @Year - 2;
 
-SELECT 
-    v.Particulars, 
-    p.Name AS ProductName, 
-    ISNULL(v.Value, 0) AS Value
-INTO #TempProductBudget
-FROM ProductBudgets pb
-LEFT JOIN Products p ON pb.ProductId = p.Id
-CROSS APPLY (VALUES
-    ('CONVERSION', pb.ConversionFactor),
-    ('B/L QUANTITY (M.TON)', pb.BLQuantityMT),
-    ('B/L QUANTITY (BBL)', pb.BLQuantityBBL),
-    ('Received Quantity (M.TON)', pb.ReceiveQuantityMT),
-    ('Received Quantity (BBL)', pb.ReceiveQuantityBBL),
-    ('CIF PRICE (USD /BBL)', pb.CIFCharge),
-    ('CIF Cost (USD)', pb.CifUsdValue),
-    ('CIF Cost (Taka)', pb.CifBdt),
-    ('Duty (Taka)', pb.DutyValue),
-    ('VAT (Taka)', pb.VATValue),
-    ('AT (Taka)', pb.ATValue),
-    ('AIT (Taka)', pb.AITValue),
-    ('Arrear Duty (Taka)', pb.ArrearDuty),
-    ('Handling Commission (TK 100/MT) (Taka)', pb.HandelingChargeValue),
-    ('River Dues (0.443 USD/M TON) (Taka)', pb.RiverDuesValue),
-    ('Survey Fee (Taka)', pb.SurveyValue),
-    ('Ocean Loss (Taka)', pb.OceanLossValue),
-    ('Bank Charge (LC Commission)(Taka)', pb.BankChargeValue),
-    ('Total Cost (Taka)', pb.TotalCost),
-    ('COST/BBL (Taka)', pb.CostBblValue),
-    ('COST/LITRE (Taka)', pb.CostLiterValue)
-) v(Particulars, Value)
-WHERE pb.GLFiscalYearId = @GLFiscalYearId
-  AND pb.BudgetType = @BudgetType;
+------------------------------------------------------------
+-- Get year names
+------------------------------------------------------------
+SELECT @EstimatedYearName = YearName FROM FiscalYears WHERE [Year] = @EstimatedYear;
+SELECT @ApprovedYearName  = YearName FROM FiscalYears WHERE [Year] = @ApprovedYear;
+SELECT @ActualYearName    = YearName FROM FiscalYears WHERE [Year] = @ActualYear;
 
---------------------------------------------------------------------------------
--- STAGE 2: Build Dynamic Columns
---------------------------------------------------------------------------------
+------------------------------------------------------------
+-- Start building SELECT
+------------------------------------------------------------
+SET @SQL = N'
+SELECT
+    COA.Code AS [iBAS Code],
+    COA.Name AS [iBAS Name],
+    s.Code   AS [Sabre Code],
+    s.Name   AS [Sabre Name],
 
--- 1. List of Columns for Pivot: [Product A], [Product B]
-SELECT @cols = STRING_AGG(QUOTENAME(ProductName), ',') WITHIN GROUP (ORDER BY ProductName)
-FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
+    -- Estimated (Base Year)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@EstimatedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Estimated'' 
+            THEN cd.Yearly ELSE 0 
+        END) AS [Estimated(' + @EstimatedYearName + ')],
 
--- 2. Expression for Summing: [Product A] + [Product B]
-SELECT @sumCols = STRING_AGG(QUOTENAME(ProductName), ' + ') WITHIN GROUP (ORDER BY ProductName)
-FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
+    -- Revised (Previous Year)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Revised'' 
+            THEN cd.Yearly ELSE 0 
+        END) AS [Revised(' + @ApprovedYearName + ')],
 
-IF @cols IS NULL
+    -- Approved (Previous Year)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Approved'' 
+            THEN cd.Yearly ELSE 0 
+        END) AS [Approved(' + @ApprovedYearName + ')],
+
+    -- Actual Audited (Two Years Back)
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ActualYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''Actual_Audited'' 
+            THEN cd.Yearly ELSE 0 
+        END) AS [Actual Audited(' + @ActualYearName + ')]';
+
+------------------------------------------------------------
+-- Conditionally add 1st / 2nd 6 months columns
+------------------------------------------------------------
+IF @ReportType <> '2nd_6months_actual'
 BEGIN
-    PRINT 'No data found for the provided parameters.';
-END
-ELSE
+    SET @SQL += ',
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''1st_6months_actual'' 
+            THEN cd.Yearly ELSE 0 
+        END) AS [1st 6 Months Actual(' + @ApprovedYearName + ')]';
+END;
+
+IF @ReportType <> '1st_6months_actual'
 BEGIN
-    --------------------------------------------------------------------------------
-    -- STAGE 3: Build and Execute the Final Query with Custom Formulas
-    --------------------------------------------------------------------------------
-    SET @query = N'
-    ;WITH PivotData AS (
-        SELECT *, 
-            -- Calculate the standard horizontal sum for all rows first
-            (' + @sumCols + ') AS RowTotal
-        FROM #TempProductBudget
-        PIVOT (
-            SUM(Value) FOR ProductName IN (' + @cols + ')
-        ) pvt
-    ),
-    CalculatedTotals AS (
-        SELECT *,
-            -- Extract the specific totals we need for our formulas using Window Functions
-            MAX(CASE WHEN Particulars = ''B/L QUANTITY (BBL)'' THEN RowTotal END) OVER () AS Total_BL_BBL,
-            MAX(CASE WHEN Particulars = ''B/L QUANTITY (M.TON)''  THEN RowTotal END) OVER () AS Total_BL_MT,
-            MAX(CASE WHEN Particulars = ''CIF Cost (USD)''   THEN RowTotal END) OVER () AS Total_CIF_USD
-        FROM PivotData
-    )
-    SELECT 
-        Particulars, 
-        ' + @cols + ', 
-        -- Apply the custom logic for the ""Total"" column
-        CASE 
-            WHEN Particulars = ''CONVERSION'' THEN 
-                CASE WHEN ISNULL(Total_BL_MT, 0) = 0 THEN 0 ELSE Total_BL_BBL / Total_BL_MT END
-            
-            WHEN Particulars = ''CIF PRICE (USD /BBL)'' THEN 
-                CASE WHEN ISNULL(Total_BL_BBL, 0) = 0 THEN 0 ELSE Total_CIF_USD / Total_BL_BBL END
-            
-            ELSE RowTotal 
-        END AS Total
-    FROM CalculatedTotals
-    ORDER BY CASE Particulars
-        WHEN ''CONVERSION'' THEN 1 
-        WHEN ''B/L QUANTITY (M.TON)'' THEN 2
-        WHEN ''B/L QUANTITY (BBL)'' THEN 3
-        WHEN ''Received Quantity (M.TON)'' THEN 4
-        WHEN ''Received Quantity (BBL)'' THEN 5
-        WHEN ''CIF PRICE (USD /BBL)'' THEN 6
-        WHEN ''CIF Cost (USD)'' THEN 7
-        WHEN ''CIF Cost (Taka)'' THEN 8
-        WHEN ''Duty (Taka)'' THEN 9
-        WHEN ''VAT (Taka)'' THEN 10
-        WHEN ''AT (Taka)'' THEN 11
-        WHEN ''AIT (Taka)'' THEN 12
-        WHEN ''Arrear Duty (Taka)'' THEN 13
-        WHEN ''Handling Commission (TK 100/MT) (Taka)'' THEN 14
-        WHEN ''River Dues (0.443 USD/M TON) (Taka)'' THEN 15
-        WHEN ''Survey Fee (Taka)'' THEN 16
-        WHEN ''Ocean Loss (Taka)'' THEN 17
-        WHEN ''Bank Charge (LC Commission)(Taka)'' THEN 18
-        WHEN ''Total Cost (Taka)'' THEN 19
-        WHEN ''COST/BBL (Taka)'' THEN 20
-        WHEN ''COST/LITRE (Taka)'' THEN 21
-        ELSE 100 
-    END;';
-
-    EXEC sp_executesql @query;
-END
-
--- Cleanup
-IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
+    SET @SQL += ',
+    SUM(CASE 
+            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+             AND c.BudgetType = ''2nd_6months_actual'' 
+            THEN cd.Yearly ELSE 0 
+        END) AS [2nd 6 Months Actual(' + @ApprovedYearName + ')]';
+END;
 
 
+SET @SQL += ',
 
+-- Estimated %
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@EstimatedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Estimated'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [Estimated %],
+
+-- Revised %
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Revised'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [Revised %],
+
+-- Actual Audited %
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ActualYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Actual_Audited'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [Actual Audited %]';
+
+
+IF @ReportType <> '2nd_6months_actual'
+BEGIN
+    SET @SQL += ',
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''1st_6months_actual'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [1st 6 Months Actual %]';
+END;
+
+IF @ReportType <> '1st_6months_actual'
+BEGIN
+    SET @SQL += ',
+CASE 
+    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
+    THEN 0
+    ELSE ROUND(
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''2nd_6months_actual'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        /
+        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
+        * 100, 2)
+END AS [2nd 6 Months Actual %]';
+END;
+
+SET @SQL += '
+FROM BudgetHeaders c
+INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
+INNER JOIN FiscalYears FY    ON c.FiscalYearId = FY.Id
+INNER JOIN Sabres s          ON cd.SabreId = s.Id
+INNER JOIN COAs COA          ON COA.Id = s.COAId
+WHERE 1=1
+and isnull(COA.IsNonOperatingIncome,''0'')=''1''
+and c.BudgetType IN
+(
+    ''Estimated'',
+    ''Revised'',
+    ''Approved'',
+    ''1st_6months_actual'',
+    ''2nd_6months_actual'',
+    ''Actual_Audited''
+)
+AND FY.[Year] IN (' 
+    + CAST(@ActualYear AS NVARCHAR) + ',' 
+    + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+    + CAST(@EstimatedYear AS NVARCHAR) + ')';
+
+IF @BranchId IS NOT NULL
+BEGIN
+    SET @SQL += ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR);
+END;
+
+SET @SQL += '
+GROUP BY
+    s.Code, s.Name,
+    COA.Code, COA.Name
+ORDER BY s.Code;';
+
+
+EXEC sp_executesql @SQL;
 
 ";
-
-                #endregion
-
-                #region Local Refined
-
-                string query_LocalRefined = @"
-
---DECLARE @GLFiscalYearId INT = 7;
---DECLARE @BudgetType NVARCHAR(20) = 'Estimated';
---DECLARE @ChargeGroup VARCHAR(200) = 'LocalRefined';
-
-DECLARE @cols NVARCHAR(MAX);
-DECLARE @sumCols NVARCHAR(MAX);
-DECLARE @query NVARCHAR(MAX);
-
---------------------------------------------------------------------------------
--- STAGE 1: Prepare Data in Temp Table
---------------------------------------------------------------------------------
-IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
-
-SELECT 
-    v.Particulars, 
-    p.Name AS ProductName, 
-    ISNULL(v.Value, 0) AS Value
-INTO #TempProductBudget
-FROM ProductBudgets pb
-LEFT JOIN Products p ON pb.ProductId = p.Id
-CROSS APPLY (VALUES
-    ('CONVERSION', pb.ConversionFactor),
-    ('B/L QUANTITY (M.TON)', pb.BLQuantityMT),
-    ('B/L QUANTITY (BBL)', pb.BLQuantityBBL),
-    ('Received Quantity (M.TON)', pb.ReceiveQuantityMT),
-    ('Received Quantity (BBL)', pb.ReceiveQuantityBBL),
-    ('CIF PRICE (USD /BBL)', pb.CIFCharge),
-    ('CIF Cost (USD)', pb.CifUsdValue),
-    ('CIF Cost (Taka)', pb.CifBdt),
-    ('Duty (Taka)', pb.DutyValue),
-    ('VAT (Taka)', pb.VATValue),
-    ('AT (Taka)', pb.ATValue),
-    ('AIT (Taka)', pb.AITValue),
-    ('Arrear Duty (Taka)', pb.ArrearDuty),
-    ('Handling Commission (TK 100/MT) (Taka)', pb.HandelingChargeValue),
-    ('River Dues (0.443 USD/M TON) (Taka)', pb.RiverDuesValue),
-    ('Survey Fee (Taka)', pb.SurveyValue),
-    ('Ocean Loss (Taka)', pb.OceanLossValue),
-    ('Bank Charge (LC Commission)(Taka)', pb.BankChargeValue),
-    ('Total Cost (Taka)', pb.TotalCost),
-    ('COST/BBL (Taka)', pb.CostBblValue),
-    ('COST/LITRE (Taka)', pb.CostLiterValue)
-) v(Particulars, Value)
-WHERE pb.GLFiscalYearId = @GLFiscalYearId
-  AND pb.BudgetType = @BudgetType;
-
---------------------------------------------------------------------------------
--- STAGE 2: Build Dynamic Columns
---------------------------------------------------------------------------------
-
--- 1. List of Columns for Pivot: [Product A], [Product B]
-SELECT @cols = STRING_AGG(QUOTENAME(ProductName), ',') WITHIN GROUP (ORDER BY ProductName)
-FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
-
--- 2. Expression for Summing: [Product A] + [Product B]
-SELECT @sumCols = STRING_AGG(QUOTENAME(ProductName), ' + ') WITHIN GROUP (ORDER BY ProductName)
-FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
-
-IF @cols IS NULL
-BEGIN
-    PRINT 'No data found for the provided parameters.';
-END
-ELSE
-BEGIN
-    --------------------------------------------------------------------------------
-    -- STAGE 3: Build and Execute the Final Query with Custom Formulas
-    --------------------------------------------------------------------------------
-    SET @query = N'
-    ;WITH PivotData AS (
-        SELECT *, 
-            -- Calculate the standard horizontal sum for all rows first
-            (' + @sumCols + ') AS RowTotal
-        FROM #TempProductBudget
-        PIVOT (
-            SUM(Value) FOR ProductName IN (' + @cols + ')
-        ) pvt
-    ),
-    CalculatedTotals AS (
-        SELECT *,
-            -- Extract the specific totals we need for our formulas using Window Functions
-            MAX(CASE WHEN Particulars = ''B/L QUANTITY (BBL)'' THEN RowTotal END) OVER () AS Total_BL_BBL,
-            MAX(CASE WHEN Particulars = ''B/L QUANTITY (M.TON)''  THEN RowTotal END) OVER () AS Total_BL_MT,
-            MAX(CASE WHEN Particulars = ''CIF Cost (USD)''   THEN RowTotal END) OVER () AS Total_CIF_USD
-        FROM PivotData
-    )
-    SELECT 
-        Particulars, 
-        ' + @cols + ', 
-        -- Apply the custom logic for the ""Total"" column
-        CASE 
-            WHEN Particulars = ''CONVERSION'' THEN 
-                CASE WHEN ISNULL(Total_BL_MT, 0) = 0 THEN 0 ELSE Total_BL_BBL / Total_BL_MT END
-            
-            WHEN Particulars = ''CIF PRICE (USD /BBL)'' THEN 
-                CASE WHEN ISNULL(Total_BL_BBL, 0) = 0 THEN 0 ELSE Total_CIF_USD / Total_BL_BBL END
-            
-            ELSE RowTotal 
-        END AS Total
-    FROM CalculatedTotals
-    ORDER BY CASE Particulars
-        WHEN ''CONVERSION'' THEN 1 
-        WHEN ''B/L QUANTITY (M.TON)'' THEN 2
-        WHEN ''B/L QUANTITY (BBL)'' THEN 3
-        WHEN ''Received Quantity (M.TON)'' THEN 4
-        WHEN ''Received Quantity (BBL)'' THEN 5
-        WHEN ''CIF PRICE (USD /BBL)'' THEN 6
-        WHEN ''CIF Cost (USD)'' THEN 7
-        WHEN ''CIF Cost (Taka)'' THEN 8
-        WHEN ''Duty (Taka)'' THEN 9
-        WHEN ''VAT (Taka)'' THEN 10
-        WHEN ''AT (Taka)'' THEN 11
-        WHEN ''AIT (Taka)'' THEN 12
-        WHEN ''Arrear Duty (Taka)'' THEN 13
-        WHEN ''Handling Commission (TK 100/MT) (Taka)'' THEN 14
-        WHEN ''River Dues (0.443 USD/M TON) (Taka)'' THEN 15
-        WHEN ''Survey Fee (Taka)'' THEN 16
-        WHEN ''Ocean Loss (Taka)'' THEN 17
-        WHEN ''Bank Charge (LC Commission)(Taka)'' THEN 18
-        WHEN ''Total Cost (Taka)'' THEN 19
-        WHEN ''COST/BBL (Taka)'' THEN 20
-        WHEN ''COST/LITRE (Taka)'' THEN 21
-        ELSE 100 
-    END;';
-
-    EXEC sp_executesql @query;
-END
-
--- Cleanup
-IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
-
-";
-
-                #endregion
-
-                #region Imported Crude
-
-                string query_ImportedCrude = @"
---DECLARE @GLFiscalYearId INT = 9;
---DECLARE @BudgetType NVARCHAR(20) = 'Estimated';
---DECLARE @ChargeGroup VARCHAR(200) = 'ImportedCrude';
-
-DECLARE @cols NVARCHAR(MAX);
-DECLARE @sumCols NVARCHAR(MAX);
-DECLARE @query NVARCHAR(MAX);
-
---------------------------------------------------------------------------------
--- STAGE 1: Prepare Data (Renamed BDT to TAKA)
---------------------------------------------------------------------------------
-IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
-
-SELECT 
-    v.Particulars, 
-    p.Name AS ProductName, 
-    ISNULL(v.Value, 0) AS Value
-INTO #TempProductBudget
-FROM ProductBudgets pb
-LEFT JOIN Products p ON pb.ProductId = p.Id
-CROSS APPLY (VALUES
-    ('Conversion Factor', pb.ConversionFactor),
-    ('B/L Quantity (M.TON)', pb.BLQuantityMT),
-    ('B/L Quantity (BBL)', pb.BLQuantityBBL),
-    ('Received Quantity (M.TON)', pb.ReceiveQuantityMT),
-    ('Received Quantity (BBL)', pb.ReceiveQuantityBBL),
-    ('Process Quantity (M.TON)', pb.ProcessQuantityMT),
-    ('Process Quantity (BBL)', pb.ProcessQuantityBBL),
-    ('Production (M.TON)', pb.ProductionMT),
-    ('Production (BBL)', pb.ProductionBBL),
-    ('FOB Price (USD/BBL)', pb.FobPriceBBL),
-    ('FOB Price (USD/M.TON)', pb.FobPriceMT),
-    ('FOB Value (USD)', pb.FobValueUsd),
-    ('FOB Value (TAKA)', pb.FobValueBdt),
-    ('Freight (USD/M.TON)', pb.FreightMT),
-    ('Freight (USD/BBL)', pb.FreightBBL),
-    ('Freight Value (USD)', pb.FreightUsd),
-    ('Freight Value (TAKA)', pb.FreightBdt),
-    ('Service Charge (USD)', pb.ServiceChargeValueUsd),
-    ('Service Charge (TAKA)', pb.ServiceChargeBdt),
-    ('Lighterage Charge (USD/M.TON)', pb.LightCharge),
-    ('Lighterage Charge (USD)', pb.LightChargeValueUsd),
-    ('Lighterage Charge (TAKA)', pb.LightChargeValue),
-    ('CFR Price (USD/BBL)', pb.CfrPriceBBL),
-    ('CFR Price (USD)', pb.CfrPriceUsd),
-    ('CFR Price (TAKA)', pb.CfrPriceBdt),
-    ('Duty (TAKA)', pb.DutyValue),
-    ('VAT (TAKA)', pb.VATValue),
-    ('AT (TAKA)', pb.ATValue),
-    ('AIT (TAKA)', pb.AITValue),
-    ('Arrear Duty (TAKA)', pb.ArrearDuty),
-    ('Total Duty VAT', pb.TotalDutyVat),
-    ('Insurance (TAKA)', pb.InsuranceValue),
-    ('Bank Charge (TAKA)', pb.BankChargeValue),
-    ('Ocean Loss (TAKA)', pb.OceanLossValue),
-    ('CPA Charge (TAKA)', pb.CPAChargeValue),
-    ('Handling Charge (TAKA)', pb.HandelingChargeValue),
-    ('Survey Fee (TAKA)', pb.SurveyValue),
-    ('Process Fee (TAKA)', pb.ProcessFeeValue),
-    ('RCO Treatment Fee (TAKA)', pb.RcoTreatmentFeeValue),
-    ('ABP Treatment Fee (TAKA)', pb.AbpTreatmentFeeValue),
-    ('Product Improvement Fee (TAKA)', pb.ProductImprovementFeeValue),
-    ('Total Cost (TAKA)', pb.TotalCost),
-    ('COST/BBL (TAKA)', pb.CostBblValue),
-    ('COST/LITRE (TAKA)', pb.CostLiterValue)
-) v(Particulars, Value)
-WHERE pb.GLFiscalYearId = @GLFiscalYearId
-  AND pb.BudgetType = @BudgetType;
-
---------------------------------------------------------------------------------
--- STAGE 2: Build Dynamic Columns
---------------------------------------------------------------------------------
-SELECT @cols = STRING_AGG(QUOTENAME(ProductName), ',') WITHIN GROUP (ORDER BY ProductName)
-FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
-
-SELECT @sumCols = STRING_AGG(QUOTENAME(ProductName), ' + ') WITHIN GROUP (ORDER BY ProductName)
-FROM (SELECT DISTINCT ProductName FROM #TempProductBudget) t;
-
-IF @cols IS NULL
-BEGIN
-    PRINT 'No data found for the provided parameters.';
-END
-ELSE
-BEGIN
-    --------------------------------------------------------------------------------
-    -- STAGE 3: Execute Query
-    --------------------------------------------------------------------------------
-    SET @query = N'
-    ;WITH PivotData AS (
-        SELECT *, (' + @sumCols + ') AS RowTotal
-        FROM #TempProductBudget
-        PIVOT (SUM(Value) FOR ProductName IN (' + @cols + ')) pvt
-    )
-    SELECT 
-        Particulars, 
-        ' + @cols + ', 
-        CASE 
-            WHEN Particulars IN (
-                ''FOB Price (USD/BBL)'', 
-                ''FOB Price (USD/M.TON)'', 
-                ''Freight Value (USD)'', 
-                ''Freight Value (TAKA)'', 
-                ''Freight (USD/M.TON)'', 
-                ''Freight (USD/BBL)'', 
-                ''Service Charge (USD)'', 
-                ''Lighterage Charge (USD/M.TON)'', 
-                ''CFR Price (USD/BBL)'', 
-                ''COST/BBL (TAKA)'', 
-                ''COST/LITRE (TAKA)''
-            ) THEN NULL 
-            ELSE RowTotal 
-        END AS Total
-    FROM PivotData
-    ORDER BY CASE Particulars
-        WHEN ''Conversion Factor'' THEN 1
-        WHEN ''B/L Quantity (M.TON)'' THEN 2
-        WHEN ''B/L Quantity (BBL)'' THEN 3
-        WHEN ''Received Quantity (M.TON)'' THEN 4
-        WHEN ''Received Quantity (BBL)'' THEN 5
-        WHEN ''Process Quantity (M.TON)'' THEN 6
-        WHEN ''Process Quantity (BBL)'' THEN 7
-        WHEN ''Production (M.TON)'' THEN 8
-        WHEN ''Production (BBL)'' THEN 9
-        WHEN ''FOB Price (USD/BBL)'' THEN 10
-        WHEN ''FOB Price (USD/M.TON)'' THEN 11
-        WHEN ''FOB Value (USD)'' THEN 12
-        WHEN ''FOB Value (TAKA)'' THEN 13
-        WHEN ''Freight Value (USD)'' THEN 14
-        WHEN ''Freight Value (TAKA)'' THEN 15
-        WHEN ''Freight (USD/M.TON)'' THEN 16
-        WHEN ''Freight (USD/BBL)'' THEN 17
-        WHEN ''Service Charge (USD)'' THEN 18
-        WHEN ''Service Charge (TAKA)'' THEN 19
-        WHEN ''Lighterage Charge (USD/M.TON)'' THEN 20
-        WHEN ''Lighterage Charge (USD)'' THEN 21
-        WHEN ''Lighterage Charge (TAKA)'' THEN 22
-        WHEN ''CFR Price (USD)'' THEN 23
-        WHEN ''CFR Price (USD/BBL)'' THEN 24
-        WHEN ''CFR Price (TAKA)'' THEN 25
-        WHEN ''Duty (TAKA)'' THEN 26
-        WHEN ''VAT (TAKA)'' THEN 27
-        WHEN ''AT (TAKA)'' THEN 28
-        WHEN ''AIT (TAKA)'' THEN 29
-        WHEN ''Arrear Duty (TAKA)'' THEN 30
-        WHEN ''Total Duty VAT'' THEN 31
-        WHEN ''Insurance (TAKA)'' THEN 32
-        WHEN ''Bank Charge (TAKA)'' THEN 33
-        WHEN ''Ocean Loss (TAKA)'' THEN 34
-        WHEN ''CPA Charge (TAKA)'' THEN 35
-        WHEN ''Handling Charge (TAKA)'' THEN 36
-        WHEN ''Survey Fee (TAKA)'' THEN 37
-        WHEN ''Process Fee (TAKA)'' THEN 38
-        WHEN ''RCO Treatment Fee (TAKA)'' THEN 39
-        WHEN ''ABP Treatment Fee (TAKA)'' THEN 40
-        WHEN ''Product Improvement Fee (TAKA)'' THEN 41
-        WHEN ''Total Cost (TAKA)'' THEN 42
-        WHEN ''COST/BBL (TAKA)'' THEN 43
-        WHEN ''COST/LITRE (TAKA)'' THEN 44
-        ELSE 100 
-    END;';
-
-    EXEC sp_executesql @query;
-END
-
-IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBudget;
-
-";
-
-                #endregion
-
-                //if (!string.IsNullOrWhiteSpace(vm.ChargeGroup) && vm.ChargeGroup.ToLower() == "importedrefined")
-                //{
-                //    query = query_ImportedRefined;
-                //}
-                //else if (!string.IsNullOrWhiteSpace(vm.ChargeGroup) && vm.ChargeGroup.ToLower() == "localrefined")
-                //{
-                //    query = query_LocalRefined;
-                //}
-                //else if (!string.IsNullOrWhiteSpace(vm.ChargeGroup) && vm.ChargeGroup.ToLower() == "importedcrude")
-                //{
-                //    query = query_ImportedCrude;
-                //}
 
                 SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
-                adapter.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
-                adapter.SelectCommand.Parameters.AddWithValue("@GLFiscalYearId", vm.YearId);
+                adapter.SelectCommand.Parameters.AddWithValue("@FYId", vm.YearId);
+
+                if (!string.IsNullOrEmpty(vm.BranchId))
+                    adapter.SelectCommand.Parameters.AddWithValue("@BId", vm.BranchId);
+
+                if (!string.IsNullOrEmpty(vm.ReportType))
+                    adapter.SelectCommand.Parameters.AddWithValue("@RType", vm.ReportType);
 
                 adapter.Fill(dt);
 
