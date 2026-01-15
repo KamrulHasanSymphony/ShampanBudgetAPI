@@ -40,7 +40,7 @@ namespace ShampanBFRSAPI.Controllers.Login
             {
                 var claims = new List<Claim>
                     {
-                        new Claim("Database", "Tailor_DB"),
+                        new Claim("Database", "SSLBudget_DB"),
                     };
 
                 if (model.Operation == "update")
