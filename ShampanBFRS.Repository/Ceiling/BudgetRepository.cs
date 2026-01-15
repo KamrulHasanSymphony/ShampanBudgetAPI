@@ -282,7 +282,7 @@ WHERE 1 = 1
         WHERE 1 = 1
           AND UI.UserName = 'erp'
           {(options.filter.Filters.Count > 0
-                      ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")"
+                      ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")"
                       : "")}
           {ApplyConditions("", conditionalFields, conditionalValues, false)}
 
@@ -308,7 +308,7 @@ WHERE 1 = 1
                 COAs.Name          AS iBASName,
                 Sabres.Code        AS SabreCode,
                 Sabres.[Name]      AS SabreName,
-                0                  AS InputTotal
+                0.0                AS InputTotal
 
             FROM Sabres
             LEFT OUTER JOIN COAs ON COAs.Id = Sabres.COAId
@@ -316,7 +316,7 @@ WHERE 1 = 1
             INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
             WHERE 1 = 1
               {(options.filter.Filters.Count > 0
-                          ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")"
+                          ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")"
                           : "")}
               {ApplyConditions("", conditionalFields, conditionalValues, false)}
         ) t
@@ -324,7 +324,7 @@ WHERE 1 = 1
           AND (@take = 0 OR t.rowindex <= @take);
         ";
 
-                var data = KendoGrid<BudgetHeaderVM>
+                var data = KendoGrid<BudgetDetailVM>
                     .GetTransactionalGridData_CMD(
                         options,
                         sqlQuery,

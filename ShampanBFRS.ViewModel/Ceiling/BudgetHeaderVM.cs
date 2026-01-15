@@ -46,7 +46,6 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public int? ToFiscalYearId { get; set; }
         public string? ToBudgetType { get; set; }
 
-        public string? Serial { get; set; }
         public PeramModel? PeramModel { get; set; }
 
         public List<BudgetDetailVM>? DetailList { get; set; }

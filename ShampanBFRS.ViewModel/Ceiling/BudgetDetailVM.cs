@@ -9,7 +9,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
 {
     public class BudgetDetailVM :AuditVM
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         public int? BudgetHeaderId { get; set; }
         public int? SabreId { get; set; }
@@ -51,6 +51,9 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public string? iBASName { get; set; }
         public string? iBASCode { get; set; }
 
-        public string? Operation { get; set; }  
+        public string? Operation { get; set; }
+
+        public string? Serial { get; set; }
+
     }
 }
