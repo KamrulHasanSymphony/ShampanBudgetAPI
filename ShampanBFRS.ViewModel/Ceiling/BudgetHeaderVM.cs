@@ -37,11 +37,11 @@ namespace ShampanBFRS.ViewModel.Ceiling
 
         public string? Operation { get; set; }
 
-        public string? iBASCode { get; set; }
-        public string? iBASName { get; set; }
-        public string? SabreCode { get; set; }
-        public string? SabreName { get; set; }
-        public int? SabreId { get; set; }
+        //public string? iBASCode { get; set; }
+        //public string? iBASName { get; set; }
+        //public string? SabreCode { get; set; }
+        //public string? SabreName { get; set; }
+        //public int? SabreId { get; set; }
 
         public int? ToFiscalYearId { get; set; }
         public string? ToBudgetType { get; set; }
