@@ -10,12 +10,12 @@ namespace ShampanBFRS.ViewModel.Ceiling
 {
     public class BudgetHeaderVM :AuditVM
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         public int? CompanyId { get; set; }
         public int? BranchId { get; set; }
+        [Display(Name = "Fiscal Year")]
         public int? FiscalYearId { get; set; }
-
         public int? BudgetSetNo { get; set; }
 
         public string? BudgetType { get; set; }
@@ -37,19 +37,16 @@ namespace ShampanBFRS.ViewModel.Ceiling
 
         public string? Operation { get; set; }
 
-        //public string? iBASCode { get; set; }
-        //public string? iBASName { get; set; }
-        //public string? SabreCode { get; set; }
-        //public string? SabreName { get; set; }
-        //public int? SabreId { get; set; }
+        public PeramModel? PeramModel { get; set; }
+
+        public List<BudgetDetailVM> DetailList { get; set; }
+
+        public string? MenuType { get; set; }
+
+        [Display(Name = "Report Type")]
+        public string? ReportType { get; set; }
 
         public int? ToFiscalYearId { get; set; }
         public string? ToBudgetType { get; set; }
-
-        public PeramModel? PeramModel { get; set; }
-
-        public List<BudgetDetailVM>? DetailList { get; set; }
-
-        public string? MenuType { get; set; }
     }
 }

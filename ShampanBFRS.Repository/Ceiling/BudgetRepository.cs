@@ -79,7 +79,7 @@ namespace ShampanBFRS.Repository.Ceiling
                     cmd.Parameters.AddWithValue("@TransactionDate", DateTime.Now);
 
                     // Flags
-                    cmd.Parameters.AddWithValue("@IsPost",'N');
+                    cmd.Parameters.AddWithValue("@IsPost", 'N');
                     cmd.Parameters.AddWithValue("@IsApproveFinal", vm.IsApproveFinal ?? false);
 
                     // Approval
@@ -172,7 +172,7 @@ namespace ShampanBFRS.Repository.Ceiling
             }
         }
 
-        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues , SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction, PeramModel vm = null)
         {
             DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
@@ -258,8 +258,93 @@ WHERE 1 = 1
                 return result;
             }
         }
+        public async Task<ResultVM> BudgetListAll(string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction, CommonVM vm = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
 
-        public async Task<ResultVM> GetBudgetDataForDetailsNew( GridOptions options,string[] conditionalFields,string[] conditionalValues,SqlConnection conn,SqlTransaction transaction)
+            try
+            {
+                string query = @"
+SELECT 
+    ISNULL(M.Id, 0) AS Id,  
+    ISNULL(M.CompanyId, 0) AS CompanyId,
+    ISNULL(M.BranchId, 0) AS BranchId,
+    ISNULL(M.Code, '') AS Code,
+    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
+    ISNULL(M.BudgetType, '') AS BudgetType,
+    ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
+    ISNULL(M.IsPost, '') AS IsPost,
+    CASE WHEN ISNULL(M.IsPost, '') = 'Y'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
+    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
+    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
+    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
+    ISNULL(M.PostedBy, '') AS PostedBy,
+    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
+    ISNULL(M.PostedFrom, '') AS PostedFrom,  
+    ISNULL(M.CreatedBy, '') AS CreatedBy,
+    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
+    ISNULL(M.CreatedFrom, '') AS CreatedFrom
+FROM BudgetHeaders M
+
+WHERE 1 = 1
+                ";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    query += " AND M.Id = @Id ";
+                }
+
+                // Apply additional conditions
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+                }
+
+                objComm.Fill(dataTable);
+
+                var modelList = dataTable.AsEnumerable().Select(row => new BudgetHeaderVM
+                {
+                    Id = row.Field<int>("Id"),
+                    CompanyId = row.Field<int>("CompanyId"),
+                    BranchId = row.Field<int>("BranchId"),
+                    Code = row.Field<string>("Code"),
+                    FiscalYearId = row.Field<int>("FiscalYearId"),
+                    BudgetType = row.Field<string>("BudgetType"),
+                    TransactionDate = row.Field<DateTime?>("TransactionDate")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+                    IsPost = row.Field<string>("IsPost"),
+                    LastUpdateBy = row.Field<string>("LastUpdateBy"),
+                    LastUpdateOn = row.Field<DateTime?>("LastUpdateOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+                    LastUpdateFrom = row.Field<string>("LastUpdateFrom"),
+                    PostedBy = row.Field<string>("PostedBy"),
+                    PostedOn = row.Field<DateTime?>("PostedOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+                    PostedFrom = row.Field<string>("PostedFrom")
+                }).ToList();
+
+
+
+
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = modelList;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.Message;
+                return result;
+            }
+        }
+        public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
         {
             bool isNewConnection = false;
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
@@ -560,9 +645,126 @@ INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
             }
         }
 
+        public async Task<ResultVM> BudgetAllDetailsList(string[] conditionalFields, string[] conditionalValue, CommonVM vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            bool isNewConnection = false;
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    conn.Open();
+                    isNewConnection = true;
+                }
+
+                string query = @"
+
+             SELECT 
+            D.SabreId,
+            COAs.Code   AS iBASCode,
+            COAs.Name   AS iBASName,
+            S.Code      AS SabreCode,
+            S.Name      AS SabreName,
+            SUM(D.InputTotal) AS InputTotal,
+            SUM(D.M1) AS M1,
+            SUM(D.M2) AS M2,
+            SUM(D.M3) AS M3,
+            SUM(D.M4) AS M4,
+            SUM(D.M5) AS M5,
+            SUM(D.M6) AS M6,
+            SUM(D.M7) AS M7,
+            SUM(D.M8) AS M8,
+            SUM(D.M9) AS M9,
+            SUM(D.M10) AS M10,
+            SUM(D.M11) AS M11,
+            SUM(D.M12) AS M12,
+            SUM(D.Q1) AS Q1,
+            SUM(D.Q2) AS Q2,
+            SUM(D.Q3) AS Q3,
+            SUM(D.Q4) AS Q4,
+            SUM(D.H1) AS H1,
+            SUM(D.H2) AS H2,
+            SUM(D.Yearly) AS Yearly
+          FROM BudgetDetails D
+
+        LEFT JOIN BudgetHeaders bh ON bh.Id = D.BudgetHeaderId
+        LEFT JOIN Sabres S ON S.Id = D.SabreId
+        LEFT JOIN COAs ON COAs.Id = S.COAId
+        INNER JOIN DepartmentSabres DS ON DS.SabreId = S.Id
+        INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
+
+        WHERE 1 = 1
+        and bh.FiscalYearId = @FiscalYearId
+        and bh.BudgetType = @BudgetType
+        AND D.BudgetHeaderId =  @Id
+        GROUP BY 
+            D.SabreId,
+            COAs.Code,
+            COAs.Name,
+            S.Code,
+            S.Name
+        ORDER BY 
+            COAs.Code, S.Code
+
+           ";
+
+
+                //if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                //{
+                //    query += " AND D.BudgetHeaderId = @Id ";
+                //}
+
+                // Apply additional conditions
+                //query = ApplyConditions(query, conditionalFields, conditionalValue, false);
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValue);
+
+
+                if (!string.IsNullOrEmpty(conditionalValue[0]))
+                {
+                    objComm.SelectCommand.Parameters.AddWithValue("@Id", conditionalValue[0]);
+                }
+
+                if (!string.IsNullOrEmpty(vm.FiscalYearId))
+                    objComm.SelectCommand.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId);
+
+                if (!string.IsNullOrEmpty(vm.BudgetType))
+                    objComm.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
+
+                objComm.Fill(dataTable);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = dataTable;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+
+
 
         public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
-       {
+        {
             DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
@@ -647,6 +849,87 @@ WHERE 1 = 1
             }
         }
 
+        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+
+                var data = new GridEntity<BudgetHeaderVM>();
+
+                // Define your SQL query string
+                string sqlQuery = @"
+                -- Count query
+           SELECT COUNT(DISTINCT M.FiscalYearId) AS TotalCount
+            FROM BudgetHeaders M
+            WHERE 1 = 1
+
+                -- Add the filter condition
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
+
+                // Apply additional conditions
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                sqlQuery += @"
+                -- Data query with pagination and sorting
+                SELECT * 
+                FROM (
+                    SELECT 
+                    ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "fy.YearName DESC") + @") AS rowindex,
+   
+                        ISNULL(M.CompanyId, 0) AS CompanyId,
+                        ISNULL(M.BranchId, 0) AS BranchId,
+                        ISNULL(M.Id, 0) AS Id,
+                        M.FiscalYearId,
+                        ISNULL(fy.YearName, '') AS YearName,
+                        ISNULL(M.BudgetType, '') AS BudgetType
+
+                         FROM BudgetHeaders M
+                         LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
+                         WHERE 1 = 1
+
+                -- Add the filter condition
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
+
+                // Apply additional conditions
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                sqlQuery += @"
+                GROUP BY
+        M.Id,
+        M.CompanyId,
+        M.BranchId,
+        M.FiscalYearId,
+        fy.YearName,
+        M.BudgetType
+) AS a
+                WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+            ";
+
+                // Execute the query and get data
+                data = KendoGrid<BudgetHeaderVM>.GetTransactionalGridData_CMD(options, sqlQuery, "M.Id", conditionalFields, conditionalValues);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = data;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+        }
+
         public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlConnection conn, SqlTransaction transaction)
         {
             DataTable dataTable = new DataTable();
@@ -702,7 +985,7 @@ WHERE 1 = 1
 
 
         }
-        
+
         public async Task<ResultVM> MultiplePost(CommonVM vm, SqlConnection conn, SqlTransaction transaction)
         {
             ResultVM result = new() { Status = "Fail", Message = "Error" };
@@ -1368,265 +1651,7 @@ EXEC sp_executesql @SQL;
             }
         }
 
-        public async Task<ResultVM> NonOperatingIncomeReport(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
-        {
-            DataTable dt = new DataTable();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
-            try
-            {
-                if (conn == null) throw new Exception(MessageModel.DBConnFail);
-                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
-
-                string query = @"
-
-DECLARE @BranchId INT = @BId;
-DECLARE @Year INT;               -- Base year (Estimated year)
-DECLARE @EstimatedYear INT;
-DECLARE @ApprovedYear INT;
-DECLARE @ActualYear INT;
-
-DECLARE @EstimatedYearName NVARCHAR(50);
-DECLARE @ApprovedYearName NVARCHAR(50);
-DECLARE @ActualYearName NVARCHAR(50);
-
-DECLARE @SQL NVARCHAR(MAX);
-DECLARE @ReportType NVARCHAR(50) = @RType;
-
-------------------------------------------------------------
--- Get base year (Estimated)
-------------------------------------------------------------
-SELECT @Year = [Year]
-FROM FiscalYears
-WHERE Id = @FYId;
-
-SET @EstimatedYear = @Year;
-SET @ApprovedYear  = @Year - 1;
-SET @ActualYear    = @Year - 2;
-
-------------------------------------------------------------
--- Get year names
-------------------------------------------------------------
-SELECT @EstimatedYearName = YearName FROM FiscalYears WHERE [Year] = @EstimatedYear;
-SELECT @ApprovedYearName  = YearName FROM FiscalYears WHERE [Year] = @ApprovedYear;
-SELECT @ActualYearName    = YearName FROM FiscalYears WHERE [Year] = @ActualYear;
-
-------------------------------------------------------------
--- Start building SELECT
-------------------------------------------------------------
-SET @SQL = N'
-SELECT
-    COA.Code AS [iBAS Code],
-    COA.Name AS [iBAS Name],
-    s.Code   AS [Sabre Code],
-    s.Name   AS [Sabre Name],
-
-    -- Estimated (Base Year)
-    SUM(CASE 
-            WHEN FY.[Year] = ' + CAST(@EstimatedYear AS NVARCHAR) + ' 
-             AND c.BudgetType = ''Estimated'' 
-            THEN cd.Yearly ELSE 0 
-        END) AS [Estimated(' + @EstimatedYearName + ')],
-
-    -- Revised (Previous Year)
-    SUM(CASE 
-            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-             AND c.BudgetType = ''Revised'' 
-            THEN cd.Yearly ELSE 0 
-        END) AS [Revised(' + @ApprovedYearName + ')],
-
-    -- Approved (Previous Year)
-    SUM(CASE 
-            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-             AND c.BudgetType = ''Approved'' 
-            THEN cd.Yearly ELSE 0 
-        END) AS [Approved(' + @ApprovedYearName + ')],
-
-    -- Actual Audited (Two Years Back)
-    SUM(CASE 
-            WHEN FY.[Year] = ' + CAST(@ActualYear AS NVARCHAR) + ' 
-             AND c.BudgetType = ''Actual_Audited'' 
-            THEN cd.Yearly ELSE 0 
-        END) AS [Actual Audited(' + @ActualYearName + ')]';
-
-------------------------------------------------------------
--- Conditionally add 1st / 2nd 6 months columns
-------------------------------------------------------------
-IF @ReportType <> '2nd_6months_actual'
-BEGIN
-    SET @SQL += ',
-    SUM(CASE 
-            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-             AND c.BudgetType = ''1st_6months_actual'' 
-            THEN cd.Yearly ELSE 0 
-        END) AS [1st 6 Months Actual(' + @ApprovedYearName + ')]';
-END;
-
-IF @ReportType <> '1st_6months_actual'
-BEGIN
-    SET @SQL += ',
-    SUM(CASE 
-            WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-             AND c.BudgetType = ''2nd_6months_actual'' 
-            THEN cd.Yearly ELSE 0 
-        END) AS [2nd 6 Months Actual(' + @ApprovedYearName + ')]';
-END;
-
-
-SET @SQL += ',
-
--- Estimated %
-CASE 
-    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
-    THEN 0
-    ELSE ROUND(
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@EstimatedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Estimated'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        /
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        * 100, 2)
-END AS [Estimated %],
-
--- Revised %
-CASE 
-    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
-    THEN 0
-    ELSE ROUND(
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Revised'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        /
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        * 100, 2)
-END AS [Revised %],
-
--- Actual Audited %
-CASE 
-    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
-    THEN 0
-    ELSE ROUND(
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ActualYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Actual_Audited'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        /
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        * 100, 2)
-END AS [Actual Audited %]';
-
-
-IF @ReportType <> '2nd_6months_actual'
-BEGIN
-    SET @SQL += ',
-CASE 
-    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
-    THEN 0
-    ELSE ROUND(
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''1st_6months_actual'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        /
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        * 100, 2)
-END AS [1st 6 Months Actual %]';
-END;
-
-IF @ReportType <> '1st_6months_actual'
-BEGIN
-    SET @SQL += ',
-CASE 
-    WHEN SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                  AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) = 0
-    THEN 0
-    ELSE ROUND(
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''2nd_6months_actual'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        /
-        CAST(SUM(CASE WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
-                      AND c.BudgetType = ''Approved'' THEN cd.Yearly ELSE 0 END) AS DECIMAL(18,2))
-        * 100, 2)
-END AS [2nd 6 Months Actual %]';
-END;
-
-SET @SQL += '
-FROM BudgetHeaders c
-INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
-INNER JOIN FiscalYears FY    ON c.FiscalYearId = FY.Id
-INNER JOIN Sabres s          ON cd.SabreId = s.Id
-INNER JOIN COAs COA          ON COA.Id = s.COAId
-WHERE 1=1
-and isnull(COA.IsNonOperatingIncome,''0'')=''1''
-and c.BudgetType IN
-(
-    ''Estimated'',
-    ''Revised'',
-    ''Approved'',
-    ''1st_6months_actual'',
-    ''2nd_6months_actual'',
-    ''Actual_Audited''
-)
-AND FY.[Year] IN (' 
-    + CAST(@ActualYear AS NVARCHAR) + ',' 
-    + CAST(@ApprovedYear AS NVARCHAR) + ',' 
-    + CAST(@EstimatedYear AS NVARCHAR) + ')';
-
-IF @BranchId IS NOT NULL
-BEGIN
-    SET @SQL += ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR);
-END;
-
-SET @SQL += '
-GROUP BY
-    s.Code, s.Name,
-    COA.Code, COA.Name
-ORDER BY s.Code;';
-
-
-EXEC sp_executesql @SQL;
-
-";
-
-                SqlDataAdapter adapter = CreateAdapter(query, conn, transaction);
-                adapter.SelectCommand.Parameters.AddWithValue("@FYId", vm.YearId);
-
-                if (!string.IsNullOrEmpty(vm.BranchId))
-                    adapter.SelectCommand.Parameters.AddWithValue("@BId", vm.BranchId);
-
-                if (!string.IsNullOrEmpty(vm.ReportType))
-                    adapter.SelectCommand.Parameters.AddWithValue("@RType", vm.ReportType);
-
-                adapter.Fill(dt);
-
-                var list = new List<Dictionary<string, object>>();
-
-                foreach (DataRow row in dt.Rows)
-                {
-                    var dict = new Dictionary<string, object>();
-                    foreach (DataColumn col in dt.Columns)
-                    {
-                        dict[col.ColumnName] = row[col];
-                    }
-                    list.Add(dict);
-                }
-
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
-                result.DataVM = list;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.Status = MessageModel.Fail;
-                result.Message = ex.Message;
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-        }
 
 
     }

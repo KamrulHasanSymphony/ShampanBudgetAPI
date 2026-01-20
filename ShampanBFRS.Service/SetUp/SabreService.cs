@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShampanBFRS.Repository.Common;
-using ShampanBFRS.Repository.Question;
 using ShampanBFRS.Repository.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
 using ShampanBFRS.ViewModel.KendoCommon;

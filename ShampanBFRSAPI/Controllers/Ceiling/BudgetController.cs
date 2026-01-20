@@ -66,7 +66,28 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 };
             }
         }
-    
+
+        [HttpPost("BudgetListAll")]
+        public async Task<ResultVM> BudgetListAll(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                resultVM = await _Service.BudgetListAll(new[] { "M.Id" }, new[] { vm.Id.ToString() }, vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
+                };
+            }
+        }
+
         [HttpPost("GetBudgetDataForDetailsNew")]
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
@@ -106,6 +127,46 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 string[] finalConditionValues = conditionValues.ToArray();
 
                 return await _Service.GetGridData(options, finalConditionFields, finalConditionValues);
+
+                //resultVM = await _salaryAllowanceService.GetGridData(options, new[] { "" }, new[] { "" });
+
+                //return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
+        [HttpPost("GetGridDataBudgetAll")]
+        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+
+                List<string> conditionFields = new List<string>
+                {
+                    "M.CreatedBy",
+                    "M.BudgetType",
+                    "M.TransactionType"
+
+                };
+
+                List<string> conditionValues = new List<string>
+                {
+                    options.vm.UserId.ToString(), options.vm.BudgetType.ToString(),options.vm.TransactionType.ToString()
+                };
+                string[] finalConditionFields = conditionFields.ToArray();
+                string[] finalConditionValues = conditionValues.ToArray();
+
+                return await _Service.GetGridDataBudgetAll(options, finalConditionFields, finalConditionValues);
 
                 //resultVM = await _salaryAllowanceService.GetGridData(options, new[] { "" }, new[] { "" });
 
@@ -207,21 +268,6 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             {
                 _Service = new BudgetService();
                 resultVM = await _Service.BudgetLoadFinalReport(vm);
-                return resultVM;
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
-            }
-        }
-
-        [HttpPost("NonOperatingIncomeReport")]
-        public async Task<ResultVM> NonOperatingIncomeReport(CommonVM vm)
-        {
-            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
-            try
-            {
-                resultVM = await _Service.NonOperatingIncomeReport(vm);
                 return resultVM;
             }
             catch (Exception ex)
