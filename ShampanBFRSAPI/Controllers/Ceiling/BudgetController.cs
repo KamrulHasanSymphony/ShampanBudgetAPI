@@ -152,8 +152,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             {
 
                 List<string> conditionFields = new List<string>
-                {
-                    "M.CreatedBy",
+                {              
                     "M.BudgetType",
                     "M.TransactionType"
 
@@ -161,16 +160,14 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
 
                 List<string> conditionValues = new List<string>
                 {
-                    options.vm.UserId.ToString(), options.vm.BudgetType.ToString(),options.vm.TransactionType.ToString()
+                    options.vm.BudgetType.ToString(),options.vm.TransactionType.ToString()
                 };
+
                 string[] finalConditionFields = conditionFields.ToArray();
                 string[] finalConditionValues = conditionValues.ToArray();
 
                 return await _Service.GetGridDataBudgetAll(options, finalConditionFields, finalConditionValues);
 
-                //resultVM = await _salaryAllowanceService.GetGridData(options, new[] { "" }, new[] { "" });
-
-                //return resultVM;
             }
             catch (Exception ex)
             {
