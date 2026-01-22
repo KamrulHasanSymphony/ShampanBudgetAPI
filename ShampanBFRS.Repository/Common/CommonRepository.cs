@@ -2019,7 +2019,7 @@ WHERE
                     throw new Exception("Database connection fail!");
                 }
                 string sqlQuery = @"
-	         SELECT DISTINCT top (20)
+	         SELECT DISTINCT 
 
           ISNULL(H.Id, 0) Id
          ,ISNULL(H.Code, '') Code
