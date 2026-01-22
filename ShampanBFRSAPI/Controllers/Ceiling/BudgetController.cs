@@ -73,7 +73,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
             {
-                resultVM = await _Service.BudgetListAll(new[] { "M.Id" }, new[] { vm.Id.ToString() }, vm);
+                resultVM = await _Service.BudgetListAll(vm);
                 return resultVM;
             }
             catch (Exception ex)

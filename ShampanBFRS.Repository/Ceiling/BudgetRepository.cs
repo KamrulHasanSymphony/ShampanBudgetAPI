@@ -258,92 +258,7 @@ WHERE 1 = 1
                 return result;
             }
         }
-        public async Task<ResultVM> BudgetListAll(string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction, CommonVM vm = null)
-        {
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
 
-            try
-            {
-                string query = @"
-SELECT 
-    ISNULL(M.Id, 0) AS Id,  
-    ISNULL(M.CompanyId, 0) AS CompanyId,
-    ISNULL(M.BranchId, 0) AS BranchId,
-    ISNULL(M.Code, '') AS Code,
-    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
-    ISNULL(M.BudgetType, '') AS BudgetType,
-    ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
-    ISNULL(M.IsPost, '') AS IsPost,
-    CASE WHEN ISNULL(M.IsPost, '') = 'Y'  THEN 'Posted' ELSE 'Not Posted' END AS Status,
-    ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
-    ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
-    ISNULL(M.LastUpdateFrom, '') AS LastUpdateFrom,
-    ISNULL(M.PostedBy, '') AS PostedBy,
-    ISNULL(M.PostedOn, '1900-01-01') AS PostedOn,
-    ISNULL(M.PostedFrom, '') AS PostedFrom,  
-    ISNULL(M.CreatedBy, '') AS CreatedBy,
-    ISNULL(M.CreatedOn, '1900-01-01') AS CreatedOn,
-    ISNULL(M.CreatedFrom, '') AS CreatedFrom
-FROM BudgetHeaders M
-
-WHERE 1 = 1
-                ";
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    query += " AND M.Id = @Id ";
-                }
-
-                // Apply additional conditions
-                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
-
-                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
-
-                // SET additional conditions param
-                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
-
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
-                }
-
-                objComm.Fill(dataTable);
-
-                var modelList = dataTable.AsEnumerable().Select(row => new BudgetHeaderVM
-                {
-                    Id = row.Field<int>("Id"),
-                    CompanyId = row.Field<int>("CompanyId"),
-                    BranchId = row.Field<int>("BranchId"),
-                    Code = row.Field<string>("Code"),
-                    FiscalYearId = row.Field<int>("FiscalYearId"),
-                    BudgetType = row.Field<string>("BudgetType"),
-                    TransactionDate = row.Field<DateTime?>("TransactionDate")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
-                    IsPost = row.Field<string>("IsPost"),
-                    LastUpdateBy = row.Field<string>("LastUpdateBy"),
-                    LastUpdateOn = row.Field<DateTime?>("LastUpdateOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
-                    LastUpdateFrom = row.Field<string>("LastUpdateFrom"),
-                    PostedBy = row.Field<string>("PostedBy"),
-                    PostedOn = row.Field<DateTime?>("PostedOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
-                    PostedFrom = row.Field<string>("PostedFrom")
-                }).ToList();
-
-
-
-
-
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
-                result.DataVM = modelList;
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.Message;
-                result.ExMessage = ex.Message;
-                return result;
-            }
-        }
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
         {
             bool isNewConnection = false;
@@ -645,124 +560,6 @@ WHERE 1 = 1
             }
         }
 
-        public async Task<ResultVM> BudgetAllDetailsList(string[] conditionalFields, string[] conditionalValue, CommonVM vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
-        {
-            bool isNewConnection = false;
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            try
-            {
-                if (conn == null)
-                {
-                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                    conn.Open();
-                    isNewConnection = true;
-                }
-
-                string query = @"
-
-             SELECT 
-            D.SabreId,
-            COAs.Code   AS iBASCode,
-            COAs.Name   AS iBASName,
-            S.Code      AS SabreCode,
-            S.Name      AS SabreName,
-            SUM(D.InputTotal) AS InputTotal,
-            SUM(D.M1) AS M1,
-            SUM(D.M2) AS M2,
-            SUM(D.M3) AS M3,
-            SUM(D.M4) AS M4,
-            SUM(D.M5) AS M5,
-            SUM(D.M6) AS M6,
-            SUM(D.M7) AS M7,
-            SUM(D.M8) AS M8,
-            SUM(D.M9) AS M9,
-            SUM(D.M10) AS M10,
-            SUM(D.M11) AS M11,
-            SUM(D.M12) AS M12,
-            SUM(D.Q1) AS Q1,
-            SUM(D.Q2) AS Q2,
-            SUM(D.Q3) AS Q3,
-            SUM(D.Q4) AS Q4,
-            SUM(D.H1) AS H1,
-            SUM(D.H2) AS H2,
-            SUM(D.Yearly) AS Yearly
-          FROM BudgetDetails D
-
-        LEFT JOIN BudgetHeaders bh ON bh.Id = D.BudgetHeaderId
-        LEFT JOIN Sabres S ON S.Id = D.SabreId
-        LEFT JOIN COAs ON COAs.Id = S.COAId
-        INNER JOIN DepartmentSabres DS ON DS.SabreId = S.Id
-        INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
-
-        WHERE 1 = 1
-        and bh.FiscalYearId = @FiscalYearId
-        and bh.BudgetType = @BudgetType
-        AND D.BudgetHeaderId =  @Id
-        GROUP BY 
-            D.SabreId,
-            COAs.Code,
-            COAs.Name,
-            S.Code,
-            S.Name
-        ORDER BY 
-            COAs.Code, S.Code
-
-           ";
-
-
-                //if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                //{
-                //    query += " AND D.BudgetHeaderId = @Id ";
-                //}
-
-                // Apply additional conditions
-                //query = ApplyConditions(query, conditionalFields, conditionalValue, false);
-
-                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
-
-                // SET additional conditions param
-                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValue);
-
-
-                if (!string.IsNullOrEmpty(conditionalValue[0]))
-                {
-                    objComm.SelectCommand.Parameters.AddWithValue("@Id", conditionalValue[0]);
-                }
-
-                if (!string.IsNullOrEmpty(vm.FiscalYearId))
-                    objComm.SelectCommand.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId);
-
-                if (!string.IsNullOrEmpty(vm.BudgetType))
-                    objComm.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
-
-                objComm.Fill(dataTable);
-
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
-                result.DataVM = dataTable;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.ExMessage = ex.Message;
-                result.Message = ex.Message;
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-        }
-
-
-
-
         public async Task<ResultVM> GetGridData(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
         {
             DataTable dataTable = new DataTable();
@@ -829,87 +626,6 @@ WHERE 1 = 1
 
                 sqlQuery += @"
                 ) AS a
-                WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-            ";
-
-                // Execute the query and get data
-                data = KendoGrid<BudgetHeaderVM>.GetTransactionalGridData_CMD(options, sqlQuery, "M.Id", conditionalFields, conditionalValues);
-
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
-                result.DataVM = data;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.ExMessage = ex.Message;
-                result.Message = ex.Message;
-                return result;
-            }
-        }
-
-        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
-        {
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-
-            try
-            {
-                if (conn == null)
-                {
-                    throw new Exception("Database connection fail!");
-                }
-
-                var data = new GridEntity<BudgetHeaderVM>();
-
-                // Define your SQL query string
-                string sqlQuery = @"
-                -- Count query
-           SELECT COUNT(DISTINCT M.FiscalYearId) AS TotalCount
-            FROM BudgetHeaders M
-            WHERE 1 = 1
-
-                -- Add the filter condition
-                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-                // Apply additional conditions
-                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
-
-                sqlQuery += @"
-                -- Data query with pagination and sorting
-                SELECT * 
-                FROM (
-                    SELECT 
-                    ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "fy.YearName DESC") + @") AS rowindex,
-   
-                        ISNULL(M.CompanyId, 0) AS CompanyId,
-                        ISNULL(M.BranchId, 0) AS BranchId,
-                        ISNULL(M.Id, 0) AS Id,
-                        M.FiscalYearId,
-                        ISNULL(fy.YearName, '') AS YearName,
-                        ISNULL(M.BudgetType, '') AS BudgetType
-
-                         FROM BudgetHeaders M
-                         LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
-                         WHERE 1 = 1
-
-                -- Add the filter condition
-                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
-
-                // Apply additional conditions
-                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
-
-                sqlQuery += @"
-                GROUP BY
-        M.Id,
-        M.CompanyId,
-        M.BranchId,
-        M.FiscalYearId,
-        fy.YearName,
-        M.BudgetType
-) AS a
                 WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
             ";
 
@@ -1651,7 +1367,254 @@ EXEC sp_executesql @SQL;
             }
         }
 
+        #region Budget All
 
+        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options, string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+
+                var data = new GridEntity<BudgetHeaderVM>();
+
+                // Define your SQL query string
+                string sqlQuery = @"
+                -- Count query
+           SELECT COUNT(DISTINCT M.FiscalYearId) AS TotalCount
+            FROM BudgetHeaders M
+            WHERE 1 = 1
+
+                -- Add the filter condition
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
+
+                // Apply additional conditions
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                sqlQuery += @"
+                -- Data query with pagination and sorting
+                SELECT * 
+                FROM (
+                    SELECT 
+                    ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "fy.YearName DESC") + @") AS rowindex,
+   
+                        ISNULL(M.CompanyId, 0) AS CompanyId,
+                        ISNULL(M.BranchId, 0) AS BranchId,
+                        
+                        M.FiscalYearId,
+                        ISNULL(fy.YearName, '') AS YearName,
+                        ISNULL(M.BudgetType, '') AS BudgetType
+
+                         FROM BudgetHeaders M
+                         LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
+                         WHERE 1 = 1
+
+                -- Add the filter condition
+                " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
+
+                // Apply additional conditions
+                sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
+
+                sqlQuery += @"
+                GROUP BY
+        
+        M.CompanyId,
+        M.BranchId,
+        M.FiscalYearId,
+        fy.YearName,
+        M.BudgetType
+) AS a
+WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+order by a.FiscalYearId desc
+            ";
+
+                // Execute the query and get data
+                data = KendoGrid<BudgetHeaderVM>.GetTransactionalGridData_CMD(options, sqlQuery, "M.Id", conditionalFields, conditionalValues);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = data;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> BudgetAllDetailsList( CommonVM vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            bool isNewConnection = false;
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    conn.Open();
+                    isNewConnection = true;
+                }
+
+                string query = @"
+
+ SELECT 
+D.SabreId,
+COAs.Code   AS iBASCode,
+COAs.Name   AS iBASName,
+S.Code      AS SabreCode,
+S.Name      AS SabreName,
+SUM(D.InputTotal) AS InputTotal,
+SUM(D.M1) AS M1,
+SUM(D.M2) AS M2,
+SUM(D.M3) AS M3,
+SUM(D.M4) AS M4,
+SUM(D.M5) AS M5,
+SUM(D.M6) AS M6,
+SUM(D.M7) AS M7,
+SUM(D.M8) AS M8,
+SUM(D.M9) AS M9,
+SUM(D.M10) AS M10,
+SUM(D.M11) AS M11,
+SUM(D.M12) AS M12,
+SUM(D.Q1) AS Q1,
+SUM(D.Q2) AS Q2,
+SUM(D.Q3) AS Q3,
+SUM(D.Q4) AS Q4,
+SUM(D.H1) AS H1,
+SUM(D.H2) AS H2,
+SUM(D.Yearly) AS Yearly
+FROM BudgetDetails D
+LEFT JOIN Sabres S ON S.Id = D.SabreId
+LEFT JOIN COAs ON COAs.Id = S.COAId
+INNER JOIN DepartmentSabres DS ON DS.SabreId = S.Id
+INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
+
+WHERE 1 = 1
+and bh.FiscalYearId = @FiscalYearId
+and bh.BudgetType = @BudgetType
+
+GROUP BY 
+D.SabreId,
+COAs.Code,
+COAs.Name,
+S.Code,
+S.Name
+ORDER BY 
+COAs.Code, S.Code
+
+           ";
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                if (!string.IsNullOrEmpty(vm.FiscalYearId))
+                    objComm.SelectCommand.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId);
+
+                if (!string.IsNullOrEmpty(vm.BudgetType))
+                    objComm.SelectCommand.Parameters.AddWithValue("@BudgetType", vm.BudgetType);
+
+                objComm.Fill(dataTable);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = dataTable;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+        public async Task<ResultVM> BudgetListAll(string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction, CommonVM vm = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+            try
+            {
+                string query = @"
+SELECT 
+    ISNULL(M.CompanyId, 0) AS CompanyId,
+    ISNULL(M.BranchId, 0) AS BranchId,
+    ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
+    ISNULL(M.BudgetType, '') AS BudgetType
+
+FROM BudgetHeaders M
+
+WHERE 1 = 1
+                ";
+
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                query = @"
+group by 
+M.CompanyId,
+M.BranchId,
+M.FiscalYearId,
+M.BudgetType
+                ";
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+                objComm.Fill(dataTable);
+
+                var modelList = dataTable.AsEnumerable().Select(row => new BudgetHeaderVM
+                {
+                    Id = 0,
+                    CompanyId = row.Field<int>("CompanyId"),
+                    BranchId = row.Field<int>("BranchId"),
+                    Code = "",
+                    FiscalYearId = row.Field<int>("FiscalYearId"),
+                    BudgetType = row.Field<string>("BudgetType"),
+                    TransactionDate = "",  // Format if necessary
+                    IsPost = "",
+                    LastUpdateBy = "",
+                    LastUpdateOn = "",  // Format if necessary
+                    LastUpdateFrom = "",
+                    PostedBy = "",
+                    PostedOn = "",  // Format if necessary
+                    PostedFrom = ""
+                }).ToList();
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = modelList;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.Message;
+                return result;
+            }
+        }
+
+
+        #endregion
 
 
     }

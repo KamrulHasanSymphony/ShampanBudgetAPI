@@ -38,8 +38,8 @@ namespace ShampanBFRS.Service.Ceiling
 
                 #region Check Exist Data
 
-                string tableName = "BudgetHeaders"; 
-                string[] conditionField = { "FiscalYearId", "CreatedBy" }; 
+                string tableName = "BudgetHeaders";
+                string[] conditionField = { "FiscalYearId", "CreatedBy" };
                 string[] conditionValue = { model.FiscalYearId.ToString(), model.CreatedBy.ToString() };
 
                 bool exist = _commonRepo.CheckExists(tableName, conditionField, conditionValue, conn, transaction);
@@ -167,7 +167,7 @@ namespace ShampanBFRS.Service.Ceiling
                 }
                 #endregion open connection and transaction
 
-               
+
 
 
                 var record = _commonRepo.DetailsDelete("BudgetDetails", new[] { "BudgetHeaderId" }, new[] { bugetHeader.Id.ToString() }, conn, transaction);
@@ -331,97 +331,6 @@ namespace ShampanBFRS.Service.Ceiling
             return result;
         }
 
-        public async Task<ResultVM> BudgetListAll(string[] conditionalFields, string[] conditionalValues, CommonVM vm = null, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
-        {
-            BudgetRepository _repo = new BudgetRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-            try
-            {
-                #region open connection and transaction
-                if (VcurrConn != null)
-                {
-                    conn = VcurrConn;
-                }
-                if (Vtransaction != null)
-                {
-                    transaction = Vtransaction;
-                }
-                if (conn == null)
-                {
-                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                    if (conn.State != ConnectionState.Open)
-                    {
-                        conn.Open();
-                    }
-                }
-                if (transaction == null)
-                {
-                    transaction = conn.BeginTransaction("");
-                }
-                #endregion open connection and transaction
-
-                result = await _repo.BudgetListAll(conditionalFields, conditionalValues, conn, transaction, vm);
-
-                var lst = new List<BudgetHeaderVM>();
-
-                string data = JsonConvert.SerializeObject(result.DataVM);
-
-                lst = JsonConvert.DeserializeObject<List<BudgetHeaderVM>>(data);
-
-                var detailsDataList = await _repo.BudgetAllDetailsList(new[] { "D.BudgetHeaderId" }, conditionalValues, vm, conn, transaction);
-
-                if (detailsDataList.Status == "Success" && detailsDataList.DataVM is DataTable dt)
-                {
-                    string json = JsonConvert.SerializeObject(dt);
-                    var details = JsonConvert.DeserializeObject<List<BudgetDetailVM>>(json);
-
-                    lst.FirstOrDefault().DetailList = details;
-                    result.DataVM = lst;
-                }
-                #region Commit
-                if (Vtransaction == null && transaction != null)
-                {
-                    if (result.Status == "Success")
-                    {
-                        transaction.Commit();
-                        return result;
-                    }
-                    else
-                    {
-                        throw new Exception(result.Message);
-                    }
-                }
-                #endregion Commit
-
-            }
-            #region Catch & Finally
-            catch (Exception ex)
-            {
-                if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
-
-                result.Message = ex.Message.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (VcurrConn == null)
-                {
-                    if (conn != null)
-                    {
-                        if (conn.State == ConnectionState.Open)
-                        {
-                            conn.Close();
-                        }
-                    }
-                }
-            }
-            #endregion Catch & Finally
-            return result;
-        }
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
             BudgetRepository _repo = new BudgetRepository();
@@ -506,56 +415,6 @@ namespace ShampanBFRS.Service.Ceiling
             }
 
             return result;
-        }
-        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options, string[] conditionalFields, string[] conditionalValues)
-        {
-            BudgetRepository _repo = new BudgetRepository();
-            ResultVM result = new() { Status = "Fail", Message = "Error", Id = "0", DataVM = null };
-
-            bool isNewConnection = false;
-            SqlConnection conn = null;
-            SqlTransaction transaction = null;
-
-            try
-            {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
-                conn.Open();
-                isNewConnection = true;
-
-                transaction = conn.BeginTransaction();
-
-                result = await _repo.GetGridDataBudgetAll(options, conditionalFields, conditionalValues, conn, transaction);
-
-                if (isNewConnection && result.Status == "Success")
-                {
-                    transaction.Commit();
-                }
-                else
-                {
-                    throw new Exception(result.Message);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && isNewConnection)
-                {
-                    transaction.Rollback();
-                }
-                result.Message = ex.ToString();
-                result.ExMessage = ex.ToString();
-                return result;
-            }
-            finally
-            {
-                if (isNewConnection && conn != null)
-                {
-                    conn.Close();
-                }
-            }
-
-            //return result;
         }
         public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
         {
@@ -741,7 +600,7 @@ namespace ShampanBFRS.Service.Ceiling
                         Message = MessageModel.NotFoundForSave,
                     };
                 }
-                
+
                 string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
                 if (code != "" || code != null)
@@ -836,8 +695,157 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
+        #region Budget All
 
-       
+        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options, string[] conditionalFields, string[] conditionalValues)
+        {
+            BudgetRepository _repo = new BudgetRepository();
+            ResultVM result = new() { Status = "Fail", Message = "Error", Id = "0", DataVM = null };
+
+            bool isNewConnection = false;
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+
+            try
+            {
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                conn.Open();
+                isNewConnection = true;
+
+                transaction = conn.BeginTransaction();
+
+                result = await _repo.GetGridDataBudgetAll(options, conditionalFields, conditionalValues, conn, transaction);
+
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+                result.Message = ex.ToString();
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+
+            //return result;
+        }
+
+        public async Task<ResultVM> BudgetListAll(CommonVM vm = null, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
+        {
+            BudgetRepository _repo = new BudgetRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+            try
+            {
+                #region open connection and transaction
+                if (VcurrConn != null)
+                {
+                    conn = VcurrConn;
+                }
+                if (Vtransaction != null)
+                {
+                    transaction = Vtransaction;
+                }
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    if (conn.State != ConnectionState.Open)
+                    {
+                        conn.Open();
+                    }
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction("");
+                }
+                #endregion open connection and transaction
+
+                string[] conditionalFields = new string[] { "M.FiscalYearId", "M.BudgetType" };
+                string[] conditionalValues = new string[] {vm.FiscalYearId,vm.BudgetType };
+
+                result = await _repo.BudgetListAll(conditionalFields, conditionalValues, conn, transaction, vm);
+
+                var lst = new List<BudgetHeaderVM>();
+
+                string data = JsonConvert.SerializeObject(result.DataVM);
+
+                lst = JsonConvert.DeserializeObject<List<BudgetHeaderVM>>(data);
+
+                var detailsDataList = await _repo.BudgetAllDetailsList(vm, conn, transaction);
+
+                if (detailsDataList.Status == "Success" && detailsDataList.DataVM is DataTable dt)
+                {
+                    string json = JsonConvert.SerializeObject(dt);
+                    var details = JsonConvert.DeserializeObject<List<BudgetDetailVM>>(json);
+
+                    lst.FirstOrDefault().DetailList = details;
+                    result.DataVM = lst;
+                }
+                #region Commit
+                if (Vtransaction == null && transaction != null)
+                {
+                    if (result.Status == "Success")
+                    {
+                        transaction.Commit();
+                        return result;
+                    }
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
+                }
+                #endregion Commit
+
+            }
+            #region Catch & Finally
+            catch (Exception ex)
+            {
+                if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
+
+                result.Message = ex.Message.ToString();
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+            finally
+            {
+                if (VcurrConn == null)
+                {
+                    if (conn != null)
+                    {
+                        if (conn.State == ConnectionState.Open)
+                        {
+                            conn.Close();
+                        }
+                    }
+                }
+            }
+            #endregion Catch & Finally
+            return result;
+        }
+
+
+        #endregion
+
 
     }
 }
