@@ -11,7 +11,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
     [ApiController]
     public class BudgetController : ControllerBase
     {
-       BudgetService _Service = new BudgetService();
+        BudgetService _Service = new BudgetService();
         CommonService _common = new CommonService();
 
         [HttpPost("Insert")]
@@ -67,27 +67,6 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        [HttpPost("BudgetListAll")]
-        public async Task<ResultVM> BudgetListAll(CommonVM vm)
-        {
-            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-            try
-            {
-                resultVM = await _Service.BudgetListAll(vm);
-                return resultVM;
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM
-                {
-                    Status = MessageModel.Fail,
-                    Message = ex.Message,
-                    ExMessage = ex.Message,
-                    DataVM = vm
-                };
-            }
-        }
-
         [HttpPost("GetBudgetDataForDetailsNew")]
         public async Task<ResultVM> GetBudgetDataForDetailsNew(GridOptions options)
         {
@@ -103,9 +82,9 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message };
             }
         }
-      
+
         [HttpPost("GetGridData")]
-        public async Task<ResultVM> GetGridData(GridOptions options )
+        public async Task<ResultVM> GetGridData(GridOptions options)
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
@@ -114,7 +93,7 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 List<string> conditionFields = new List<string>
                 {
                     "M.CreatedBy",
-                    "M.BudgetType",         
+                    "M.BudgetType",
                     "M.TransactionType"
 
                 };
@@ -144,42 +123,6 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
             }
         }
 
-        [HttpPost("GetGridDataBudgetAll")]
-        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options)
-        {
-            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
-            try
-            {
-
-                List<string> conditionFields = new List<string>
-                {              
-                    "M.BudgetType",
-                    "M.TransactionType"
-
-                };
-
-                List<string> conditionValues = new List<string>
-                {
-                    options.vm.BudgetType.ToString(),options.vm.TransactionType.ToString()
-                };
-
-                string[] finalConditionFields = conditionFields.ToArray();
-                string[] finalConditionValues = conditionValues.ToArray();
-
-                return await _Service.GetGridDataBudgetAll(options, finalConditionFields, finalConditionValues);
-
-            }
-            catch (Exception ex)
-            {
-                return new ResultVM
-                {
-                    Status = MessageModel.Fail,
-                    Message = ex.Message,
-                    ExMessage = ex.Message,
-                    DataVM = null
-                };
-            }
-        }
 
         [HttpPost("GetDetailDataById")]
         public async Task<ResultVM> GetDetailDataById(GridOptions options, int masterId)
@@ -272,6 +215,71 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
                 return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
             }
         }
+
+        #region Budget All
+
+
+        [HttpPost("BudgetListAll")]
+        public async Task<ResultVM> BudgetListAll(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                resultVM = await _Service.BudgetListAll(vm);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
+                };
+            }
+        }
+
+        [HttpPost("GetGridDataBudgetAll")]
+        public async Task<ResultVM> GetGridDataBudgetAll(GridOptions options)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+
+                List<string> conditionFields = new List<string>
+                {
+                    "M.BudgetType",
+                    "M.TransactionType"
+
+                };
+
+                List<string> conditionValues = new List<string>
+                {
+                    options.vm.BudgetType.ToString(),options.vm.TransactionType.ToString()
+                };
+
+                string[] finalConditionFields = conditionFields.ToArray();
+                string[] finalConditionValues = conditionValues.ToArray();
+
+                return await _Service.GetGridDataBudgetAll(options, finalConditionFields, finalConditionValues);
+
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = null
+                };
+            }
+        }
+
+
+
+        #endregion 
 
 
 

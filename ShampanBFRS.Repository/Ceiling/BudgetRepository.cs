@@ -1495,6 +1495,7 @@ SUM(D.H1) AS H1,
 SUM(D.H2) AS H2,
 SUM(D.Yearly) AS Yearly
 FROM BudgetDetails D
+LEFT JOIN BudgetHeaders bh ON bh.Id = D.BudgetHeaderId
 LEFT JOIN Sabres S ON S.Id = D.SabreId
 LEFT JOIN COAs ON COAs.Id = S.COAId
 INNER JOIN DepartmentSabres DS ON DS.SabreId = S.Id
@@ -1567,13 +1568,13 @@ WHERE 1 = 1
 
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
-                query = @"
-group by 
-M.CompanyId,
-M.BranchId,
-M.FiscalYearId,
-M.BudgetType
-                ";
+                query += @"
+GROUP BY 
+    M.CompanyId,
+    M.BranchId,
+    M.FiscalYearId,
+    M.BudgetType
+";
 
                 SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
 
