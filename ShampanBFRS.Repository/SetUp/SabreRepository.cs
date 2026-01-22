@@ -57,7 +57,7 @@ namespace ShampanBFRS.Repository.SetUp
               
                     vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    result.Status = MessageModel.Fail;
+                    result.Status = MessageModel.Success;
                     result.Message = MessageModel.InsertSuccess;
                     result.Id = vm.Id.ToString();
                     result.DataVM = vm;
