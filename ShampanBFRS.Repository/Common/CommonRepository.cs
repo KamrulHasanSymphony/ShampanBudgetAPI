@@ -2149,17 +2149,19 @@ WHERE
                 string sqlQuery = @"
 	         SELECT DISTINCT 
 
-          ISNULL(H.Id, 0) Id
-         ,ISNULL(H.Code, '') Code 
-         ,ISNULL(H.Name, '') Name 
-         ,ISNULL(H.Remarks, '') Remarks
-         ,ISNULL(H.IsActive, 0) IsActive
-         ,ISNULL(H.IsArchive, 0) IsArchive
-         ,CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive'   END Status
-         FROM Sabres H
-         WHERE H.IsActive = 1
+             ISNULL(H.Id, 0) Id
+            ,ISNULL(H.Code, '') Code 
+            ,ISNULL(H.Name, '') Name 
+            ,ISNULL(H.Remarks, '') Remarks
+            ,ISNULL(H.IsActive, 0) IsActive
+            ,ISNULL(H.IsArchive, 0) IsArchive
+            ,CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive'   END Status
+            FROM Sabres H
+            left outer join COAs  c on c.Id=H.COAId
+            Where 1=1
+            And H.IsActive = 1
 
-                      ";
+             ";
 
 
                 sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
@@ -2435,63 +2437,7 @@ WHERE
                 return result;
             }
         }
-        //public async Task<ResultVM> ProductList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
-        //{
-        //    DataTable dataTable = new DataTable();
-        //    ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
-
-        //    try
-        //    {
-        //        if (conn == null)
-        //        {
-        //            throw new Exception("Database connection fail!");
-        //        }
-        //        string sqlQuery = @"
-        //  SELECT DISTINCT
-        //     ISNULL(H.Id, 0) Id
-        //    ,ISNULL(H.Code, '') Code
-        //    ,ISNULL(H.Name, '') Name
-        //    ,ISNULL(H.ConversionFactor,0) ConversionFactor 
-        //    ,ISNULL(H.IsActive, 0) IsActive
-        //    ,CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive'   END Status
-        //    FROM Products H
-        // WHERE H.IsActive = 1
-        //";
-
-        //        sqlQuery = ApplyConditions(sqlQuery, conditionalFields, conditionalValues, false);
-
-        //        SqlDataAdapter objComm = CreateAdapter(sqlQuery, conn, transaction);
-
-        //        // SET additional conditions param
-        //        objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
-
-
-
-        //        objComm.Fill(dataTable);
-
-        //        var modelList = dataTable.AsEnumerable().Select(row => new ProductVM
-        //        {
-        //            Id = Convert.ToInt32(row["Id"]),
-        //            Code = row["Code"]?.ToString(),
-        //            Name = row["Name"]?.ToString(),
-        //            ConversionFactor = row["ConversionFactor"] != DBNull.Value ? Convert.ToDecimal(row["ConversionFactor"]) : 0m,
-        //            IsActive = Convert.ToBoolean(row["IsActive"])
-
-        //        }).ToList();
-
-
-        //        result.Status = "Success";
-        //        result.Message = "Data retrieved successfully.";
-        //        result.DataVM = modelList;
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        result.ExMessage = ex.Message;
-        //        result.Message = ex.Message;
-        //        return result;
-        //    }
-        //}
+       
 
         public async Task<ResultVM> PersonnelCategoriesList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {

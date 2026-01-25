@@ -355,7 +355,7 @@ namespace ShampanBFRS.Repository.SetUp
             -- Count query to get total number of records
             SELECT COUNT(DISTINCT H.Id) AS totalcount
             FROM Sabres H
-            LEFT OUTER JOIN COAs C ON H.Id =C.Id
+            LEFT OUTER JOIN COAs C ON H.COAId =C.Id
             WHERE 1 = 1
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SabresVM>.FilterCondition(options.filter) + ")" : "");
                 // Add additional filtering conditions if present
@@ -380,7 +380,7 @@ namespace ShampanBFRS.Repository.SetUp
                         ISNULL(H.LastUpdateBy, '') AS LastUpdateBy,
                         ISNULL(FORMAT(H.LastUpdateAt, 'yyyy-MM-dd HH:mm'), '1900-01-01') AS LastUpdateAt
                         FROM Sabres H
-                        LEFT OUTER JOIN COAs C ON H.Id =C.Id
+                        LEFT OUTER JOIN COAs C ON H.COAId =C.Id
                 WHERE 1 = 1
               " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<SabresVM>.FilterCondition(options.filter) + ")" : "");
 

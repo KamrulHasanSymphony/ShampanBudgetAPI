@@ -236,7 +236,7 @@ namespace ShampanBFRSAPI.Controllers.Common
             try
             {
                 CommonService _commonService = new CommonService();
-                resultVM = await _commonService.SabreList(new[] { "" }, new[] { "" }, null);
+                resultVM = await _commonService.SabreList(new[] { "c.COAGroupId" }, new[] { Vm.Value.ToString() }, null);
                 return resultVM;
             }
             catch (Exception ex)
