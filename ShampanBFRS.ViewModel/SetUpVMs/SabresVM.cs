@@ -12,7 +12,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
     {
         public int Id { get; set; }
 
-        [Display(Name = "COA")]
+        [Display(Name = "iBAS")]
         public int? COAId { get; set; }
 
         [Display(Name = "Code")]

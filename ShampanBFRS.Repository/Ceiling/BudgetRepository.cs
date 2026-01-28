@@ -280,7 +280,7 @@ WHERE 1 = 1
         INNER JOIN DepartmentSabres DS ON DS.SabreId = Sabres.Id
         INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
         WHERE 1 = 1
-          AND UI.UserName = 'erp'
+          
           {(options.filter.Filters.Count > 0
                       ? " AND (" + GridQueryBuilder<BudgetDetailVM>.FilterCondition(options.filter) + ")"
                       : "")}
@@ -508,13 +508,9 @@ WHERE 1 = 1
                  ,COAs.Name          AS iBASName
                  ,S.Code        AS SabreCode
                  ,S.Name      AS SabreName
-                  FROM BudgetDetails D
-  
+                  FROM BudgetDetails D 
                   LEFT OUTER JOIN Sabres S ON S.Id = D.SabreId
                   LEFT OUTER JOIN COAs ON COAs.Id = S.COAId
-                  INNER JOIN DepartmentSabres DS ON DS.SabreId = S.Id
-                  INNER JOIN UserInformations UI ON UI.DepartmentId = DS.DepartmentId
-
                   WHERE 1 = 1
   
                   ";
