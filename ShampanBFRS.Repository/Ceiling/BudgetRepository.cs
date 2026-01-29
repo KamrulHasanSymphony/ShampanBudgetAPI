@@ -576,6 +576,7 @@ WHERE 1 = 1
                 -- Count query
                 SELECT COUNT(DISTINCT M.Id) AS totalcount
 FROM BudgetHeaders M
+LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
 WHERE 1 = 1
 
                 -- Add the filter condition
@@ -1383,9 +1384,10 @@ EXEC sp_executesql @SQL;
                 // Define your SQL query string
                 string sqlQuery = @"
                 -- Count query
-           SELECT COUNT(DISTINCT M.FiscalYearId) AS TotalCount
-            FROM BudgetHeaders M
-            WHERE 1 = 1
+                SELECT COUNT(DISTINCT M.FiscalYearId) AS TotalCount
+                FROM BudgetHeaders M
+                LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
+                WHERE 1 = 1
 
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
@@ -1401,15 +1403,13 @@ EXEC sp_executesql @SQL;
                     ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "fy.YearName DESC") + @") AS rowindex,
    
                         ISNULL(M.CompanyId, 0) AS CompanyId,
-                        ISNULL(M.BranchId, 0) AS BranchId,
-                        
+                        ISNULL(M.BranchId, 0) AS BranchId,            
                         M.FiscalYearId,
                         ISNULL(fy.YearName, '') AS YearName,
                         ISNULL(M.BudgetType, '') AS BudgetType
-
-                         FROM BudgetHeaders M
-                         LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
-                         WHERE 1 = 1
+                        FROM BudgetHeaders M
+                        LEFT JOIN FiscalYears fy ON fy.Id = M.FiscalYearId
+                        WHERE 1 = 1
 
                 -- Add the filter condition
                 " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<BudgetHeaderVM>.FilterCondition(options.filter) + ")" : "");
@@ -1420,15 +1420,15 @@ EXEC sp_executesql @SQL;
                 sqlQuery += @"
                 GROUP BY
         
-        M.CompanyId,
-        M.BranchId,
-        M.FiscalYearId,
-        fy.YearName,
-        M.BudgetType
-) AS a
-WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
-order by a.FiscalYearId desc
-            ";
+                M.CompanyId,
+                M.BranchId,
+                M.FiscalYearId,
+                fy.YearName,
+                M.BudgetType
+                ) AS a
+                WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
+                order by a.FiscalYearId desc
+                 ";
 
                 // Execute the query and get data
                 data = KendoGrid<BudgetHeaderVM>.GetTransactionalGridData_CMD(options, sqlQuery, "M.Id", conditionalFields, conditionalValues);
