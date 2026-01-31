@@ -608,8 +608,6 @@ WHERE Id IN ({inClause});";
                 -- Count query
              SELECT COUNT(DISTINCT M.ID) AS totalcount
             FROM Structures M
-
-
             WHERE 1 = 1
                 -- Add the filter condition
     " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<StructureVM>.FilterCondition(options.filter) + ")" : ""); /*+ @"*/

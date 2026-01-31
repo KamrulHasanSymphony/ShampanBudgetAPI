@@ -360,7 +360,7 @@ namespace ShampanBFRS.Repository.SetUp
                            ISNULL(H.IsActive,0) AS IsActive,
                            CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
                            ISNULL(H.CreatedBy,'') AS CreatedBy,
-                            ISNULL(FORMAT(H.CreatedAt,'yyyy-MM-dd HH:mm'),'') AS CreatedAt,
+                           ISNULL(FORMAT(H.CreatedAt,'yyyy-MM-dd HH:mm'),'') AS CreatedAt,
                            ISNULL(H.LastUpdateBy,'') AS LastUpdateBy,
                            ISNULL(FORMAT(H.LastUpdateAt,'yyyy-MM-dd HH:mm'),'') AS LastUpdateAt
                     FROM COAGroups H

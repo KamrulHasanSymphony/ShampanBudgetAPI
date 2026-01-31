@@ -354,11 +354,11 @@ namespace ShampanBFRS.Repository.SetUp
                            ISNULL(H.IsActive,0) AS IsActive,
                            CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
                            ISNULL(H.CreatedBy,'') AS CreatedBy,
-                            ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn,
+                           ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreatedOn,
                            ISNULL(H.LastUpdateBy,'') AS LastUpdateBy,
                            ISNULL(FORMAT(H.LastUpdateOn,'yyyy-MM-dd HH:mm'),'') AS LastUpdateOn
-                    FROM Segments H
-                    WHERE H.IsArchive != 1
+                           FROM Segments H
+                           WHERE H.IsArchive != 1
                     " + (options.filter.Filters.Count > 0
                             ? " AND (" + GridQueryBuilder<SegmentVM>.FilterCondition(options.filter) + ")"
                             : "") + @"
