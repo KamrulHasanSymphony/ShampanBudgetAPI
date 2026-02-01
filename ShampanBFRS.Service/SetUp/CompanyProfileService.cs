@@ -37,7 +37,7 @@ namespace ShampanBFRS.Service.SetUp
                 string[] conditionField = { "CompanyName" };
                 string[] conditionValue = { vm.CompanyName.Trim() };
 
-                bool exist = _commonRepo.CheckExists("CompanyProfiles", conditionField, conditionValue, conn, transaction);
+                bool exist = _commonRepo.CheckExists("CompanyInfo", conditionField, conditionValue, conn, transaction);
 
                 if (exist)
                 {
@@ -46,39 +46,30 @@ namespace ShampanBFRS.Service.SetUp
                 }
                 #endregion
 
-                string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
-                
 
-                if (!string.IsNullOrEmpty(code))
-                {
-                    vm.Code = code;
+               result = await _repo.Insert(vm, conn, transaction);
 
-                    result = await _repo.Insert(vm, conn, transaction);
+               if (result.Status == "Success")
+               {
+                   result = await _repo.AuthCompanyInsert(vm, null, null);
+               }
+               else
+               {
+                   throw new Exception(result.Message);
+               }
 
-                    if (result.Status == "Success")
-                    {
-                        result = await _repo.AuthCompanyInsert(vm, null, null);
-                    }
-                    else
-                    {
-                        throw new Exception(result.Message);
-                    }
+               if (isNewConnection && result.Status == "Success")
+               {
+                   transaction.Commit();
+               }
+               else
+               {
+                   throw new Exception(result.Message);
+               }
 
-                    if (isNewConnection && result.Status == "Success")
-                    {
-                        transaction.Commit();
-                    }
-                    else
-                    {
-                        throw new Exception(result.Message);
-                    }
+               return result;
+               
 
-                    return result;
-                }
-                else
-                {
-                    throw new Exception("Code Generation Failed!");
-                }
             }
             catch (Exception ex)
             {
@@ -117,10 +108,10 @@ namespace ShampanBFRS.Service.SetUp
                 transaction = conn.BeginTransaction();
 
                 #region Check Exist Data
-                string[] conditionField = { "Id not", "CompanyName" };
-                string[] conditionValue = { vm.Id.ToString(), vm.CompanyName.Trim() };
+                string[] conditionField = { "CompanyID not", "CompanyName" };
+                string[] conditionValue = { vm.CompanyID.ToString(), vm.CompanyName.Trim() };
 
-                bool exist = _commonRepo.CheckExists("CompanyProfiles", conditionField, conditionValue, conn, transaction);
+                bool exist = _commonRepo.CheckExists("CompanyInfo", conditionField, conditionValue, conn, transaction);
 
                 if (exist)
                 {
@@ -133,7 +124,7 @@ namespace ShampanBFRS.Service.SetUp
 
                 if (result.Status == "Success")
                 {
-                    result = await _repo.AuthCompanyUpdate(vm, null, null);
+                    result = await _repo.AuthCompanyUpdate(vm, conn, transaction);
                 }
                 else
                 {

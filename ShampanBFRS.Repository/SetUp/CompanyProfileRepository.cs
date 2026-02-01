@@ -28,27 +28,23 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 string query = @"
-                INSERT INTO CompanyProfiles 
+                INSERT INTO CompanyInfo 
                     (
-                        Code, CompanyName, CompanyBanglaName, CompanyLegalName, Address1, Address2, Address3, City, ZipCode, 
-                        TelephoneNo, FaxNo, Email, ContactPerson, ContactPersonDesignation, ContactPersonTelephone, ContactPersonEmail,TINNo, VatRegistrationNo, Comments, IsArchive, IsActive, CreatedBy, CreatedOn,CreatedFrom,FYearStart, FYearEnd, BusinessNature, AccountingNature, CompanyTypeId, Section, BIN,IsVDSWithHolder, AppVersion, License
+                        CompanyName, CompanyLegalName, Address, City,  ZipCode,TelephoneNo,FaxNo, Email, ContactPerson,
+                        ContactPersonDesignation, ContactPersonTelephone, ContactPersonEmail,TINNo, BIN, VatRegistrationNo,FYearStart, FYearEnd, Comments,ActiveStatus, CreatedBy, CreatedOn,LastModifiedOn,LastModifiedBy
                     )
                     VALUES 
                     (
-                      @Code, @CompanyName, @CompanyBanglaName, @CompanyLegalName, @Address1, @Address2, @Address3, @City, @ZipCode,
-                      @TelephoneNo, @FaxNo, @Email, @ContactPerson, @ContactPersonDesignation, @ContactPersonTelephone, @ContactPersonEmail, @TINNo, @VatRegistrationNo, @Comments,@IsArchive, @IsActive, @CreatedBy, GETDATE(), @CreatedFrom, @FYearStart, @FYearEnd, @BusinessNature, @AccountingNature, @CompanyTypeId, @Section, @BIN, @IsVDSWithHolder, @AppVersion, @License
+                      @CompanyName, @CompanyLegalName, @Address, @City, @ZipCode,@TelephoneNo, @FaxNo, @Email, @ContactPerson,
+                     @ContactPersonDesignation, @ContactPersonTelephone, @ContactPersonEmail, @TINNo,@BIN ,@VatRegistrationNo,@FYearStart, @FYearEnd, @Comments,@ActiveStatus, @CreatedBy, GETDATE(),@LastModifiedOn,@LastModifiedBy
                     );
-                    SELECT SCOPE_IDENTITY();";
+                SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyName", vm.CompanyName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyBanglaName", vm.CompanyBanglaName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CompanyName", vm.CompanyName ?? (object)DBNull.Value);                    
                     cmd.Parameters.AddWithValue("@CompanyLegalName", vm.CompanyLegalName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address1", vm.Address1 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address2", vm.Address2 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address3", vm.Address3 ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Address", vm.Address ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@City", vm.City ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ZipCode", vm.ZipCode ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TelephoneNo", vm.TelephoneNo ?? (object)DBNull.Value);
@@ -59,28 +55,23 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@ContactPersonTelephone", vm.ContactPersonTelephone ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ContactPersonEmail", vm.ContactPersonEmail ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TINNo", vm.TINNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@VatRegistrationNo", vm.VatRegistrationNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
-                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearStart", vm.FYearStart ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearEnd", vm.FYearEnd ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BusinessNature", vm.BusinessNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@AccountingNature", vm.AccountingNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyTypeId", vm.CompanyTypeId);
-                    cmd.Parameters.AddWithValue("@Section", vm.Section ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsVDSWithHolder", vm.IsVDSWithHolder);
-                    cmd.Parameters.AddWithValue("@AppVersion", vm.AppVersion ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@License", vm.License ?? (object)DBNull.Value);
 
-                    vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
+                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ActiveStatus", vm.ActiveStatus);
+                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastModifiedOn", vm.LastModifiedOn ?? (object)DBNull.Value);
+
+                    vm.CompanyID = Convert.ToInt32(cmd.ExecuteScalar());
 
                     result.Status = MessageModel.Success;
                     result.Message = MessageModel.InsertSuccess;
-                    result.Id =vm.Id.ToString();
+                    result.Id =vm.CompanyID.ToString();
                     result.DataVM = vm;
                 }
 
@@ -99,7 +90,7 @@ namespace ShampanBFRS.Repository.SetUp
         // Update Method
          public async Task<ResultVM> Update(CompanyProfileVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.CompanyID.ToString(), DataVM = vm };
 
             try
             {
@@ -114,14 +105,11 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 string query = @"
-UPDATE CompanyProfiles
+UPDATE CompanyInfo
 SET
     CompanyName = @CompanyName,
-    CompanyBanglaName = @CompanyBanglaName,
     CompanyLegalName = @CompanyLegalName,
-    Address1 = @Address1,
-    Address2 = @Address2,
-    Address3 = @Address3,
+    Address = @Address,
     City = @City,
     ZipCode = @ZipCode,
     TelephoneNo = @TelephoneNo,
@@ -132,34 +120,23 @@ SET
     ContactPersonTelephone = @ContactPersonTelephone,
     ContactPersonEmail = @ContactPersonEmail,
     TINNo = @TINNo,
+    BIN = @BIN,
     VatRegistrationNo = @VatRegistrationNo,
-    Comments = @Comments,
     FYearStart = @FYearStart,
     FYearEnd = @FYearEnd,
-    BusinessNature = @BusinessNature,
-    AccountingNature = @AccountingNature,
-    CompanyTypeId = @CompanyTypeId,
-    Section = @Section,
-    BIN = @BIN,
-    IsVDSWithHolder = @IsVDSWithHolder,
-    LastModifiedBy = @LastModifiedBy,    
-    LastUpdateFrom = @LastUpdateFrom,
+    Comments = @Comments,
+    ActiveStatus = @ActiveStatus,
     LastModifiedOn = GETDATE(),
-    AppVersion = @AppVersion,
-    License = @License
+    LastModifiedBy = @LastModifiedBy
 
-
-WHERE Id = @Id ";
+WHERE CompanyID  = @CompanyID  ";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@Id", vm.Id);
+                    cmd.Parameters.AddWithValue("@CompanyID", vm.CompanyID);
                     cmd.Parameters.AddWithValue("@CompanyName", vm.CompanyName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyBanglaName", vm.CompanyBanglaName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CompanyLegalName", vm.CompanyLegalName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address1", vm.Address1 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address2", vm.Address2 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address3", vm.Address3 ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Address", vm.Address ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@City", vm.City ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ZipCode", vm.ZipCode ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TelephoneNo", vm.TelephoneNo ?? (object)DBNull.Value);
@@ -170,20 +147,13 @@ WHERE Id = @Id ";
                     cmd.Parameters.AddWithValue("@ContactPersonTelephone", vm.ContactPersonTelephone ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ContactPersonEmail", vm.ContactPersonEmail ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TINNo", vm.TINNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@VatRegistrationNo", vm.VatRegistrationNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearStart", vm.FYearStart ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearEnd", vm.FYearEnd ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BusinessNature", vm.BusinessNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@AccountingNature", vm.AccountingNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyTypeId", vm.CompanyTypeId);
-                    cmd.Parameters.AddWithValue("@Section", vm.Section ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsVDSWithHolder", vm.IsVDSWithHolder);
-                    cmd.Parameters.AddWithValue("@AppVersion", vm.AppVersion ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@License", vm.License ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ActiveStatus", vm.ActiveStatus);
                     cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
@@ -265,7 +235,7 @@ WHERE Id = @Id ";
         }
 
         // List Method
-        public async Task<ResultVM> xxxxList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
@@ -279,52 +249,37 @@ WHERE Id = @Id ";
 
 
                 string query = @"
-SELECT 
-    ISNULL(H.Id, 0) AS Id,
-    ISNULL(H.Code, '') AS Code,
-    ISNULL(H.CompanyName, '') AS CompanyName,
-    ISNULL(H.CompanyBanglaName, '') AS CompanyBanglaName,
-    ISNULL(H.CompanyLegalName, '') AS CompanyLegalName,
-    ISNULL(H.Address1, '') AS Address1,
-    ISNULL(H.Address2, '') AS Address2,
-    ISNULL(H.Address3, '') AS Address3,
-    ISNULL(H.City, '') AS City,
-    ISNULL(H.ZipCode, '') AS ZipCode,
-    ISNULL(H.TelephoneNo, '') AS TelephoneNo,
-    ISNULL(H.FaxNo, '') AS FaxNo,
-    ISNULL(H.Email, '') AS Email,
-    ISNULL(H.ContactPerson, '') AS ContactPerson,
-    ISNULL(H.ContactPersonDesignation, '') AS ContactPersonDesignation,
-    ISNULL(H.ContactPersonTelephone, '') AS ContactPersonTelephone,
-    ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail,
-    ISNULL(H.TINNo, '') AS TINNo,
-    ISNULL(H.VatRegistrationNo, '') AS VatRegistrationNo,
-    ISNULL(H.Comments, '') AS Comments,
-    ISNULL(H.IsArchive, 0) AS IsArchive,
-    ISNULL(H.IsActive, 0) AS IsActive,
-    ISNULL(H.CreatedBy, '') AS CreatedBy,
-    ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn,
-    ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
-    ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastModifiedOn,
-    ISNULL(H.CreatedFrom, '') AS CreatedFrom,
-    ISNULL(H.LastUpdateFrom, '') AS LastUpdateFrom,
-    ISNULL(FORMAT(H.FYearStart, 'yyyy-MM-dd'), '1900-01-01') AS FYearStart,
-    ISNULL(FORMAT(H.FYearEnd, 'yyyy-MM-dd'), '1900-01-01') AS FYearEnd,
-    ISNULL(H.BusinessNature, '') AS BusinessNature,
-    ISNULL(H.AccountingNature, '') AS AccountingNature,
-    ISNULL(H.CompanyTypeId, 0) AS CompanyTypeId,
-    ISNULL(H.Section, '') AS Section,
-    ISNULL(H.BIN, '') AS BIN,
-    ISNULL(H.IsVDSWithHolder, 0) AS IsVDSWithHolder,
-    ISNULL(H.AppVersion, '') AS AppVersion,
-    ISNULL(H.License, '') AS License
+            SELECT 
+                ISNULL(H.CompanyID, 0) AS CompanyID,
+                ISNULL(H.CompanyName, '') AS CompanyName,
+                ISNULL(H.CompanyLegalName, '') AS CompanyLegalName,
+                ISNULL(H.Address, '') AS Address,
+                ISNULL(H.City, '') AS City,
+                ISNULL(H.ZipCode, '') AS ZipCode,
+                ISNULL(H.TelephoneNo, '') AS TelephoneNo,
+                ISNULL(H.FaxNo, '') AS FaxNo,
+                ISNULL(H.Email, '') AS Email,
+                ISNULL(H.ContactPerson, '') AS ContactPerson,
+                ISNULL(H.ContactPersonDesignation, '') AS ContactPersonDesignation,
+                ISNULL(H.ContactPersonTelephone, '') AS ContactPersonTelephone,
+                ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail,
+                ISNULL(H.TINNo, '') AS TINNo,
+                ISNULL(H.BIN, '') AS BIN,
+                ISNULL(H.VatRegistrationNo, '') AS VatRegistrationNo,
+                ISNULL(FORMAT(H.FYearStart, 'yyyy-MM-dd'), '1900-01-01') AS FYearStart,
+                ISNULL(FORMAT(H.FYearEnd, 'yyyy-MM-dd'), '1900-01-01') AS FYearEnd,
+                ISNULL(H.Comments, '') AS Comments,
+                ISNULL(H.ActiveStatus, 0) AS ActiveStatus,
+                ISNULL(H.CreatedBy, '') AS CreatedBy,
+                ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn,
+                ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
+                ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastModifiedOn
 
-FROM 
-    CompanyProfiles AS H
-WHERE 
-    1 = 1
-
-";
+                FROM 
+                    CompanyInfo AS H
+                WHERE 
+                1 = 1
+            ";
 
                 if (vm != null && !string.IsNullOrEmpty(vm.Id))
                 {
@@ -348,14 +303,10 @@ WHERE
 
                 var modelList = dataTable.AsEnumerable().Select(row => new CompanyProfileVM
                 {
-                    Id = Convert.ToInt32(row["Id"]),
-                    Code = row["Code"].ToString(),
+                    CompanyID = Convert.ToInt32(row["CompanyID"]),
                     CompanyName = row["CompanyName"].ToString(),
-                    CompanyBanglaName = row["CompanyBanglaName"].ToString(),
                     CompanyLegalName = row["CompanyLegalName"].ToString(),
-                    Address1 = row["Address1"].ToString(),
-                    Address2 = row["Address2"].ToString(),
-                    Address3 = row["Address3"].ToString(),
+                    Address = row["Address"].ToString(),
                     City = row["City"].ToString(),
                     ZipCode = row["ZipCode"].ToString(),
                     TelephoneNo = row["TelephoneNo"].ToString(),
@@ -366,26 +317,17 @@ WHERE
                     ContactPersonTelephone = row["ContactPersonTelephone"].ToString(),
                     ContactPersonEmail = row["ContactPersonEmail"].ToString(),
                     TINNo = row["TINNo"].ToString(),
+                    BIN = row["BIN"].ToString(),
                     VatRegistrationNo = row["VatRegistrationNo"].ToString(),
+                    FYearStart = row["FYearStart"].ToString(),
+                    FYearEnd = row["FYearEnd"].ToString(),
                     Comments = row["Comments"].ToString(),
-                    IsArchive = Convert.ToBoolean(row["IsArchive"]),
-                    IsActive = Convert.ToBoolean(row["IsActive"]),
+                    ActiveStatus = Convert.ToBoolean(row["ActiveStatus"]),
                     CreatedBy = row["CreatedBy"].ToString(),
                     CreatedOn = row["CreatedOn"].ToString(),
                     LastModifiedBy = row["LastModifiedBy"].ToString(),
-                    LastModifiedOn = row["LastModifiedOn"].ToString(),
-                    CreatedFrom = row["CreatedFrom"].ToString(),
-                    LastUpdateFrom = row["LastUpdateFrom"].ToString(),
-                    FYearStart = row["FYearStart"].ToString(),
-                    FYearEnd = row["FYearEnd"].ToString(),
-                    BusinessNature = row["BusinessNature"].ToString(),
-                    AccountingNature = row["AccountingNature"].ToString(),
-                    CompanyTypeId = Convert.ToInt32(row["CompanyTypeId"]),
-                    Section = row["Section"].ToString(),
-                    BIN = row["BIN"].ToString(),
-                    IsVDSWithHolder = Convert.ToBoolean(row["IsVDSWithHolder"]),
-                    AppVersion = row["AppVersion"].ToString(),
-                    License = row["License"].ToString(),
+                    LastModifiedOn = row["LastModifiedOn"].ToString()
+
 
                 }).ToList();
 
@@ -405,115 +347,115 @@ WHERE
             }
         }
 
-        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
-        {
-            DataTable dataTable = new DataTable();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+       //        public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+//        {
+//            DataTable dataTable = new DataTable();
+//            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
-            try
-            {
-                if (conn == null)
-                {
-                    throw new Exception("Database connection fail!");
-                }
+//            try
+//            {
+//                if (conn == null)
+//                {
+//                    throw new Exception("Database connection fail!");
+//                }
 
 
-                string query = @"
-SELECT 
-    ISNULL(H.CompanyID, 0) AS Id,
-    ISNULL(H.CompanyName, '') AS CompanyName,
-    ISNULL(H.CompanyLegalName, '') AS CompanyLegalName,
-    ISNULL(H.Address, '') AS Address,
-    ISNULL(H.City, '') AS City,
-    ISNULL(H.ZipCode, '') AS ZipCode,
-    ISNULL(H.TelephoneNo, '') AS TelephoneNo,
-    ISNULL(H.FaxNo, '') AS FaxNo,
-    ISNULL(H.Email, '') AS Email,
-    ISNULL(H.ContactPerson, '') AS ContactPerson,
-    ISNULL(H.ContactPersonDesignation, '') AS ContactPersonDesignation,
-    ISNULL(H.ContactPersonTelephone, '') AS ContactPersonTelephone,
-    ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail,
-    ISNULL(H.TINNo, '') AS TINNo,
-    ISNULL(H.VatRegistrationNo, '') AS VatRegistrationNo,
-    ISNULL(H.Comments, '') AS Comments,
-    ISNULL(H.CreatedBy, '') AS CreatedBy,
-    ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn,
-    ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
-    ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastModifiedOn,
-    ISNULL(H.BIN, '') AS BIN,
-    ISNULL(FORMAT(H.FYearStart, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS FYearStart,
-    ISNULL(FORMAT(H.FYearEnd, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS FYearEnd
+//                string query = @"
+//SELECT 
+//    ISNULL(H.CompanyID, 0) AS Id,
+//    ISNULL(H.CompanyName, '') AS CompanyName,
+//    ISNULL(H.CompanyLegalName, '') AS CompanyLegalName,
+//    ISNULL(H.Address, '') AS Address,
+//    ISNULL(H.City, '') AS City,
+//    ISNULL(H.ZipCode, '') AS ZipCode,
+//    ISNULL(H.TelephoneNo, '') AS TelephoneNo,
+//    ISNULL(H.FaxNo, '') AS FaxNo,
+//    ISNULL(H.Email, '') AS Email,
+//    ISNULL(H.ContactPerson, '') AS ContactPerson,
+//    ISNULL(H.ContactPersonDesignation, '') AS ContactPersonDesignation,
+//    ISNULL(H.ContactPersonTelephone, '') AS ContactPersonTelephone,
+//    ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail,
+//    ISNULL(H.TINNo, '') AS TINNo,
+//    ISNULL(H.VatRegistrationNo, '') AS VatRegistrationNo,
+//    ISNULL(H.Comments, '') AS Comments,
+//    ISNULL(H.CreatedBy, '') AS CreatedBy,
+//    ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn,
+//    ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
+//    ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastModifiedOn,
+//    ISNULL(H.BIN, '') AS BIN,
+//    ISNULL(FORMAT(H.FYearStart, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS FYearStart,
+//    ISNULL(FORMAT(H.FYearEnd, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS FYearEnd
 
-FROM 
-    CompanyInfo AS H
-WHERE 
-    1 = 1
+//FROM 
+//    CompanyInfo AS H
+//WHERE 
+//    1 = 1
 
-";
+//";
 
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    query += " AND H.CompanyID = @CompanyID ";
-                }
+//                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+//                {
+//                    query += " AND H.CompanyID = @CompanyID ";
+//                }
 
-                // Apply additional conditions
-                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+//                // Apply additional conditions
+//                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
 
-                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+//                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
 
-                // SET additional conditions param
-                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+//                // SET additional conditions param
+//                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
 
-                if (vm != null && !string.IsNullOrEmpty(vm.Id))
-                {
-                    objComm.SelectCommand.Parameters.AddWithValue("@CompanyID", vm.Id);
-                }
+//                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+//                {
+//                    objComm.SelectCommand.Parameters.AddWithValue("@CompanyID", vm.Id);
+//                }
 
-                objComm.Fill(dataTable);
+//                objComm.Fill(dataTable);
 
-                var modelList = dataTable.AsEnumerable().Select(row => new CompanyProfileVM
-                {
-                    Id = Convert.ToInt32(row["Id"]),
-                    CompanyName = row["CompanyName"].ToString(),
-                    CompanyLegalName = row["CompanyLegalName"].ToString(),
-                    Address1 = row["Address"].ToString(),
-                    City = row["City"].ToString(),
-                    ZipCode = row["ZipCode"].ToString(),
-                    TelephoneNo = row["TelephoneNo"].ToString(),
-                    FaxNo = row["FaxNo"].ToString(),
-                    Email = row["Email"].ToString(),
-                    ContactPerson = row["ContactPerson"].ToString(),
-                    ContactPersonDesignation = row["ContactPersonDesignation"].ToString(),
-                    ContactPersonTelephone = row["ContactPersonTelephone"].ToString(),
-                    ContactPersonEmail = row["ContactPersonEmail"].ToString(),
-                    TINNo = row["TINNo"].ToString(),
-                    VatRegistrationNo = row["VatRegistrationNo"].ToString(),
-                    Comments = row["Comments"].ToString(),
-                    CreatedBy = row["CreatedBy"].ToString(),
-                    CreatedOn = row["CreatedOn"].ToString(),
-                    LastModifiedBy = row["LastModifiedBy"].ToString(),
-                    LastModifiedOn = row["LastModifiedOn"].ToString(),
-                    BIN = row["BIN"].ToString(),
-                    FYearStart = row["FYearStart"].ToString(),
-                    FYearEnd = row["FYearEnd"].ToString(),
+//                var modelList = dataTable.AsEnumerable().Select(row => new CompanyProfileVM
+//                {
+//                    Id = Convert.ToInt32(row["Id"]),
+//                    CompanyName = row["CompanyName"].ToString(),
+//                    CompanyLegalName = row["CompanyLegalName"].ToString(),
+//                    Address1 = row["Address"].ToString(),
+//                    City = row["City"].ToString(),
+//                    ZipCode = row["ZipCode"].ToString(),
+//                    TelephoneNo = row["TelephoneNo"].ToString(),
+//                    FaxNo = row["FaxNo"].ToString(),
+//                    Email = row["Email"].ToString(),
+//                    ContactPerson = row["ContactPerson"].ToString(),
+//                    ContactPersonDesignation = row["ContactPersonDesignation"].ToString(),
+//                    ContactPersonTelephone = row["ContactPersonTelephone"].ToString(),
+//                    ContactPersonEmail = row["ContactPersonEmail"].ToString(),
+//                    TINNo = row["TINNo"].ToString(),
+//                    VatRegistrationNo = row["VatRegistrationNo"].ToString(),
+//                    Comments = row["Comments"].ToString(),
+//                    CreatedBy = row["CreatedBy"].ToString(),
+//                    CreatedOn = row["CreatedOn"].ToString(),
+//                    LastModifiedBy = row["LastModifiedBy"].ToString(),
+//                    LastModifiedOn = row["LastModifiedOn"].ToString(),
+//                    BIN = row["BIN"].ToString(),
+//                    FYearStart = row["FYearStart"].ToString(),
+//                    FYearEnd = row["FYearEnd"].ToString(),
 
-                }).ToList();
+//                }).ToList();
 
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
-                result.DataVM = modelList;
+//                result.Status = MessageModel.Success;
+//                result.Message = MessageModel.RetrievedSuccess;
+//                result.DataVM = modelList;
 
-                return result;
+//                return result;
 
-            }
-            catch (Exception ex)
-            {
-                result.Status = MessageModel.Fail;
-                result.ExMessage = ex.Message;
-                result.Message = ex.Message;
-                return result;
-            }
-        }
+//            }
+//            catch (Exception ex)
+//            {
+//                result.Status = MessageModel.Fail;
+//                result.ExMessage = ex.Message;
+//                result.Message = ex.Message;
+//                return result;
+//            }
+//        }
 
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
@@ -660,24 +602,20 @@ WHERE 1 = 1
                 // Define your SQL query string
                 string sqlQuery = @"
             -- Count query
-                    SELECT COUNT(DISTINCT H.Id) AS totalcount
-                   FROM CompanyProfiles H 
-                    WHERE H.IsArchive != 1
+                    SELECT COUNT(DISTINCT H.CompanyID) AS totalcount
+                   FROM CompanyInfo  H 
+                    WHERE 1 = 1
                     " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CompanyProfileVM>.FilterCondition(options.filter) + ")" : "") + @"
 
                     -- Data query with pagination and sorting
                     SELECT * 
                     FROM (
                         SELECT 
-                         ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "H.Id DESC ") + @") AS rowindex,
-                        ISNULL(H.Id, 0) AS Id,
-                        ISNULL(H.Code, '') AS Code,
+                        ROW_NUMBER() OVER(ORDER BY " + (options.sort.Count > 0 ? options.sort[0].field + " " + options.sort[0].dir : "H.CompanyID DESC ") + @") AS rowindex,
+                        ISNULL(H.CompanyID, 0) AS CompanyID,
                         ISNULL(H.CompanyName, '') AS CompanyName,
-                        ISNULL(H.CompanyBanglaName, '') AS CompanyBanglaName,
                         ISNULL(H.CompanyLegalName, '') AS CompanyLegalName,
-                        ISNULL(H.Address1, '') AS Address1,
-                        ISNULL(H.Address2, '') AS Address2,
-                        ISNULL(H.Address3, '') AS Address3,
+                        ISNULL(H.Address, '') AS Address,
                         ISNULL(H.City, '') AS City,
                         ISNULL(H.ZipCode, '') AS ZipCode,
                         ISNULL(H.TelephoneNo, '') AS TelephoneNo,
@@ -688,31 +626,20 @@ WHERE 1 = 1
                         ISNULL(H.ContactPersonTelephone, '') AS ContactPersonTelephone,
                         ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail,
                         ISNULL(H.TINNo, '') AS TINNo,
-                        ISNULL(H.VatRegistrationNo, '') AS VatRegistrationNo,
-                        ISNULL(H.Comments, '') AS Comments,
-                        ISNULL(H.IsArchive, 0) AS IsArchive,
-                        ISNULL(H.IsActive, 0) AS IsActive,
-                        CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive' END AS Status,
-                        ISNULL(H.CreatedBy, '') AS CreatedBy,
-                        ISNULL(FORMAT(H.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn,
-                        ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
-                        ISNULL(FORMAT(H.LastModifiedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastModifiedOn,
-                        ISNULL(H.CreatedFrom, '') AS CreatedFrom,
-                        ISNULL(H.LastUpdateFrom, '') AS LastUpdateFrom,
-                        ISNULL(FORMAT(H.FYearStart, 'yyyy-MM-dd'), '1900-01-01') AS FYearStart,
-                        ISNULL(FORMAT(H.FYearEnd, 'yyyy-MM-dd'), '1900-01-01') AS FYearEnd,
-                        ISNULL(H.BusinessNature, '') AS BusinessNature,
-                        ISNULL(H.AccountingNature, '') AS AccountingNature,
-                        ISNULL(H.CompanyTypeId, 0) AS CompanyTypeId,
-                        ISNULL(H.Section, '') AS Section,
                         ISNULL(H.BIN, '') AS BIN,
-                        ISNULL(H.IsVDSWithHolder, 0) AS IsVDSWithHolder,
-                        ISNULL(H.AppVersion, '') AS AppVersion,
-                        ISNULL(H.License, '') AS License
-                    
-                        FROM CompanyProfiles AS H
+                        ISNULL(H.VatRegistrationNo, '') AS VatRegistrationNo,
+                        ISNULL(FORMAT(H.FYearStart,'yyyy-MM-dd'), '1900-01-01') AS FYearStart,
+                        ISNULL(FORMAT(H.FYearEnd,'yyyy-MM-dd'), '1900-01-01') AS FYearEnd,
+                        ISNULL(H.Comments, '') AS Comments,
+                        ISNULL(H.ActiveStatus, 0) AS ActiveStatus,
+                        CASE WHEN ISNULL(H.ActiveStatus,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
+                        ISNULL(H.CreatedBy, '') AS CreatedBy,
+                        ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm:ss'),'1900-01-01') AS CreatedOn,
+                        ISNULL(H.LastModifiedBy, '') AS LastModifiedBy,
+                        ISNULL(FORMAT(H.LastModifiedOn,'yyyy-MM-dd HH:mm:ss'),'1900-01-01') AS LastModifiedOn
+                        FROM CompanyInfo H
 
-                        WHERE H.IsArchive != 1
+                        WHERE 1 = 1
                   
             -- Add the filter condition
             " + (options.filter.Filters.Count > 0 ? " AND (" + GridQueryBuilder<CompanyProfileVM>.FilterCondition(options.filter) + ")" : "") + @"
@@ -721,7 +648,7 @@ WHERE 1 = 1
             WHERE rowindex > @skip AND (@take = 0 OR rowindex <= @take)
         ";
 
-                data = KendoGrid<CompanyProfileVM>.GetGridData_CMD(options, sqlQuery, "H.Id");
+                data = KendoGrid<CompanyProfileVM>.GetGridData_CMD(options, sqlQuery, "H.CompanyID");
 
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
@@ -755,29 +682,24 @@ WHERE 1 = 1
                 }
 
                 string query = @"
-                INSERT INTO CompanyProfiles 
+                INSERT INTO CompanyInfo 
                     (
-                        Code, CompanyName, CompanyBanglaName, CompanyLegalName, Address1, Address2, Address3, City, ZipCode, 
-                        TelephoneNo, FaxNo, Email, ContactPerson, ContactPersonDesignation, ContactPersonTelephone, ContactPersonEmail,TINNo, VatRegistrationNo, Comments, IsArchive, IsActive, CreatedBy, CreatedOn,CreatedFrom,FYearStart, FYearEnd, BusinessNature, AccountingNature, CompanyTypeId, Section, BIN, 
-                        IsVDSWithHolder, AppVersion, License
+                        CompanyName, CompanyLegalName, Address, City,  ZipCode,TelephoneNo,FaxNo, Email, ContactPerson,
+                        ContactPersonDesignation, ContactPersonTelephone, ContactPersonEmail,TINNo, BIN, VatRegistrationNo,FYearStart, FYearEnd, Comments,ActiveStatus, CreatedBy, CreatedOn,LastModifiedOn,LastModifiedBy
                     )
                     VALUES 
                     (
-                      @Code, @CompanyName, @CompanyBanglaName, @CompanyLegalName, @Address1, @Address2, @Address3, @City, @ZipCode,
-                      @TelephoneNo, @FaxNo, @Email, @ContactPerson, @ContactPersonDesignation, @ContactPersonTelephone, @ContactPersonEmail, @TINNo, @VatRegistrationNo, @Comments, 
-                        @IsArchive, @IsActive, @CreatedBy, GETDATE(), @CreatedFrom, @FYearStart, @FYearEnd, @BusinessNature, @AccountingNature, @CompanyTypeId, @Section, @BIN, @IsVDSWithHolder, @AppVersion, @License
+                      @CompanyName, @CompanyLegalName, @Address, @City, @ZipCode,@TelephoneNo, @FaxNo, @Email, @ContactPerson,
+                     @ContactPersonDesignation, @ContactPersonTelephone, @ContactPersonEmail, @TINNo,@BIN ,@VatRegistrationNo,@FYearStart, @FYearEnd, @Comments,@ActiveStatus, @CreatedBy, GETDATE(),@LastModifiedOn,@LastModifiedBy
                     );
-                    SELECT SCOPE_IDENTITY();";
+                SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
+                    
                     cmd.Parameters.AddWithValue("@CompanyName", vm.CompanyName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyBanglaName", vm.CompanyBanglaName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CompanyLegalName", vm.CompanyLegalName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address1", vm.Address1 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address2", vm.Address2 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address3", vm.Address3 ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Address", vm.Address ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@City", vm.City ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ZipCode", vm.ZipCode ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TelephoneNo", vm.TelephoneNo ?? (object)DBNull.Value);
@@ -788,29 +710,20 @@ WHERE 1 = 1
                     cmd.Parameters.AddWithValue("@ContactPersonTelephone", vm.ContactPersonTelephone ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ContactPersonEmail", vm.ContactPersonEmail ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TINNo", vm.TINNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@VatRegistrationNo", vm.VatRegistrationNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsArchive", vm.IsArchive);
-                    cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
-                    cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearStart", vm.FYearStart ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearEnd", vm.FYearEnd ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BusinessNature", vm.BusinessNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@AccountingNature", vm.AccountingNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyTypeId", vm.CompanyTypeId);
-                    cmd.Parameters.AddWithValue("@Section", vm.Section ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsVDSWithHolder", vm.IsVDSWithHolder);
-                    cmd.Parameters.AddWithValue("@AppVersion", vm.AppVersion ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@License", vm.License ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ActiveStatus", vm.ActiveStatus);
+                    cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
 
 
-                    vm.Id = Convert.ToInt32(cmd.ExecuteScalar());
+                    vm.CompanyID = Convert.ToInt32(cmd.ExecuteScalar());
 
                     result.Status = MessageModel.Success;
                     result.Message = MessageModel.InsertSuccess;
-                    result.Id = vm.Id.ToString();
+                    result.Id = vm.CompanyID.ToString();
                     result.DataVM = vm;
                 }
 
@@ -829,7 +742,7 @@ WHERE 1 = 1
         // Update Method
         public async Task<ResultVM> AuthCompanyUpdate(CompanyProfileVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.CompanyID.ToString(), DataVM = vm };
 
             try
             {
@@ -844,14 +757,11 @@ WHERE 1 = 1
                 }
 
                 string query = @"
-UPDATE CompanyProfiles
+UPDATE CompanyInfo 
 SET
     CompanyName = @CompanyName,
-    CompanyBanglaName = @CompanyBanglaName,
     CompanyLegalName = @CompanyLegalName,
-    Address1 = @Address1,
-    Address2 = @Address2,
-    Address3 = @Address3,
+    Address = @Address,
     City = @City,
     ZipCode = @ZipCode,
     TelephoneNo = @TelephoneNo,
@@ -862,33 +772,23 @@ SET
     ContactPersonTelephone = @ContactPersonTelephone,
     ContactPersonEmail = @ContactPersonEmail,
     TINNo = @TINNo,
+    BIN = @BIN,
     VatRegistrationNo = @VatRegistrationNo,
-    Comments = @Comments,
-    LastModifiedOn = GETDATE(),
     FYearStart = @FYearStart,
     FYearEnd = @FYearEnd,
-    BusinessNature = @BusinessNature,
-    AccountingNature = @AccountingNature,
-    CompanyTypeId = @CompanyTypeId,
-    Section = @Section,
-    BIN = @BIN,
-    IsVDSWithHolder = @IsVDSWithHolder,
-    LastModifiedBy = @LastModifiedBy,    
-    LastUpdateFrom = @LastUpdateFrom,
-    AppVersion = @AppVersion,
-    License = @License
+    Comments = @Comments,
+    ActiveStatus = @ActiveStatus,
+    LastModifiedOn = GETDATE(),
+    LastModifiedBy = @LastModifiedBy
 
-WHERE Id = @Id ";
+WHERE CompanyID = @CompanyID ";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@Id", vm.Id);
+                    cmd.Parameters.AddWithValue("@CompanyID", vm.CompanyID);
                     cmd.Parameters.AddWithValue("@CompanyName", vm.CompanyName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyBanglaName", vm.CompanyBanglaName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CompanyLegalName", vm.CompanyLegalName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address1", vm.Address1 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address2", vm.Address2 ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Address3", vm.Address3 ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Address", vm.Address ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@City", vm.City ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ZipCode", vm.ZipCode ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TelephoneNo", vm.TelephoneNo ?? (object)DBNull.Value);
@@ -899,20 +799,13 @@ WHERE Id = @Id ";
                     cmd.Parameters.AddWithValue("@ContactPersonTelephone", vm.ContactPersonTelephone ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ContactPersonEmail", vm.ContactPersonEmail ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TINNo", vm.TINNo ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@VatRegistrationNo", vm.VatRegistrationNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearStart", vm.FYearStart ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FYearEnd", vm.FYearEnd ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BusinessNature", vm.BusinessNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@AccountingNature", vm.AccountingNature ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CompanyTypeId", vm.CompanyTypeId);
-                    cmd.Parameters.AddWithValue("@Section", vm.Section ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@BIN", vm.BIN ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsVDSWithHolder", vm.IsVDSWithHolder);
-                    cmd.Parameters.AddWithValue("@AppVersion", vm.AppVersion ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@License", vm.License ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Comments", vm.Comments ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ActiveStatus", vm.ActiveStatus);
                     cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
