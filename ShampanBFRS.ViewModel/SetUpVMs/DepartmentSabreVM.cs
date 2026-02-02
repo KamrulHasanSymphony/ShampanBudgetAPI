@@ -15,10 +15,9 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public int? DepartmentId { get; set; }
         [Display(Name = "Sabre")]
         public int? SabreId { get; set; }
-        //
+
         [Display(Name = "iBAS")]
-        public int? COAId { get; set; }
-        //
+        public int? COAId { get; set; }     
         public string? Code { get; set; }
         public string? Name { get; set; }
         public string? Remark { get; set; }
