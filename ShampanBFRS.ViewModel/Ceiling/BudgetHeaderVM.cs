@@ -39,7 +39,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
 
         public PeramModel? PeramModel { get; set; }
 
-        public List<BudgetDetailVM> DetailList { get; set; }
+        public List<BudgetDetailVM>? DetailList { get; set; }
 
         public string? MenuType { get; set; }
 
@@ -48,5 +48,10 @@ namespace ShampanBFRS.ViewModel.Ceiling
 
         public int? ToFiscalYearId { get; set; }
         public string? ToBudgetType { get; set; }
+
+        //public BudgetHeaderVM()
+        //{
+        //    DetailList = new List<BudgetDetailVM>();
+        //}
     }
 }
