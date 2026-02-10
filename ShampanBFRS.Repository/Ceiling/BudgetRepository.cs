@@ -4,12 +4,7 @@ using System.Data.SqlClient;
 using System.Data;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Options;
-using ShampanBFRS.ViewModel.SetUpVMs;
-using ShampanBFRS.ViewModel.SalaryAllowance;
 using ShampanBFRS.ViewModel.Utility;
-using ShampanBFRS.ViewModel.Sale;
 
 namespace ShampanBFRS.Repository.Ceiling
 {
