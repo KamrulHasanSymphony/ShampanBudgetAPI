@@ -29,16 +29,17 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
                 INSERT INTO Departments
                 (
-                    Name, Description, Reference, Remarks, IsActive, IsArchive, CreatedBy, CreatedFrom,CreatedOn
+                   Code, Name, Description, Reference, Remarks, IsActive, IsArchive, CreatedBy, CreatedFrom,CreatedOn
                 )
                 VALUES
                 (
-                    @Name, @Description, @Reference, @Remarks, @IsActive, @IsArchive, @CreatedBy, @CreatedFrom,GETDate()
+                   @Code, @Name, @Description, @Reference, @Remarks, @IsActive, @IsArchive, @CreatedBy, @CreatedFrom,GETDate()
                 );
                 SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
+                    cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Reference", vm.Reference ?? (object)DBNull.Value);
@@ -80,6 +81,7 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
                 UPDATE Departments
                 SET 
+                    Code = @Code,
                     Name = @Name,
                     Description = @Description,
                     Reference = @Reference,
@@ -93,6 +95,7 @@ namespace ShampanBFRS.Repository.SetUp
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
+                    cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Description", vm.Description ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Reference", vm.Reference ?? (object)DBNull.Value);
@@ -188,6 +191,7 @@ namespace ShampanBFRS.Repository.SetUp
                 string query = @"
                 SELECT 
                     ISNULL(M.Id,0) AS Id,
+                    ISNULL(M.Code, '') AS Code,
                     ISNULL(M.Name, '') AS Name,
                     ISNULL(M.Description, '') AS Description,
                     ISNULL(M.Reference, '') AS Reference,
@@ -216,6 +220,7 @@ namespace ShampanBFRS.Repository.SetUp
                 var list = dt.AsEnumerable().Select(row => new DepartmentVM
                 {
                     Id = row.Field<int>("Id"),
+                    Code = row.Field<string>("Code"),
                     Name = row.Field<string>("Name"),
                     Description = row.Field<string>("Description"),
                     Reference = row.Field<string>("Reference"),
@@ -254,7 +259,7 @@ namespace ShampanBFRS.Repository.SetUp
                 if (conn == null) throw new Exception("Database connection failed!");
 
                 string query = @"
-                SELECT Id,Name, Description, Reference, Remarks, IsActive, IsArchive, CreatedBy, CreatedAt, LastUpdateBy, LastUpdateAt
+                SELECT Id,Code,Name, Description, Reference, Remarks, IsActive, IsArchive, CreatedBy, CreatedAt, LastUpdateBy, LastUpdateAt
                 FROM Departments
                 WHERE 1=1";
 
@@ -348,6 +353,7 @@ namespace ShampanBFRS.Repository.SetUp
                             ? " " + options.sort[0].field + " " + options.sort[0].dir
                             : "H.Id DESC") + @") AS rowindex,
                            ISNULL(H.Id,0) AS Id,
+                           ISNULL(H.Code,'') AS Code,
                            ISNULL(H.Name,'') AS Name,
                            ISNULL(H.Description,'') AS Description,
                            ISNULL(H.Reference,'') AS Reference,

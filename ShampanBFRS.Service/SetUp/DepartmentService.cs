@@ -21,6 +21,9 @@ namespace ShampanBFRS.Service.SetUp
 
         public async Task<ResultVM> Insert(DepartmentVM department)
         {
+            string CodeGroup = "Department";
+            string CodeName = "Department";
+
             DepartmentRepository _repo = new DepartmentRepository();
             _commonRepo = new CommonRepository();
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
@@ -48,20 +51,31 @@ namespace ShampanBFRS.Service.SetUp
                 //    throw new Exception("Data Already Exists!");
                 //}
                 //#endregion
+                string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
-                result = await _repo.Insert(department, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
+                if (!string.IsNullOrEmpty(code))
                 {
-                    transaction.Commit();
+                    department.Code = code;
+                    result = await _repo.Insert(department, conn, transaction);
+
+                    if (isNewConnection && result.Status == "Success")
+                    {
+                        transaction.Commit();
+                    }
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
+
+                    return result;
                 }
                 else
                 {
-                    throw new Exception(result.Message);
+                    throw new Exception("Code Generation Failed!");
                 }
-
-                return result;
             }
+
             catch (Exception ex)
             {
                 if (transaction != null && isNewConnection) transaction.Rollback();

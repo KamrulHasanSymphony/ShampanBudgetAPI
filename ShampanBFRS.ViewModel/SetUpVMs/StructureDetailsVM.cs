@@ -15,6 +15,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public int StructureId { get; set; }
         [Display(Name = "Segment")]
         public int SegmentId { get; set; }
+        public int ?Length { get; set; }
 
         [Display(Name = "Remarks")]
         public string? Remarks { get; set; }

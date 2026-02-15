@@ -309,9 +309,7 @@ namespace ShampanBFRS.Repository.SetUp
                     ISNULL(FORMAT(M.CreatedOn,'yyyy-MM-dd HH:mm'),'') AS CreaCreatedOntedAt,
                     ISNULL(M.LastUpdateBy,'') AS LastUpdateBy,
                     ISNULL(FORMAT(M.LastUpdateOn,'yyyy-MM-dd HH:mm'),'') AS LastUpdateOn
-
-
-              FROM Structures M
+                  FROM Structures M
 
                WHERE 1 = 1";
 
@@ -399,6 +397,7 @@ namespace ShampanBFRS.Repository.SetUp
             ISNULL(D.StructureId, 0) AS StructureId,
             ISNULL(D.SegmentId, 0) AS SegmentId,
 			ISNULL(SG.Name, '') AS SegmentName,
+            ISNULL(SG.Length, 0) AS Length,
             ISNULL(D.Remarks, '') AS Remarks
             FROM StructureDetails D
 			LEFT JOIN Segments SG ON D.SegmentId = SG.Id

@@ -2566,7 +2566,8 @@ where 1=1
            ISNULL(H.Id, 0) Id
            ,ISNULL(H.Code, '') Code
            ,ISNULL(H.Name, '') Name
-           ,ISNULL(H.Remarks,0) Remarks 
+           ,ISNULL(H.Length,0) Length
+           ,ISNULL(H.Remarks,'') Remarks 
            ,ISNULL(H.IsActive, 0) IsActive
            ,CASE WHEN ISNULL(H.IsActive, 0) = 1 THEN 'Active' ELSE 'Inactive'   END Status
            FROM Segments H
@@ -2589,6 +2590,7 @@ where 1=1
                     Id = Convert.ToInt32(row["Id"]),
                     Code = row["Code"].ToString(),
                     Name = row["Name"].ToString(),
+                    Length = row.Field<int?>("Length"),
                     Remarks = row.Field<string>("Remarks"),
                     IsActive = row.Field<bool>("IsActive")
 
