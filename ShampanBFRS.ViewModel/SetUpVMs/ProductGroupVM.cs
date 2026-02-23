@@ -11,6 +11,10 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
     public class ProductGroupVM :AuditVM
     {
         public int Id { get; set; }
+        [Display(Name = "Name")]
+        [Required(ErrorMessage = "Name is required")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Only letters are allowed")]
+        [StringLength(50, ErrorMessage = "Name must be between 3 and 50 characters")]
         public string? Name { get; set; }
         public string? Remarks { get; set; }
     }

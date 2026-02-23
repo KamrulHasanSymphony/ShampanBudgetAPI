@@ -38,26 +38,38 @@ namespace ShampanBFRS.Service.SetUp
                 conn.Open();
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
-
-                //#region Check Exist Data
-                //string[] conditionField = { "LogInId" };
-                //string[] conditionValue = { examinee.LogInId.Trim() };
-
-                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
-
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exists!";
-                //    throw new Exception("Data Already Exists!");
-                //}
-                //#endregion
                 string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
 
                 if (!string.IsNullOrEmpty(code))
                 {
                     department.Code = code;
+
                     result = await _repo.Insert(department, conn, transaction);
+
+                    //
+
+                    if (result.Status.ToLower() == "success")
+                    {
+                        foreach (var detail in department.SabreList)
+                        {
+                            detail.DepartmentId = department.Id;
+
+                            var resultDetail = await _repo.InsertDetails(detail, conn, transaction);
+
+                            if (resultDetail.Status.ToLower() != "success")
+                            {
+                                throw new Exception(resultDetail.Message);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
+
+
+                    //
 
                     if (isNewConnection && result.Status == "Success")
                     {
@@ -89,11 +101,49 @@ namespace ShampanBFRS.Service.SetUp
             }
         }
 
+        //public async Task<ResultVM> Update(DepartmentVM department)
+        //{
+        //    DepartmentRepository _repo = new DepartmentRepository();
+        //    _commonRepo = new CommonRepository();
+        //    ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+
+        //    bool isNewConnection = false;
+        //    SqlConnection conn = null;
+        //    SqlTransaction transaction = null;
+
+        //    try
+        //    {
+        //        conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+        //        conn.Open();
+        //        isNewConnection = true;
+        //        transaction = conn.BeginTransaction();
+
+        //        result = await _repo.Update(department, conn, transaction);
+
+        //        if (isNewConnection && result.Status == "Success")
+        //            transaction.Commit();
+        //        else
+        //            throw new Exception(result.Message);
+
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (transaction != null && isNewConnection) transaction.Rollback();
+        //        result.Message = ex.Message;
+        //        result.ExMessage = ex.ToString();
+        //        return result;
+        //    }
+        //    finally
+        //    {
+        //        if (isNewConnection && conn != null) conn.Close();
+        //    }
+        //}
+
         public async Task<ResultVM> Update(DepartmentVM department)
         {
             DepartmentRepository _repo = new DepartmentRepository();
-            _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null };
 
             bool isNewConnection = false;
             SqlConnection conn = null;
@@ -101,45 +151,68 @@ namespace ShampanBFRS.Service.SetUp
 
             try
             {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
+                conn = new SqlConnection(DatabaseHelper.GetConnectionString());
                 conn.Open();
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
-                //#region Check Exist Data
-                //string[] conditionField = { "Id not", "LogInId" };
-                //string[] conditionValue = { department.Id.ToString(), department.LogInId.Trim() };
+                // Ensure that the result has valid data
+                ResultVM rvm = await List(new[] { "M.Id" }, new[] { department.Id.ToString() }, null);
 
-                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exists!";
-                //    throw new Exception("Data Already Exists!");
-                //}
-                //#endregion
+                if (rvm.DataVM == null || !(rvm.DataVM is List<DepartmentVM>))
+                {
+                    throw new Exception("No data found for the given ID.");
+                }
+
+                List<DepartmentVM> dpList = (List<DepartmentVM>)rvm.DataVM;
+
+                DepartmentVM mrvm = dpList.FirstOrDefault();  // Get the first item if present
+
+                _commonRepo.DetailsDelete("DepartmentSabres", new[] { "DepartmentId" }, new[] { department.Id.ToString() }, conn, transaction);
 
                 result = await _repo.Update(department, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
-                    transaction.Commit();
+                if (result.Status.ToLower() == "success")
+                {
+                    foreach (var detail in department.SabreList)
+                    {
+                        detail.DepartmentId = department.Id;
+
+                        var resultDetail = await _repo.InsertDetails(detail, conn, transaction);
+
+                        if (resultDetail.Status.ToLower() != "success")
+                        {
+                            throw new Exception(resultDetail.Message);
+                        }
+                    }
+                }
                 else
+                {
                     throw new Exception(result.Message);
+                }
+
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
 
                 return result;
             }
             catch (Exception ex)
             {
-                if (transaction != null && isNewConnection) transaction.Rollback();
+                transaction?.Rollback();
                 result.Message = ex.Message;
                 result.ExMessage = ex.ToString();
                 return result;
             }
             finally
             {
-                if (isNewConnection && conn != null) conn.Close();
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
             }
         }
-
         public async Task<ResultVM> Delete(CommonVM vm)
         {
             DepartmentRepository _repo = new DepartmentRepository();

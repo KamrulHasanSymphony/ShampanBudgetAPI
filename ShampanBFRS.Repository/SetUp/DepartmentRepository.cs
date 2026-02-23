@@ -11,6 +11,7 @@ using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.QuestionVM;
+using Newtonsoft.Json;
 
 namespace ShampanBFRS.Repository.SetUp
 {
@@ -177,6 +178,76 @@ namespace ShampanBFRS.Repository.SetUp
             }
         }
 
+        public async Task<ResultVM> InsertDetails(DepartmentSabreVM detail, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            bool isNewConnection = false;
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    conn.Open();
+                    isNewConnection = true;
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction();
+                }
+
+                string query = @"
+
+                INSERT INTO DepartmentSabres
+                (
+                    DepartmentId, SabreId
+                )
+                VALUES
+                (
+                    @DepartmentId, @SabreId
+                );
+                SELECT SCOPE_IDENTITY();";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@DepartmentId", detail.DepartmentId);
+                    cmd.Parameters.AddWithValue("@SabreId", detail.SabreId);
+                    object newId = await cmd.ExecuteScalarAsync();
+
+                    detail.Id = Convert.ToInt32(newId);
+
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
+                    result.Id = detail.Id.ToString();
+                    result.DataVM = detail;
+                }
+
+                if (isNewConnection)
+                {
+                    transaction.Commit();
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+                result.ExMessage = ex.Message;
+                result.Message = MessageModel.InsertFail;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
         // List Method
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
             SqlConnection conn = null, SqlTransaction transaction = null)
@@ -233,6 +304,22 @@ namespace ShampanBFRS.Repository.SetUp
                    // LastUpdateAt = row.Field<string>("LastUpdateOn")
                 }).ToList();
 
+                // get details list and bind it DepartmentVM.SabreList
+
+                var detailsDataList = DetailsList(new[] { "D.DepartmentId" }, conditionalValues, vm, conn, transaction);
+
+                if (detailsDataList.Status == "Success" && detailsDataList.DataVM is DataTable ddt)
+                {
+
+                    string json = JsonConvert.SerializeObject(ddt);
+                    var details = JsonConvert.DeserializeObject<List<DepartmentSabreVM>>(json);
+                    foreach (var req in list)
+                    {
+                        req.SabreList = details.Where(d => d.DepartmentId == req.Id).ToList();
+                    }
+
+                }
+
                 result.Status = MessageModel.Success;
                 result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = list;
@@ -246,6 +333,70 @@ namespace ShampanBFRS.Repository.SetUp
                 return result;
             }
         }
+
+        public ResultVM DetailsList(string[] conditionalFields, string[] conditionalValue, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+
+                string query = @"
+            SELECT 
+
+             ISNULL(D.Id, 0) AS Id,
+            ISNULL(D.DepartmentId, 0) AS DepartmentId,
+            ISNULL(D.SabreId, 0) AS SabreId,
+
+            ISNULL(C.Code, '') AS iBASCode,
+            ISNULL(C.Name, '') AS iBASName,
+            ISNULL(sb.Name, '') AS Name,
+            ISNULL(sb.Code, '') AS Code
+            FROM DepartmentSabres D
+			LEFT JOIN Departments SG ON D.DepartmentId = SG.Id
+			LEFT OUTER JOIN Sabres sb ON sb.Id = D.SabreId
+           LEFT OUTER JOIN COAs C on C.Id=D.SabreId
+            
+
+            WHERE 1 = 1";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    query += " AND D.DepartmentId = @Id ";
+                }
+
+                query = ApplyConditions(query, conditionalFields, conditionalValue, false);
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValue);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+                }
+
+                objComm.Fill(dataTable);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = dataTable;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
+                return result;
+            }
+        }
+
 
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null,
@@ -357,7 +508,7 @@ namespace ShampanBFRS.Repository.SetUp
                            ISNULL(H.Name,'') AS Name,
                            ISNULL(H.Description,'') AS Description,
                            ISNULL(H.Reference,'') AS Reference,
-                           ISNULL(H.Remarks,0) AS Remarks,
+                           ISNULL(H.Remarks,'') AS Remarks,
                            ISNULL(H.IsActive,0) AS IsActive,
                            CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
                            ISNULL(H.CreatedBy,'') AS CreatedBy,

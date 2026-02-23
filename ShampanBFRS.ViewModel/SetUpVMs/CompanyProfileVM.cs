@@ -43,7 +43,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [Display(Name = "Contact Person Email")]
         public string? ContactPersonEmail { get; set; }
 
-        [Display(Name = "TIN Number")]
+        [Display(Name = "TIN")]
         public string? TINNo { get; set; }
 
         [Display(Name = "BIN")]

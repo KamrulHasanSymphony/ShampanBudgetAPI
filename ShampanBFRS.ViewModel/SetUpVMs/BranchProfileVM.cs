@@ -11,15 +11,19 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [Display(Name = "Branch Code")]
         public string? Code { get; set; }
 
-        [Display(Name = "Branch Name")]
+        [Display(Name = "Name")]
+        [Required(ErrorMessage = "Name is required")]
         public string? Name { get; set; }
 
         [Display(Name = "Legal Name")]
+        [Required(ErrorMessage = "Legal Name is required")]
         public string? LegalName { get; set; }
 
         [Display(Name = "Address")]
+        [Required(ErrorMessage = "Address is required")]
         public string? Address { get; set; }
 
+        [Display(Name = "Active")]
         public bool ActiveStatus { get; set; }
 
         [Display(Name = "City")]
@@ -37,6 +41,9 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
 
 
         [Display(Name = "Email Address")]
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
         public string? Email { get; set; }
 
 
@@ -52,18 +59,9 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [Display(Name = "Contact Person Email")]
         public string? ContactPersonEmail { get; set; }
 
-
-        [Display(Name = "VAT Registration No.")]
-        public string? VATRegistrationNo { get; set; }
-
-        [Display(Name = "BIN")]
-        public string? BIN { get; set; }
-
-        [Display(Name = "TIN No.")]
-        public string? TINNO { get; set; }
-
         [Display(Name = "Comments")]
         public string? Comments { get; set; }
+
         public string? UserId { get; set; }
 
         

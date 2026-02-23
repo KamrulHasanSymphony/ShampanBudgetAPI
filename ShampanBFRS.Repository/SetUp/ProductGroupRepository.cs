@@ -340,7 +340,7 @@ namespace ShampanBFRS.Repository.SetUp
                             : "H.Id DESC") + @") AS rowindex,
                            	   ISNULL(H.Id,0) AS Id,
                                ISNULL(H.Name,'') AS Name,
-                               ISNULL(H.Remarks,0) AS Remarks,
+                               ISNULL(H.Remarks,'') AS Remarks,
                                ISNULL(H.IsActive,0) AS IsActive,
                                CASE WHEN ISNULL(H.IsActive,0)=1 THEN 'Active' ELSE 'Inactive' END AS Status,
                                ISNULL(H.CreatedBy,'') AS CreatedBy,

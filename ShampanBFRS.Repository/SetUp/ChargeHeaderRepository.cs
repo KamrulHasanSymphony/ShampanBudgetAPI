@@ -320,7 +320,7 @@ namespace ShampanBFRS.Repository.SetUp
                    
     
                  ISNULL(H.Id, 0) AS Id,
-                 ISNULL(CG.ChargeGroupText, 0) AS ChargeGroup
+                 ISNULL(CG.ChargeGroupText, '') AS ChargeGroup
   
                 FROM ChargeHeaders H
                 LEFT OUTER JOIN ChargeGroups CG ON CG.ChargeGroupValue = H.ChargeGroup

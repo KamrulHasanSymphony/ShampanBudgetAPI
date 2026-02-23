@@ -201,18 +201,19 @@ namespace ShampanBFRS.Service.SetUp
                 isNewConnection = true;
 
                 transaction = conn.BeginTransaction();
-                //#region Check Exist Data
-                //string[] conditionField = { "Name" };
-                //string[] conditionValue = { urm.Name.Trim() };
 
-                //bool exist = _commonRepo.CheckExists("Role", conditionField, conditionValue, conn, transaction);
+                #region Check Exist Data
+                string[] conditionField = { "Name" };
+                string[] conditionValue = { urm.Name.Trim() };
 
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exist!";
-                //    throw new Exception("Data Already Exist!");
-                //}
-                //#endregion
+                bool exist = _commonRepo.CheckExists("Role", conditionField, conditionValue, conn, transaction);
+
+                if (exist)
+                {
+                    result.Message = "Data Already Exist!";
+                    throw new Exception("Data Already Exist!");
+                }
+                #endregion
 
 
                 result = await _repo.RoleMenuDelete(urm);

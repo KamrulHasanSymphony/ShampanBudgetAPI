@@ -2150,6 +2150,8 @@ WHERE
 	         SELECT DISTINCT 
 
              ISNULL(H.Id, 0) Id
+            ,ISNULL(c.Code, '') iBASCode  
+            ,ISNULL(c.Name, '') iBASName  
             ,ISNULL(H.Code, '') Code 
             ,ISNULL(H.Name, '') Name 
             ,ISNULL(H.Remarks, '') Remarks
@@ -2178,6 +2180,8 @@ WHERE
                 var modelList = dataTable.AsEnumerable().Select(row => new SabresVM
                 {
                     Id = Convert.ToInt32(row["Id"]),
+                    iBASCode = row["iBASCode"]?.ToString(),
+                    iBASName = row["iBASName"]?.ToString(),
                     Code = row["Code"]?.ToString(),
                     Name = row["Name"]?.ToString(),
                     Remarks = row["Remarks"]?.ToString(),

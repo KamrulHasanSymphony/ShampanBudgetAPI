@@ -13,6 +13,8 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
 
         public int Id { get; set; }
 
+        public int? COAId { get; set; }
+
         public int? PID { get; set; }
 
         public int? COASL { get; set; }
@@ -21,10 +23,9 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
 
         public int? COAGroupId { get; set; }
 
-        [Display(Name = "Code")]
+        [Display(Name = "iBAS Code")]
         public string? Code { get; set; }
-
-        [Display(Name = "Name")]
+        [Display(Name = "iBAS Name")]
         public string? Name { get; set; }
 
         [Display(Name = "Nature")]
@@ -65,5 +66,10 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
 
         [Display(Name = "Account Group Code")]
         public string? ACCTGRPCOD { get; set; }
+        public List<SabresVM> SabreDetails { get; set; }
+        public COAVM()
+        {
+            SabreDetails = new List<SabresVM>();
+        }
     }
 }

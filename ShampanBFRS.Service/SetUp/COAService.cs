@@ -37,30 +37,34 @@ namespace ShampanBFRS.Service.SetUp
                 conn.Open();
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
-                //#region Check Exist Data
-                //string[] conditionField = { "LogInId" };
-                //string[] conditionValue = { examinee.LogInId.Trim() };
-
-                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
-
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exists!";
-                //    throw new Exception("Data Already Exists!");
-                //}
-                //#endregion
+               
 
                 result = await _repo.Insert(coa, conn, transaction);
 
-                if (isNewConnection && result.Status == "Success")
+                if (result.Status.ToLower() == "success")
                 {
-                    transaction.Commit();
+                    foreach (var detail in coa.SabreDetails)
+                    {
+                        detail.COAId = coa.Id;
+
+                        var resultDetail = await _repo.InsertDetails(detail, conn, transaction);
+
+                        if (resultDetail.Status.ToLower() != "success")
+                        {
+                            throw new Exception(resultDetail.Message);
+                        }
+                    }
                 }
                 else
                 {
                     throw new Exception(result.Message);
                 }
 
+                if (isNewConnection && result.Status == "Success")
+                {
+                    transaction.Commit();
+                }
+               
                 return result;
             }
             catch (Exception ex)
@@ -93,24 +97,42 @@ namespace ShampanBFRS.Service.SetUp
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
-                //#region Check Exist Data
-                //string[] conditionField = { "Id not", "LogInId" };
-                //string[] conditionValue = { department.Id.ToString(), department.LogInId.Trim() };
 
-                //bool exist = _commonRepo.CheckExists("Examinees", conditionField, conditionValue, conn, transaction);
-                //if (exist)
-                //{
-                //    result.Message = "Data Already Exists!";
-                //    throw new Exception("Data Already Exists!");
-                //}
-                //#endregion
+                ResultVM rvm = await List(new[] { "C.Id" }, new[] { coa.Id.ToString() }, null);
+                if (rvm.DataVM == null || !(rvm.DataVM is List<COAVM>))
+                {
+                    throw new Exception("No data found for the given ID.");
+                }
 
+                List<COAVM> sabresList = (List<COAVM>)rvm.DataVM;
+
+                COAVM mrvm = sabresList.FirstOrDefault();  // Get the first item if present
+
+                _commonRepo.DetailsDelete("Sabres", new[] { "COAId" }, new[] { coa.Id.ToString() }, conn, transaction);
                 result = await _repo.Update(coa, conn, transaction);
+                if (result.Status.ToLower() == "success")
+                {
+                    foreach (var detail in coa.SabreDetails)
+                    {
+                        detail.COAId = coa.Id;
+
+                        var resultDetail = await _repo.InsertDetails(detail, conn, transaction);
+
+                        if (resultDetail.Status.ToLower() != "success")
+                        {
+                            throw new Exception(resultDetail.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
 
                 if (isNewConnection && result.Status == "Success")
+                {
                     transaction.Commit();
-                else
-                    throw new Exception(result.Message);
+                }
 
                 return result;
             }

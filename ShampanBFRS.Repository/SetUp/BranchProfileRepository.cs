@@ -255,8 +255,8 @@ SELECT
 	,ISNULL(H.ContactPersonEmail, '') AS ContactPersonEmail
     ,ISNULL(H.Comments,'') Comments
     ,ISNULL(H.IsArchive,0)	IsArchive
-    ,ISNULL(H.ActiveStatus,0)	ActiveStatus
-    ,CASE WHEN ISNULL(H.ActiveStatus,0) = 1 THEN 'Active' ELSE 'Inactive'	END Status
+    ,ISNULL(H.ActiveStatus,0) ActiveStatus
+    --,CASE WHEN ISNULL(H.ActiveStatus,0) = 1 THEN 'Active' ELSE 'Inactive'	END Status
     ,ISNULL(H.CreatedBy,'') CreatedBy
     ,ISNULL(H.LastModifiedBy,'') LastModifiedBy
     ,ISNULL(FORMAT(H.CreatedOn,'yyyy-MM-dd HH:mm'),'1900-01-01') CreatedOn
@@ -303,18 +303,13 @@ FROM
                     TelephoneNo = row["TelephoneNo"].ToString(),
                     FaxNo = row["FaxNo"].ToString(),
                     Email = row["Email"].ToString(),
-
                     ContactPerson = row["ContactPerson"].ToString(),
                     ContactPersonDesignation = row["ContactPersonDesignation"].ToString(),
                     ContactPersonTelephone = row["ContactPersonTelephone"].ToString(),
                     ContactPersonEmail = row["ContactPersonEmail"].ToString(),
-
                     Comments = row["Comments"].ToString(),
-
                     IsArchive = Convert.ToBoolean(row["IsArchive"]),
-                    IsActive = Convert.ToBoolean(row["ActiveStatus"]),
-                    Status = row["Status"].ToString(),
-
+                    ActiveStatus = Convert.ToBoolean(row["ActiveStatus"]),
                     CreatedBy = row["CreatedBy"].ToString(),
                     LastModifiedBy = row["LastModifiedBy"].ToString(),
                     CreatedOn = row["CreatedOn"].ToString(),

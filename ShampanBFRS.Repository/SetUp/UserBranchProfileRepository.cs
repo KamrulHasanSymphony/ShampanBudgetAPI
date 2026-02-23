@@ -160,6 +160,7 @@ WHERE Id = @Id ";
         }
 
         // List Method
+        // List Method
         public async Task<ResultVM> List(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             DataTable dataTable = new DataTable();
@@ -181,16 +182,10 @@ UM.UserId,
 UM.BranchId,
 B.Name BranchName,
 B.Code BranchCode,
---B.IsActive,
-ISNULL(UM.CreatedBy, '') AS CreatedBy,
-ISNULL(UM.LastUpdateBy, '') AS LastUpdateBy,
-ISNULL(UM.CreatedFrom, '') AS CreatedFrom,
-ISNULL(UM.LastUpdateFrom, '') AS LastUpdateFrom,
-ISNULL(FORMAT(UM.LastUpdateOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS LastUpdateOn,
-ISNULL(FORMAT(UM.CreatedOn, 'yyyy-MM-dd HH:mm:ss'), '1900-01-01') AS CreatedOn
+B.ActiveStatus
 
 FROM {DatabaseHelper.AuthDbName()}.[dbo].AspNetUsers U
-LEFT OUTER JOIN UserBranchMap UM on UM.UserId=U.Id
+LEFT OUTER JOIN UserBranchMap UM on UM.UserId = U.Id
 LEFT OUTER JOIN BranchProfiles B on UM.BranchId=B.Id
 WHERE UM.UserId IS NOT NULL
 
@@ -200,6 +195,7 @@ WHERE UM.UserId IS NOT NULL
                 {
                     query += " AND UM.Id = @Id ";
                 }
+
 
                 // Apply additional conditions
                 query = ApplyConditions(query, conditionalFields, conditionalValues, false);
@@ -219,9 +215,12 @@ WHERE UM.UserId IS NOT NULL
                 var modelList = dataTable.AsEnumerable().Select(row => new UserBranchMapVM
                 {
                     Id = Convert.ToInt32(row["Id"]),
-                    //IsActive = Convert.ToBoolean(row["IsActive"]),
+                    ActiveStatus = Convert.ToBoolean(row["ActiveStatus"]),
                     BranchId = Convert.ToInt32(row["BranchId"]),
                     UserId = row["UserId"].ToString(),
+                    UserName = row["UserName"].ToString(),
+                    BranchName = row["BranchName"].ToString(),
+                    BranchCode = row["BranchCode"].ToString(),
 
                     extension = new UserBranchMapExtension
                     {
@@ -232,16 +231,10 @@ WHERE UM.UserId IS NOT NULL
                         Code = row["BranchCode"].ToString()
                     },
 
-                    CreatedBy = row["CreatedBy"].ToString(),
-                    CreatedOn = row["CreatedOn"].ToString(),
-                    LastUpdateBy = row["LastUpdateBy"].ToString(),
-                    //LastModifiedOn = row["LastModifiedOn"].ToString(),
-                    CreatedFrom = row["CreatedFrom"].ToString(),
-                    LastUpdateFrom = row["LastUpdateFrom"].ToString(),                   
                 }).ToList();
 
-                result.Status = MessageModel.Success;
-                result.Message = MessageModel.RetrievedSuccess;
+                result.Status = "Success";
+                result.Message = "Data retrieved successfully.";
                 result.DataVM = modelList;
 
                 return result;
@@ -254,6 +247,7 @@ WHERE UM.UserId IS NOT NULL
                 return result;
             }
         }
+
 
         // ListAsDataTable Method
         public async Task<ResultVM> ListAsDataTable(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)

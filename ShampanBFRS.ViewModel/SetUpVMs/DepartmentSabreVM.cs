@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -17,13 +18,17 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public int? SabreId { get; set; }
 
         [Display(Name = "iBAS")]
-        public int? COAId { get; set; }     
+        public int? COAId { get; set; }
+        [DisplayName("iBAS Group")]
+        public int? COAGroupId { get; set; }
         public string? Code { get; set; }
         public string? Name { get; set; }
         public string? Remark { get; set; }
         public string? DepName { get; set; }
         public string? SabreCode { get; set; }
         public string? SabreName { get; set; }
+        public string? iBASCode { get; set; }
+        public string? iBASName { get; set; }
 
         public PeramModel PeramModel { get; set; }
 

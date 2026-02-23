@@ -11,6 +11,7 @@ using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.QuestionVM;
+using Newtonsoft.Json;
 
 namespace ShampanBFRS.Repository.SetUp
 {
@@ -113,6 +114,81 @@ namespace ShampanBFRS.Repository.SetUp
             }
 
             return result;
+        }
+
+        public async Task<ResultVM> InsertDetails(SabresVM detail, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            bool isNewConnection = false;
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    conn.Open();
+                    isNewConnection = true;
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction();
+                }
+
+                string query = @"
+
+                 INSERT INTO Sabres
+                (
+                    Code,COAId, Name, Remarks, IsActive, IsArchive, CreatedBy, CreatedFrom
+                )
+                VALUES
+                (
+                    @Code,@COAId, @Name, @Remarks, @IsActive, @IsArchive, @CreatedBy, @CreatedFrom
+                );
+                SELECT SCOPE_IDENTITY();";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@Code", detail.Code ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@COAId", detail.COAId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Name", detail.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Remarks", detail.Remarks ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsActive", detail.IsActive);
+                    cmd.Parameters.AddWithValue("@IsArchive", detail.IsArchive);
+                    cmd.Parameters.AddWithValue("@CreatedBy", detail.CreatedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedFrom", detail.CreatedFrom ?? (object)DBNull.Value);
+
+                    detail.Id = Convert.ToInt32(cmd.ExecuteScalar());
+
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.InsertSuccess;
+                    result.Id = detail.Id.ToString();
+                    result.DataVM = detail;
+                }
+
+                if (isNewConnection)
+                {
+                    transaction.Commit();
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && isNewConnection)
+                {
+                    transaction.Rollback();
+                }
+                result.ExMessage = ex.Message;
+                result.Message = MessageModel.InsertFail;
+                return result;
+            }
+            finally
+            {
+                if (isNewConnection && conn != null)
+                {
+                    conn.Close();
+                }
+            }
         }
 
         // Update Method
@@ -322,8 +398,22 @@ namespace ShampanBFRS.Repository.SetUp
 
                 }).ToList();
 
-                result.Status = "Success";
-                result.Message = "Department retrieved successfully.";
+                var detailsDataList = DetailsList(new[] { "D.COAId" }, conditionalValues, vm, conn, transaction);
+
+                if (detailsDataList.Status == "Success" && detailsDataList.DataVM is DataTable ddt)
+                {
+
+                    string json = JsonConvert.SerializeObject(ddt);
+                    var details = JsonConvert.DeserializeObject<List<SabresVM>>(json);
+                    foreach (var req in list)
+                    {
+                        req.SabreDetails = details.Where(d => d.COAId == req.Id).ToList();
+                    }
+
+                }
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
                 result.DataVM = list;
 
                 return result;
@@ -332,6 +422,63 @@ namespace ShampanBFRS.Repository.SetUp
             {
                 result.Message = ex.Message;
                 result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
+
+        public ResultVM DetailsList(string[] conditionalFields, string[] conditionalValue, PeramModel vm = null, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+
+                string query = @"
+            SELECT 
+
+            ISNULL(D.Id, 0) AS Id,
+            ISNULL(D.COAId, 0) AS COAId,
+            ISNULL(D.Code, 0) AS Code,
+            ISNULL(D.Name, '') AS Name,
+            ISNULL(D.Remarks, '') AS Remarks
+            FROM Sabres D
+			LEFT JOIN COAs coa ON D.COAId = coa.Id
+
+            WHERE 1 = 1";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    query += " AND D.COAId = @Id ";
+                }
+
+                query = ApplyConditions(query, conditionalFields, conditionalValue, false);
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValue);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+                }
+
+                objComm.Fill(dataTable);
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = dataTable;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ExMessage = ex.Message;
+                result.Message = ex.Message;
                 return result;
             }
         }
