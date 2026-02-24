@@ -27,22 +27,22 @@ namespace ShampanBFRS.Repository.SetUp
                 }
 
                 string query = @"
-INSERT INTO Products
-(
-Code, Name
-,ProductGroupId, ConversionFactor
---, CIFCharge, ExchangeRateUsd, InsuranceRate, BankCharge, OceanLoss, CPACharge, HandelingCharge, LightCharge, Survey, CostLiterExImport
---, ExERLRate, DutyPerLiter, Refined, Crude, SDRate, DutyInTariff, ATRate, VATRate
-, IsActive, CreatedBy, CreatedFrom, CreatedAt
-)
-VALUES
-(
-@Code, @Name,@ProductGroupId, @ConversionFactor
---, @CIFCharge, @ExchangeRateUsd, @InsuranceRate, @BankCharge, @OceanLoss, @CPACharge, @HandelingCharge, @LightCharge, @Survey
---, @CostLiterExImport, @ExERLRate, @DutyPerLiter, @Refined, @Crude, @SDRate, @DutyInTariff, @ATRate, @VATRate
-, @IsActive, @CreatedBy,@CreatedFrom, GETDATE()
-);
-SELECT SCOPE_IDENTITY();";
+                    INSERT INTO Products
+                    (
+                    Code, Name
+                    ,ProductGroupId, ConversionFactor,UOM
+                    --, CIFCharge, ExchangeRateUsd, InsuranceRate, BankCharge, OceanLoss, CPACharge, HandelingCharge, LightCharge, Survey, CostLiterExImport
+                    --, ExERLRate, DutyPerLiter, Refined, Crude, SDRate, DutyInTariff, ATRate, VATRate
+                    , IsActive, CreatedBy, CreatedFrom, CreatedAt
+                    )
+                    VALUES
+                    (
+                    @Code, @Name,@ProductGroupId, @ConversionFactor,@UOM
+                    --, @CIFCharge, @ExchangeRateUsd, @InsuranceRate, @BankCharge, @OceanLoss, @CPACharge, @HandelingCharge, @LightCharge, @Survey
+                    --, @CostLiterExImport, @ExERLRate, @DutyPerLiter, @Refined, @Crude, @SDRate, @DutyInTariff, @ATRate, @VATRate
+                    , @IsActive, @CreatedBy,@CreatedFrom, GETDATE()
+                    );
+                    SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
@@ -50,6 +50,7 @@ SELECT SCOPE_IDENTITY();";
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UOM", vm.UOM ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -116,6 +117,7 @@ SELECT SCOPE_IDENTITY();";
                     Name = @Name,
                     ProductGroupId = @ProductGroupId,
                     ConversionFactor = @ConversionFactor,
+                    UOM = @UOM,
                     --//CIFCharge = @CIFCharge,
                     --//ExchangeRateUsd = @ExchangeRateUsd,
                     --//InsuranceRate = @InsuranceRate,
@@ -147,6 +149,7 @@ SELECT SCOPE_IDENTITY();";
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ProductGroupId", vm.ProductGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ConversionFactor", vm.ConversionFactor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UOM", vm.UOM ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", vm.IsActive);
                     cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
@@ -266,6 +269,7 @@ SELECT SCOPE_IDENTITY();";
                                     ISNULL(Name, '')             AS Name,
                                     ISNULL(ProductGroupId, 0)    AS ProductGroupId,
                                     ISNULL(ConversionFactor, 0)  AS ConversionFactor,
+                                    ISNULL(UOM,'')  AS UOM,
                                     ISNULL(IsActive, 0)          AS IsActive,
                                     ISNULL(CreatedBy, '')        AS CreatedBy,
                                     ISNULL(CONVERT(VARCHAR(19), CreatedAt, 120), '')    AS CreatedAt,
@@ -296,6 +300,7 @@ SELECT SCOPE_IDENTITY();";
                     Name = row.Field<string>("Name"),
                     ProductGroupId = row.Field<int>("ProductGroupId"),
                     ConversionFactor = row.Field<decimal>("ConversionFactor"),
+                    UOM = row.Field<string>("UOM"),
                     IsActive = row.Field<bool>("IsActive"),
                     CreatedBy = row.Field<string>("CreatedBy"),
                     CreatedAt = row.Field<string>("CreatedAt"),
@@ -371,6 +376,7 @@ select
              ISNULL(p.Code, '') AS Code,
              ISNULL(p.Name, '') AS Name,
              ISNULL(p.ConversionFactor, 0) AS ConversionFactor,
+             ISNULL(p.UOM, '') AS UOM,
 			 ISNULL(ch.ChargeGroup, 0) AS ChargeGroup,
 			 ISNULL(p.ProductGroupId, 0) AS ProductGroupId,
 			 ISNULL(pg.Name, 0) AS ProductGroupName,
@@ -437,6 +443,7 @@ select
                     ProductGroupName = row.Field<string>("ProductGroupName"),
                     ProductGroupId = row.Field<int>("ProductGroupId"),
                     ConversionFactor = row.Field<decimal>("ConversionFactor"),
+                    UOM = row.Field<string>("UOM"),
                     CIFCharge = row.Field<decimal>("CIFCharge"),
                     ExchangeRateUsd = row.Field<decimal>("ExchangeRateUsd"),
                     InsuranceRate = row.Field<decimal>("InsuranceRate"),
@@ -620,7 +627,7 @@ ORDER BY Name";
              ISNULL(M.Name, '') AS Name,
              ISNULL(pg.Name, '') AS ProductGroupName,            
              ISNULL(M.ConversionFactor, 0) AS ConversionFactor,
-
+             ISNULL(M.UOM, '') AS UOM,
              --ISNULL(M.CIFCharge, 0) AS CIFCharge,
              --ISNULL(M.ExchangeRateUsd, 0) AS ExchangeRateUsd,
              --ISNULL(M.InsuranceRate, 0) AS InsuranceRate,
