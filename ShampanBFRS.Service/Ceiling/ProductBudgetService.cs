@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
+using ShampanBFRS.ViewModel.SalaryAllowance;
 
 namespace ShampanBFRS.Service.Ceiling
 {
@@ -129,6 +130,9 @@ namespace ShampanBFRS.Service.Ceiling
                     //}
 
                 }
+                //
+
+
 
                 if (isNewConnection && result.Status == "Success")
                     transaction.Commit();
