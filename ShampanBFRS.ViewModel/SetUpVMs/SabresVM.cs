@@ -16,9 +16,12 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public int? COAId { get; set; }
 
         [Display(Name = "Code")]
+        [Required(ErrorMessage = "Code is required")]
         public string? Code { get; set; }
 
         [Display(Name = "Name")]
+        [Required(ErrorMessage = "Name is required")]
+        [StringLength(50, ErrorMessage = "Name must be between 3 and 50 characters")]
         public string? Name { get; set; }
 
         [Display(Name = "Remarks")]
