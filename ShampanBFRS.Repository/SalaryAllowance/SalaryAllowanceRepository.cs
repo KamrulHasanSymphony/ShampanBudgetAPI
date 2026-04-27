@@ -30,6 +30,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                 BudgetType,
                 FiscalYearId, 
                 TransactionDate,
+                PayScale,
                 IsPost, 
                 CreatedBy, 
                 CreatedOn, 
@@ -41,7 +42,8 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                 @Code, 
                 @BudgetType,
                 @FiscalYearId, 
-                @TransactionDate, 
+                @TransactionDate,
+                @PayScale,
                 @IsPost,
                 @CreatedBy, 
                 GETDATE(),
@@ -58,7 +60,8 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                     cmd.Parameters.AddWithValue("@BudgetType", vm.BudgetType ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IsPost",'N'); // Default to "N" if IsPost is null
+                    cmd.Parameters.AddWithValue("@PayScale", vm.PayScale ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsPost",'N'); 
 
                     cmd.Parameters.AddWithValue("@CreatedBy", vm.CreatedBy ?? "ERP");
                     cmd.Parameters.AddWithValue("@CreatedFrom", vm.CreatedFrom ?? (object)DBNull.Value);
@@ -104,7 +107,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                         BudgetType = @BudgetType,
                         FiscalYearId = @FiscalYearId,
                         TransactionDate = @TransactionDate,
-
+                        PayScale =@PayScale,
                         LastUpdateBy = @LastUpdateBy,
                         LastUpdateOn = GETDATE(),
                         LastUpdateFrom = @LastUpdateFrom,
@@ -119,6 +122,7 @@ namespace ShampanBFRS.Repository.SalaryAllowance
                     cmd.Parameters.AddWithValue("@BudgetType", vm.BudgetType ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@FiscalYearId", vm.FiscalYearId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@TransactionDate", vm.TransactionDate ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@PayScale",vm.PayScale ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@BranchId", vm.BranchId);
@@ -206,6 +210,7 @@ SELECT
     ISNULL(M.FiscalYearId, 0) AS FiscalYearId,
     ISNULL(M.BudgetType, '') AS BudgetType,
     ISNULL(M.TransactionDate, '1900-01-01') AS TransactionDate,
+    ISNULL(M.PayScale, '') AS PayScale,
     ISNULL(M.IsPost, '') AS IsPost,
     ISNULL(M.LastUpdateBy, '') AS LastUpdateBy,
     ISNULL(M.LastUpdateOn, '1900-01-01') AS LastUpdateOn,
@@ -243,13 +248,14 @@ WHERE 1 = 1
                     Code = row.Field<string>("Code"),
                     FiscalYearId = row.Field<int>("FiscalYearId"),
                     BudgetType = row.Field<string>("BudgetType"),
-                    TransactionDate = row.Field<DateTime?>("TransactionDate")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+                    TransactionDate = row.Field<DateTime?>("TransactionDate")?.ToString("yyyy-MM-dd") ?? "", 
+                    PayScale = row.Field<string?>("PayScale"),
                     IsPost = row.Field<string>("IsPost"),
                     LastUpdateBy = row.Field<string>("LastUpdateBy"),
-                    LastUpdateOn = row.Field<DateTime?>("LastUpdateOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+                    LastUpdateOn = row.Field<DateTime?>("LastUpdateOn")?.ToString("yyyy-MM-dd") ?? "",  
                     LastUpdateFrom = row.Field<string>("LastUpdateFrom"),
                     PostedBy = row.Field<string>("PostedBy"),
-                    PostedOn = row.Field<DateTime?>("PostedOn")?.ToString("yyyy-MM-dd") ?? "",  // Format if necessary
+                    PostedOn = row.Field<DateTime?>("PostedOn")?.ToString("yyyy-MM-dd") ?? "", 
                     PostedFrom = row.Field<string>("PostedFrom")
                 }).ToList();
 
