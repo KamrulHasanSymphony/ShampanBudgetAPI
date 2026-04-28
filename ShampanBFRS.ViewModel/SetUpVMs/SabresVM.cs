@@ -24,6 +24,9 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [StringLength(50, ErrorMessage = "Name must be between 3 and 50 characters")]
         public string? Name { get; set; }
 
+        [Display(Name = "SABRE(Bangla)")]
+        public string? BanglaName { get; set; }
+
         [Display(Name = "Remarks")]
         public string? Remarks { get; set; }
         public string? iBASName { get; set; }

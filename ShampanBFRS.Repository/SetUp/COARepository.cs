@@ -37,6 +37,7 @@ namespace ShampanBFRS.Repository.SetUp
 ,COAGroupId
 ,Code
 ,Name
+,BanglaName
 ,Nature
 ,COAType
 ,ReportType
@@ -59,6 +60,7 @@ namespace ShampanBFRS.Repository.SetUp
 ,@COAGroupId
 ,@Code
 ,@Name
+,@BanglaName
 ,@Nature
 ,@COAType
 ,@ReportType
@@ -83,6 +85,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@COAGroupId", vm.COAGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BanglaName", vm.BanglaName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Nature", vm.Nature ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@COAType", vm.COAType ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ReportType", vm.ReportType ?? (object)DBNull.Value);
@@ -138,11 +141,11 @@ namespace ShampanBFRS.Repository.SetUp
 
                  INSERT INTO Sabres
                 (
-                    Code,COAId, Name, Remarks, IsActive, IsArchive, CreatedBy, CreatedFrom
+                    Code,COAId,Name,BanglaName,Remarks, IsActive, IsArchive, CreatedBy, CreatedFrom
                 )
                 VALUES
                 (
-                    @Code,@COAId, @Name, @Remarks, @IsActive, @IsArchive, @CreatedBy, @CreatedFrom
+                    @Code,@COAId, @Name,@BanglaName,@Remarks, @IsActive, @IsArchive, @CreatedBy, @CreatedFrom
                 );
                 SELECT SCOPE_IDENTITY();";
 
@@ -151,6 +154,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@Code", detail.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@COAId", detail.COAId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", detail.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BanglaName", detail.BanglaName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Remarks", detail.Remarks ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@IsActive", detail.IsActive);
                     cmd.Parameters.AddWithValue("@IsArchive", detail.IsArchive);
@@ -210,6 +214,7 @@ namespace ShampanBFRS.Repository.SetUp
                 ,COAGroupId= @COAGroupId
                 ,Code=@Code
                 ,Name= @Name
+                ,BanglaName= @BanglaName
                 ,Nature= @Nature
                 ,COAType= @COAType
                 ,ReportType= @ReportType
@@ -233,6 +238,7 @@ namespace ShampanBFRS.Repository.SetUp
                     cmd.Parameters.AddWithValue("@COAGroupId", vm.COAGroupId ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Code", vm.Code ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", vm.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BanglaName", vm.BanglaName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Nature", vm.Nature ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@COAType", vm.COAType ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ReportType", vm.ReportType ?? (object)DBNull.Value);
@@ -343,6 +349,7 @@ namespace ShampanBFRS.Repository.SetUp
                     ,ISNULL(C.Code,'') Code
                     ,ISNULL(C.Name,'') Name
                     ,ISNULL(C.Nature,'') Nature
+                    ,ISNULL(C.BanglaName,'') BanglaName
                     ,ISNULL(C.COAType,'') COAType
                     ,ISNULL(C.ReportType,'') ReportType
                     ,ISNULL(C.IsActive,0) IsActive
@@ -383,6 +390,7 @@ namespace ShampanBFRS.Repository.SetUp
                     Code = row.Field<string>("Code"),
                     Name = row.Field<string>("Name"),
                     Nature = row.Field<string>("Nature"),
+                    BanglaName = row.Field<string>("BanglaName"),
                     COAType = row.Field<string>("COAType"),
                     ReportType = row.Field<string>("ReportType"),
                     Remarks = row.Field<string>("Remarks"),
@@ -445,6 +453,7 @@ namespace ShampanBFRS.Repository.SetUp
             ISNULL(D.COAId, 0) AS COAId,
             ISNULL(D.Code, 0) AS Code,
             ISNULL(D.Name, '') AS Name,
+            ISNULL(D.BanglaName, '') AS BanglaName,
             ISNULL(D.Remarks, '') AS Remarks
             FROM Sabres D
 			LEFT JOIN COAs coa ON D.COAId = coa.Id
@@ -597,6 +606,7 @@ namespace ShampanBFRS.Repository.SetUp
 		                    ,ISNULL(CG.Name,'') GroupName
                             ,ISNULL(C.Code,'') Code
                             ,ISNULL(C.Name,'') Name
+                            ,ISNULL(C.BanglaName,'') BanglaName
                             ,ISNULL(C.Nature,'') Nature
                             ,ISNULL(C.COAType,'') COAType
                             ,ISNULL(C.ReportType,'') ReportType

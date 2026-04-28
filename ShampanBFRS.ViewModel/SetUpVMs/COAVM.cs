@@ -28,6 +28,8 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [Display(Name = "iBAS Name")]
         public string? Name { get; set; }
 
+        [Display(Name = "iBAS Bangla Name")]
+        public string? BanglaName { get; set; }
         [Display(Name = "Nature")]
         public string? Nature { get; set; }
 

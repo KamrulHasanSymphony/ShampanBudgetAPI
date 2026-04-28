@@ -810,6 +810,7 @@ namespace ShampanBFRS.Repository.SetUp
                            ISNULL(H.Id,0) AS Id,
                            ISNULL(H.Code,'') AS Code,
                            ISNULL(H.Name,'') AS Name,
+                           ISNULL(H.DepartmentName,'') AS DepartmentName,
                            ISNULL(H.Description,'') AS Description,
                            ISNULL(H.Reference,'') AS Reference,
                            ISNULL(H.Remarks,'') AS Remarks,
