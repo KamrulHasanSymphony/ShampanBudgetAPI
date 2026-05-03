@@ -17,7 +17,7 @@ namespace ShampanBFRS.ViewModel.SalaryAllowance
         public string? Code { get; set; }
 
         [Display(Name = "Transaction Date")]
-        public string TransactionDate { get; set; }
+        public string? TransactionDate { get; set; }
 
         [Display(Name = "Year")]
         public int? FiscalYearId { get; set; }
@@ -27,9 +27,9 @@ namespace ShampanBFRS.ViewModel.SalaryAllowance
 
         public string? YearName { get; set; }
         [DisplayName("Budget Type")]
-        public string BudgetType { get; set; }
+        public string? BudgetType { get; set; }
         [Display(Name = "Branch")]
-        public int BranchId { get; set; }
+        public int? BranchId { get; set; }
         [Display(Name = "Posted")]
         public string? IsPost { get; set; }
         public List<SalaryAllowanceDetailVM> SalaryAllowanceDetail { get; set; }
