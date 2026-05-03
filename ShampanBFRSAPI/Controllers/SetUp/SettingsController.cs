@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShampanBFRS.Service.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
+using ShampanBFRS.ViewModel.SetUpVMs;
 
 namespace ShampanBFRSAPI.Controllers.SetUp
 {
@@ -12,7 +13,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
 
         // POST: api/Settings/Insert
         [HttpPost("Insert")]
-        public async Task<ResultVM> Insert(SettingVM vm)
+        public async Task<ResultVM> Insert(SettingsModel vm)
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             _service = new SettingsService();
@@ -36,7 +37,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
 
         // POST: api/Settings/Update
         [HttpPost("Update")]
-        public async Task<ResultVM> Update(SettingVM vm)
+        public async Task<ResultVM> Update(SettingsModel vm)
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try
@@ -106,7 +107,7 @@ namespace ShampanBFRSAPI.Controllers.SetUp
 
         // GET: api/Settings/ListAsDataTable
         [HttpGet("ListAsDataTable")]
-        public async Task<ResultVM> ListAsDataTable(SettingVM vm)
+        public async Task<ResultVM> ListAsDataTable(SettingsModel vm)
         {
             ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
             try

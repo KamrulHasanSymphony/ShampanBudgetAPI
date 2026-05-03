@@ -1,5 +1,6 @@
 ﻿using ShampanBFRS.Repository.Common;
 using ShampanBFRS.ViewModel.CommonVMs;
+using ShampanBFRS.ViewModel.SetUpVMs;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -8,7 +9,7 @@ namespace ShampanBFRS.Repository.SetUp
     public class SettingsRepository : CommonRepository
     {
         // Insert Method
-        public async Task<ResultVM> Insert(SettingVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Insert(SettingsModel vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
 
@@ -36,7 +37,7 @@ INSERT INTO Settings
 ,IsActive
 ,IsArchive
 ,CreatedBy
-,CreatedOn
+,CreatedAt
 ,CreatedFrom
 )
 VALUES 
@@ -87,7 +88,7 @@ VALUES
         }
 
         // Update Method
-        public async Task<ResultVM> Update(SettingVM vm, SqlConnection conn = null, SqlTransaction transaction = null)
+        public async Task<ResultVM> Update(SettingsModel vm, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = vm.Id.ToString(), DataVM = vm };
 
@@ -225,9 +226,8 @@ SELECT DISTINCT
 ,ISNULL(M.IsArchive,0)	IsArchive
 ,ISNULL(M.IsActive,0)	IsActive
 ,ISNULL(M.CreatedBy,'')	CreatedBy
-,ISNULL(M.LastModifiedBy,'')	LastModifiedBy
-,ISNULL(FORMAT(M.CreatedOn,'yyyy-MM-dd HH:mm'),'1900-01-01')	CreatedOn
-,ISNULL(FORMAT(M.LastModifiedOn,'yyyy-MM-dd HH:mm'),'1900-01-01')	LastModifiedOn
+,ISNULL(M.CreatedAt,'')	CreatedAt
+,ISNULL(M.LastUpdateAt,'')	LastUpdateAt
 
 FROM Settings M 
 WHERE 1=1 ";
@@ -252,10 +252,10 @@ WHERE 1=1 ";
 
                 objComm.Fill(dataTable);
 
-                var model = new List<SettingVM>();
+                var model = new List<SettingsModel>();
                 foreach (DataRow row in dataTable.Rows)
                 {
-                    model.Add(new SettingVM
+                    model.Add(new SettingsModel
                     {
                         Id = Convert.ToInt32(row["Id"]),
 
@@ -265,11 +265,11 @@ WHERE 1=1 ";
                         SettingValue = row["SettingValue"].ToString(),
                         Remarks = row["Remarks"].ToString(),
                         CreatedBy = row["CreatedBy"].ToString(),
-                        LastModifiedBy = row["LastModifiedBy"].ToString(),
+                        LastUpdateAt = row["LastUpdateAt"].ToString(),
                         IsArchive = Convert.ToBoolean(row["IsArchive"]),
                         IsActive = Convert.ToBoolean(row["IsActive"]),
-                        CreatedOn = row["CreatedOn"].ToString(),
-                        LastModifiedOn = row["LastModifiedOn"].ToString(),
+                        CreatedOn = row["CreatedAt"].ToString(),
+                        LastUpdateOn = row["LastUpdateAt"].ToString(),
                     });
                 }
 

@@ -1,6 +1,7 @@
 ﻿using ShampanBFRS.Repository.Common;
 using ShampanBFRS.Repository.SetUp;
 using ShampanBFRS.ViewModel.CommonVMs;
+using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using System.Data.SqlClient;
 
@@ -8,7 +9,7 @@ namespace ShampanBFRS.Service.SetUp
 {
     public class SettingsService
     {
-        public async Task<ResultVM> Insert(SettingVM vm)
+        public async Task<ResultVM> Insert(SettingsModel vm)
         {
             SettingsRepository _repo = new SettingsRepository();
             CommonRepository _commonRepo = new CommonRepository();
@@ -70,7 +71,7 @@ namespace ShampanBFRS.Service.SetUp
             }
         }
 
-        public async Task<ResultVM> Update(SettingVM vm)
+        public async Task<ResultVM> Update(SettingsModel vm)
         {
             SettingsRepository _repo = new SettingsRepository();
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
