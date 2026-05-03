@@ -18,7 +18,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public string? SettingType { get; set; }
         public string? Remarks { get; set; }
         public string? Operation { get; set; }
-        public string?[] IDs { get; set; }
+        public string[]? IDs { get; set; }
         public string? Status { get; set; }
 
 

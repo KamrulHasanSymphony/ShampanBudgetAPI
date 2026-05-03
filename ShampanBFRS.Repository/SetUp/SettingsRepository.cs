@@ -109,9 +109,9 @@ VALUES
  SET 
  SettingValue=@SettingValue
 ,Remarks=@Remarks
-,LastModifiedBy=@LastModifiedBy
+,LastUpdateBy=@LastUpdateBy
 ,LastUpdateFrom=@LastUpdateFrom
-,LastModifiedOn=GETDATE()
+,LastUpdateAt=GETDATE()
  WHERE Id = @Id ";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
@@ -119,7 +119,7 @@ VALUES
                     cmd.Parameters.AddWithValue("@Id", vm.Id);
                     cmd.Parameters.AddWithValue("@SettingValue", vm.SettingValue ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Remarks", vm.Remarks ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@LastModifiedBy", vm.LastModifiedBy ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LastUpdateBy", vm.LastUpdateBy ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@LastUpdateFrom", vm.LastUpdateFrom ?? (object)DBNull.Value);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
@@ -311,9 +311,9 @@ SELECT DISTINCT
 ,ISNULL(M.IsArchive,0)	IsArchive
 ,ISNULL(M.IsActive,0)	IsActive
 ,ISNULL(M.CreatedBy,'')	CreatedBy
-,ISNULL(M.LastModifiedBy,'')	LastModifiedBy
-,ISNULL(FORMAT(M.CreatedOn,'yyyy-MM-dd HH:mm'),'1900-01-01')	CreatedOn
-,ISNULL(FORMAT(M.LastModifiedOn,'yyyy-MM-dd HH:mm'),'1900-01-01')	LastModifiedOn
+,ISNULL(M.CreatedAt,'')	CreatedAt
+,ISNULL(M.LastUpdateAt,'')	LastUpdateAt
+
 
 FROM Settings M 
 WHERE 1=1 ";
