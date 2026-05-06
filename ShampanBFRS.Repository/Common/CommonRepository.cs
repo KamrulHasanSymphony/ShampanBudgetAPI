@@ -1,5 +1,6 @@
 ﻿using ShampanBFRS.Repository.SalaryAllowance;
 using ShampanBFRS.ViewModel.CommonVMs;
+using ShampanBFRS.ViewModel.SalaryAllowance;
 using ShampanBFRS.ViewModel.SetUpVMs;
 using ShampanBFRS.ViewModel.Utility;
 using System.Data;
@@ -2610,6 +2611,247 @@ where 1=1
             {
                 result.ExMessage = ex.Message;
                 result.Message = ex.Message;
+                return result;
+            }
+        }
+
+        public async Task<ResultVM> GetBudgetPieChart(CommonVM vm, string[] conditionalFields, string[] conditionalValues, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error" };
+
+            try
+            {
+                if (conn == null)
+                {
+                    throw new Exception("Database connection fail!");
+                }
+
+                int top = 10;
+                string companyId = "0";
+
+                // ✅ FIX: Get CompanyId properly
+                if (conditionalValues != null && conditionalValues.Length > 0)
+                    companyId = conditionalValues[0] ?? "0";
+
+                // ✅ FIX: Get Top value
+                if (conditionalValues != null && conditionalValues.Length > 1)
+                    int.TryParse(conditionalValues[1], out top);
+
+                string sql = @"
+DECLARE @BranchId INT = @BId;
+DECLARE @Year INT;
+
+DECLARE @EstimatedYear INT;
+DECLARE @ApprovedYear INT;
+DECLARE @ActualYear INT;
+
+DECLARE @EstimatedYearName NVARCHAR(50);
+DECLARE @ApprovedYearName NVARCHAR(50);
+DECLARE @ActualYearName NVARCHAR(50);
+
+DECLARE @SQL NVARCHAR(MAX);
+DECLARE @ReportType NVARCHAR(50) = @RType;
+
+------------------------------------------------------------
+-- Get base year
+------------------------------------------------------------
+SELECT @Year = [Year]
+FROM FiscalYears
+WHERE Id =@FYId;
+
+SET @EstimatedYear = @Year;
+SET @ApprovedYear  = @Year - 1;
+SET @ActualYear    = @Year - 2;
+
+------------------------------------------------------------
+-- Get year names
+------------------------------------------------------------
+SELECT @EstimatedYearName = YearName FROM FiscalYears WHERE [Year] = @EstimatedYear;
+SELECT @ApprovedYearName  = YearName FROM FiscalYears WHERE [Year] = @ApprovedYear;
+SELECT @ActualYearName    = YearName FROM FiscalYears WHERE [Year] = @ActualYear;
+
+------------------------------------------------------------
+-- Build query
+------------------------------------------------------------
+SET @SQL = '
+
+SELECT Particular, TotalValue
+FROM
+(
+    -- Estimated
+    SELECT 
+        ''Estimated(' + @EstimatedYearName + ')'' AS Particular,
+        SUM(CASE 
+                WHEN FY.[Year] = ' + CAST(@EstimatedYear AS NVARCHAR) + ' 
+                 AND c.BudgetType = ''Estimated'' 
+                THEN cd.Yearly ELSE 0 
+            END) AS TotalValue,
+        1 AS SortOrder
+
+    FROM BudgetHeaders c
+    INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
+    INNER JOIN FiscalYears FY ON c.FiscalYearId = FY.Id
+    WHERE FY.[Year] IN (' 
+        + CAST(@ActualYear AS NVARCHAR) + ',' 
+        + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+        + CAST(@EstimatedYear AS NVARCHAR) + ')
+        ' + CASE WHEN @BranchId IS NOT NULL 
+                THEN ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR) 
+                ELSE '' END + '
+
+    UNION ALL
+
+    -- Revised
+    SELECT 
+        ''Revised(' + @ApprovedYearName + ')'', 
+        SUM(CASE 
+                WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                 AND c.BudgetType = ''Revised'' 
+                THEN cd.Yearly ELSE 0 
+            END),
+        2
+    FROM BudgetHeaders c
+    INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
+    INNER JOIN FiscalYears FY ON c.FiscalYearId = FY.Id
+    WHERE FY.[Year] IN (' 
+        + CAST(@ActualYear AS NVARCHAR) + ',' 
+        + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+        + CAST(@EstimatedYear AS NVARCHAR) + ')
+        ' + CASE WHEN @BranchId IS NOT NULL 
+                THEN ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR) 
+                ELSE '' END + '
+
+    UNION ALL
+
+    -- Approved
+    SELECT 
+        ''Approved(' + @ApprovedYearName + ')'', 
+        SUM(CASE 
+                WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                 AND c.BudgetType = ''Approved'' 
+                THEN cd.Yearly ELSE 0 
+            END),
+        3
+    FROM BudgetHeaders c
+    INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
+    INNER JOIN FiscalYears FY ON c.FiscalYearId = FY.Id
+    WHERE FY.[Year] IN (' 
+        + CAST(@ActualYear AS NVARCHAR) + ',' 
+        + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+        + CAST(@EstimatedYear AS NVARCHAR) + ')
+        ' + CASE WHEN @BranchId IS NOT NULL 
+                THEN ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR) 
+                ELSE '' END + '
+
+    UNION ALL
+
+    -- Actual Audited
+    SELECT 
+        ''Actual Audited(' + @ActualYearName + ')'', 
+        SUM(CASE 
+                WHEN FY.[Year] = ' + CAST(@ActualYear AS NVARCHAR) + ' 
+                 AND c.BudgetType = ''Actual_Audited'' 
+                THEN cd.Yearly ELSE 0 
+            END),
+        4
+    FROM BudgetHeaders c
+    INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
+    INNER JOIN FiscalYears FY ON c.FiscalYearId = FY.Id
+    WHERE FY.[Year] IN (' 
+        + CAST(@ActualYear AS NVARCHAR) + ',' 
+        + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+        + CAST(@EstimatedYear AS NVARCHAR) + ')
+        ' + CASE WHEN @BranchId IS NOT NULL 
+                THEN ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR) 
+                ELSE '' END + '
+
+    ' + CASE WHEN @ReportType <> '2nd_6months_actual' THEN '
+    UNION ALL
+    -- 1st 6 Months
+    SELECT 
+        ''1st 6 Months Actual(' + @ApprovedYearName + ')'', 
+        SUM(CASE 
+                WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                 AND c.BudgetType = ''1st_6months_actual'' 
+                THEN cd.Yearly ELSE 0 
+            END),
+        5
+    FROM BudgetHeaders c
+    INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
+    INNER JOIN FiscalYears FY ON c.FiscalYearId = FY.Id
+    WHERE FY.[Year] IN (' 
+        + CAST(@ActualYear AS NVARCHAR) + ',' 
+        + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+        + CAST(@EstimatedYear AS NVARCHAR) + ')
+        ' + CASE WHEN @BranchId IS NOT NULL 
+                THEN ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR) 
+                ELSE '' END 
+    ELSE '' END + '
+
+    ' + CASE WHEN @ReportType <> '1st_6months_actual' THEN '
+    UNION ALL
+    -- 2nd 6 Months
+    SELECT 
+        ''2nd 6 Months Actual(' + @ApprovedYearName + ')'', 
+        SUM(CASE 
+                WHEN FY.[Year] = ' + CAST(@ApprovedYear AS NVARCHAR) + ' 
+                 AND c.BudgetType = ''2nd_6months_actual'' 
+                THEN cd.Yearly ELSE 0 
+            END),
+        6
+    FROM BudgetHeaders c
+    INNER JOIN BudgetDetails cd ON c.Id = cd.BudgetHeaderId
+    INNER JOIN FiscalYears FY ON c.FiscalYearId = FY.Id
+    WHERE FY.[Year] IN (' 
+        + CAST(@ActualYear AS NVARCHAR) + ',' 
+        + CAST(@ApprovedYear AS NVARCHAR) + ',' 
+        + CAST(@EstimatedYear AS NVARCHAR) + ')
+        ' + CASE WHEN @BranchId IS NOT NULL 
+                THEN ' AND c.BranchId = ' + CAST(@BranchId AS NVARCHAR) 
+                ELSE '' END 
+    ELSE '' END + '
+
+) X
+ORDER BY SortOrder
+';
+
+EXEC sp_executesql @SQL;
+ ";
+
+                SqlDataAdapter objComm = new SqlDataAdapter(sql, conn);
+                objComm.SelectCommand.Transaction = transaction;
+
+                var fiscalYearId = 23;
+                var branchId = 1;
+                var reportType = "1st_6months_actual";
+
+                objComm.SelectCommand.Parameters.AddWithValue("@BId", branchId);
+                objComm.SelectCommand.Parameters.AddWithValue("@FYId", fiscalYearId);
+                objComm.SelectCommand.Parameters.AddWithValue("@RType", reportType);
+                objComm.SelectCommand.Parameters.AddWithValue("@CompanyId", companyId);
+
+                objComm.Fill(dataTable);
+
+                var modelList = dataTable.AsEnumerable().Select(row => new PieChartVM
+                {
+                    Particular = row["Particular"].ToString(),
+                    TotalValue = row["TotalValue"] != DBNull.Value
+                        ? Convert.ToDecimal(row["TotalValue"])
+                        : 0
+                }).ToList();
+
+                result.Status = "Success";
+                result.Message = "Data retrieved successfully.";
+                result.DataVM = modelList;
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception ex)
+            {
+                result.Status = "Fail";
+                result.Message = ex.Message;
+                result.ExMessage = ex.Message;
                 return result;
             }
         }
