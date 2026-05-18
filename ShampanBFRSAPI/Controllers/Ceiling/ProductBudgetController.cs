@@ -31,18 +31,18 @@ namespace ShampanBFRSAPI.Controllers.Ceiling
         }
 
         [HttpPost("Update")]
-        public async Task<ResultVM> Update(ProductBudgetVM VM)
+        public async Task<ResultVM> Update(ProductBudgetMasterVM vm)
         {
             ResultVM resultVM = new ResultVM { Status = "Fail", Message = "Error" };
             try
             {
                 _Service = new ProductBudgetService();
-                resultVM = await _Service.Update(VM);
+                resultVM = await _Service.Update(vm);
                 return resultVM;
             }
             catch (Exception ex)
             {
-                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = VM };
+                return new ResultVM { Status = MessageModel.Fail, Message = ex.Message, ExMessage = ex.Message, DataVM = vm };
             }
         }
 

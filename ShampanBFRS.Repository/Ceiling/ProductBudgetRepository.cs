@@ -802,6 +802,158 @@ drop table #ProductBudgetTemp
             }
         }
 
+        public async Task<ResultVM> Update(ProductBudgetMasterVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
+
+            try
+            {
+                if (conn == null) throw new Exception(MessageModel.DBConnFail);
+                if (transaction == null) throw new Exception(MessageModel.DBConnFail);
+
+                #region TEMP TABLE
+                string TempTable = @"
+                SELECT TOP 0 *
+                INTO #ProductBudgetTemp
+                FROM ProductBudgets;
+                ";
+                #endregion
+
+                #region TEMP INSERT
+                string TempInsert = @"
+                INSERT INTO #ProductBudgetTemp (
+                 CompanyId,
+                 BranchId,
+                 GLFiscalYearId,
+                 ProductId,
+                 BLQuantityMT,
+                 BudgetSetNo,
+                 BudgetType,
+                 ChargeGroup
+                )
+                VALUES (
+                 @CompanyId,
+                 @BranchId,
+                 @GLFiscalYearId,
+                 @ProductId,
+                 @BLQuantityMT,
+                 @BudgetSetNo,
+                 @BudgetType,
+                 @ChargeGroup
+                );
+                ";
+                #endregion
+
+                #region BUSINESS LOGIC
+                string sqlText = @"
+
+                -- RESET
+                UPDATE #ProductBudgetTemp SET 
+                BLQuantityBBL = 0,
+                ReceiveQuantityMT = 0,
+                ReceiveQuantityBBL = 0,
+                CifUsdValue = 0,
+                CifBdt = 0,
+                TotalCost = 0,
+                CostBblValue = 0,
+                CostLiterValue = 0;
+
+                -- JOIN MASTER DATA
+                UPDATE T
+                SET 
+                T.ConversionFactor = P.ConversionFactor,
+                T.CIFCharge = cd.CIFCharge,
+                T.ExchangeRateUsd = cd.ExchangeRateUsd,
+                T.InsuranceRate = cd.InsuranceRate,
+                T.BankCharge = cd.BankCharge,
+                T.OceanLoss = cd.OceanLoss,
+                T.CPACharge = cd.CPACharge,
+                T.HandelingCharge = cd.HandelingCharge,
+                T.LightCharge = cd.LightCharge,
+                T.Survey = cd.Survey,
+                T.DutyPerLiter = cd.DutyPerLiter,
+                T.VATRate = cd.VATRate,
+                T.ATRate = cd.ATRate,
+                T.AITRate = cd.AITRate
+                FROM #ProductBudgetTemp T
+                INNER JOIN Products P ON P.Id = T.ProductId
+                INNER JOIN ChargeDetails cd ON P.Id = cd.ProductId
+                INNER JOIN ChargeHeaders ch ON ch.Id = cd.ChargeHeaderId
+                AND ch.ChargeGroup = T.ChargeGroup;
+                ";
+
+                #endregion
+
+                #region FINAL UPDATE
+                sqlText += @"
+
+                UPDATE PB
+                SET
+                PB.BLQuantityMT = T.BLQuantityMT,
+                PB.BLQuantityBBL = T.BLQuantityMT * T.ConversionFactor,
+                PB.ReceiveQuantityMT = T.BLQuantityMT,
+                PB.ReceiveQuantityBBL = T.BLQuantityMT * T.ConversionFactor,
+                PB.CifUsdValue = 0,
+                PB.CifBdt = 0,
+                PB.TotalCost = 0,
+                PB.CostBblValue = 0,
+                PB.CostLiterValue = 0
+                FROM ProductBudgets PB
+                INNER JOIN #ProductBudgetTemp T
+                ON PB.CompanyId = T.CompanyId
+                AND PB.BranchId = T.BranchId
+                AND PB.GLFiscalYearId = T.GLFiscalYearId
+                AND PB.BudgetSetNo = T.BudgetSetNo
+                AND PB.BudgetType = T.BudgetType
+                AND PB.ChargeGroup = T.ChargeGroup
+                AND PB.ProductId = T.ProductId;
+
+                DROP TABLE #ProductBudgetTemp;
+                ";
+                #endregion
+
+                #region EXECUTION (IMPORTANT FIX)
+
+                // 🔥 SINGLE BATCH EXECUTION (FIXES YOUR ERROR)
+                string finalSql = TempTable + TempInsert + sqlText;
+
+                SqlCommand command = new SqlCommand(finalSql, conn, transaction);
+
+                // FIX: Required parameters (must match ALL SQL usage)
+                command.Parameters.Add("@CompanyId", SqlDbType.Int).Value = objMaster.CompanyId;
+                command.Parameters.Add("@BranchId", SqlDbType.Int).Value = objMaster.BranchId;
+                command.Parameters.Add("@GLFiscalYearId", SqlDbType.Int).Value = objMaster.GLFiscalYearId;
+                command.Parameters.Add("@BudgetSetNo", SqlDbType.NVarChar).Value = "1"; // FIXED
+                command.Parameters.Add("@BudgetType", SqlDbType.NVarChar).Value = objMaster.BudgetType ?? (object)DBNull.Value;
+                command.Parameters.Add("@ChargeGroup", SqlDbType.NVarChar).Value = objMaster.ChargeGroup ?? (object)DBNull.Value;
+
+                foreach (var item in objMaster.DetailList)
+                {
+                    command.Parameters.Add("@ProductId", SqlDbType.Int).Value = item.ProductId;
+                    command.Parameters.Add("@BLQuantityMT", SqlDbType.Decimal).Value = item.BLQuantityMT;
+
+                    command.ExecuteNonQuery();
+
+                    command.Parameters.RemoveAt("@ProductId");
+                    command.Parameters.RemoveAt("@BLQuantityMT");
+                }
+
+                #endregion
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.UpdateSuccess;
+                result.DataVM = objMaster;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+                return result;
+            }
+        }
         public async Task<ResultVM> ExitCheck(ProductBudgetVM objMaster, SqlConnection conn = null, SqlTransaction transaction = null)
         {
             ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
@@ -1807,8 +1959,70 @@ IF OBJECT_ID('tempdb..#TempProductBudget') IS NOT NULL DROP TABLE #TempProductBu
             }
         }
 
+        public async Task<ResultVM> Delete(ProductBudgetMasterVM productbudget,SqlConnection conn = null,SqlTransaction transaction = null)
+        {
+            ResultVM result = new ResultVM
+            {
+                Status = MessageModel.Fail,
+                Message = "Error"
+            };
 
+            try
+            {
+                if (conn == null)
+                    throw new Exception("Database connection is null.");
 
+                if (transaction == null)
+                    throw new Exception("Database transaction is null.");
 
+                string deleteSql = @"
+            DELETE FROM ProductBudgets
+            WHERE BranchId = @BranchId
+              AND GLFiscalYearId = @GLFiscalYearId
+              AND BudgetSetNo = @BudgetSetNo
+              AND BudgetType = @BudgetType
+              AND ChargeGroup = @ChargeGroup
+        ";
+
+                using var cmd = new SqlCommand(deleteSql, conn, transaction);
+
+                cmd.Parameters.AddWithValue("@BranchId", productbudget.BranchId);
+                cmd.Parameters.AddWithValue("@GLFiscalYearId", productbudget.GLFiscalYearId);
+                cmd.Parameters.AddWithValue("@BudgetSetNo", 1);
+                cmd.Parameters.AddWithValue("@BudgetType",
+                    string.IsNullOrWhiteSpace(productbudget.BudgetType)
+                        ? ""
+                        : productbudget.BudgetType);
+
+                cmd.Parameters.AddWithValue("@ChargeGroup",
+                    string.IsNullOrWhiteSpace(productbudget.ChargeGroup)
+                        ? ""
+                        : productbudget.ChargeGroup);
+
+                int rowAffected = await cmd.ExecuteNonQueryAsync();
+
+                if (rowAffected > 0)
+                {
+                    result.Status = MessageModel.Success;
+                    result.Message = MessageModel.DeleteSuccess;
+                    result.DataVM = productbudget;
+                }
+                else
+                {
+                    result.Status = MessageModel.Fail;
+                    result.Message = "No data found to delete.";
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Status = MessageModel.Fail;
+                result.Message = ex.Message;
+                result.ExMessage = ex.ToString();
+
+                return result;
+            }
+        }
     }
 }

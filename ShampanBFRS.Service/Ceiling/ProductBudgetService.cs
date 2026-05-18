@@ -1,13 +1,14 @@
-﻿using ShampanBFRS.Repository.Common;
+﻿using ShampanBFRS.Repository.Ceiling;
+using ShampanBFRS.Repository.Common;
 using ShampanBFRS.Repository.SetUp;
 using ShampanBFRS.ViewModel.Ceiling;
 using ShampanBFRS.ViewModel.CommonVMs;
-using ShampanBFRS.ViewModel.Utility;
-using System.Data.SqlClient;
-using ShampanBFRS.ViewModel.SetUpVMs;
-using ShampanBFRS.Repository.Ceiling;
 using ShampanBFRS.ViewModel.KendoCommon;
 using ShampanBFRS.ViewModel.SalaryAllowance;
+using ShampanBFRS.ViewModel.SetUpVMs;
+using ShampanBFRS.ViewModel.Utility;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace ShampanBFRS.Service.Ceiling
 {
@@ -51,8 +52,6 @@ namespace ShampanBFRS.Service.Ceiling
 
                 result = await _repo.Insert(model, conn, transaction);
 
-
-
                 if (isNewConnection && result.Status == MessageModel.Success)
                 {
                     transaction.Commit();
@@ -79,81 +78,101 @@ namespace ShampanBFRS.Service.Ceiling
             }
         }
 
-        public async Task<ResultVM> Update(ProductBudgetVM master)
-        {
-            CeilingRepository _repo = new CeilingRepository();
-            _commonRepo = new CommonRepository();
-            ResultVM result = new ResultVM { Status = MessageModel.Fail, Message = "Error" };
 
-            bool isNewConnection = false;
+        public async Task<ResultVM> Update(ProductBudgetMasterVM productbudget,SqlTransaction Vtransaction = null,SqlConnection VcurrConn = null)
+        {
+            ProductBudgetRepository _repo = new ProductBudgetRepository();
+
+            ResultVM result = new ResultVM
+            {
+                Status = MessageModel.Fail,
+                Message = "Error",
+                ExMessage = null,
+                Id = productbudget.Id.ToString(),
+                DataVM = productbudget
+            };
+
             SqlConnection conn = null;
             SqlTransaction transaction = null;
 
             try
             {
-                conn = new SqlConnection(DatabaseHelper.GetConnectionStringQuestion());
-                conn.Open();
-                isNewConnection = true;
-                transaction = conn.BeginTransaction();
+                #region Open Connection & Transaction
 
-                result = await new FiscalYearDetailRepository().List("", new[] { "FiscalYearId" }, new[] { master.GLFiscalYearId.ToString() }, null, conn, transaction);
+                conn = VcurrConn ?? new SqlConnection(DatabaseHelper.GetConnectionString());
 
-                var FiscalYearDetailVM = (List<FiscalYearDetailVM>)result.DataVM;
-
-                //result = await _repo.Update(master, conn, transaction);
-
-                if (result.Status == MessageModel.Fail)
+                if (conn.State != ConnectionState.Open)
                 {
-                    throw new Exception(MessageModel.UpdateFail);
+                    await conn.OpenAsync();
                 }
 
-                if (master.Id > 0)
+                transaction = Vtransaction ?? conn.BeginTransaction();
+
+                #endregion
+
+                #region Delete Existing Data
+
+                ResultVM deleteResult = await _repo.Delete(productbudget, conn, transaction);
+
+                if (deleteResult.Status.ToLower() != MessageModel.Success.ToLower()
+                    && deleteResult.Message != "No data found to delete.")
                 {
-                    //result = await _repo.DeleteDetails(master, conn, transaction);
-
-                    if (result.Status == MessageModel.Fail)
-                    {
-                        throw new Exception(MessageModel.DeleteFail);
-
-                    }
-
-                    //SplitCeilingByFiscalPeriods(master, FiscalYearDetailVM);
-
-                    //foreach (var detail in master.CeilingDetailList)
-                    //{
-                    //    detail.GLCeilingId = master.Id;
-
-                    //    result = await _repo.InsertDetails(detail, conn, transaction);
-
-                    //    if (result.Status == MessageModel.Fail)
-                    //        throw new Exception(result.Message);
-                    //}
-
+                    throw new Exception(deleteResult.Message);
                 }
-                //
 
+                #endregion
 
+                #region Insert Updated Data
 
-                if (isNewConnection && result.Status == "Success")
-                    transaction.Commit();
-                else
+                result = await _repo.Insert(productbudget, conn, transaction);
+
+                if (result.Status.ToLower() != MessageModel.Success.ToLower())
+                {
                     throw new Exception(result.Message);
+                }
+
+                #endregion
+
+                #region Commit Transaction
+
+                if (Vtransaction == null)
+                {
+                    transaction.Commit();
+                }
+
+                #endregion
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.UpdateSuccess;
 
                 return result;
             }
             catch (Exception ex)
             {
-                if (transaction != null && isNewConnection) transaction.Rollback();
+                if (transaction != null && Vtransaction == null)
+                {
+                    transaction.Rollback();
+                }
+
+                result.Status = MessageModel.Fail;
                 result.Message = ex.Message;
                 result.ExMessage = ex.ToString();
+
                 return result;
             }
             finally
             {
-                if (isNewConnection && conn != null) conn.Close();
+                if (VcurrConn == null && conn != null)
+                {
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        conn.Close();
+                    }
+
+                    conn.Dispose();
+                }
             }
         }
-
 
         public async Task<ResultVM> GetProductBudgetDataForDetailsNew(ProductBudgetVM model)
         {
