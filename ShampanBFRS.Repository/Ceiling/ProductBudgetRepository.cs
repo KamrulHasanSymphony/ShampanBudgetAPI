@@ -1170,7 +1170,7 @@ WHERE 1 = 1
  
  SELECT
 ROW_NUMBER() OVER (ORDER BY p.Id) AS Serial,
-ISNULL(PB.Id, 0) AS Id,
+--ISNULL(PB.Id, 0) AS Id,
 ISNULL(PB.CompanyId, 0) AS CompanyId,
 ISNULL(PB.BranchId, 0) AS BranchId,
 ISNULL(PB.GLFiscalYearId, 0) AS GLFiscalYearId,
@@ -1227,7 +1227,10 @@ ISNULL(PB.VATValue, 0) AS VATValue,
 ISNULL(PB.VATPerLiterValue, 0) AS VATPerLiterValue,
 ISNULL(PB.TotalCostAfterDuties, 0) AS TotalCostAfterDuties,
 ISNULL(PB.VATExcludingExtraVAT, 0) AS VATExcludingExtraVAT,
-ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded
+ISNULL(PB.TotalCostVATExcluded, 0) AS TotalCostVATExcluded,
+ISNULL(cd.ChargeHeaderId, 0) AS ChargeHeaderId,
+ISNULL(cd.id, 0) AS id
+
 FROM ChargeHeaders ch
 LEFT JOIN ChargeDetails cd ON ch.Id = cd.ChargeHeaderId
 LEFT JOIN Products p ON cd.ProductId = p.Id

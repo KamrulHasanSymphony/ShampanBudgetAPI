@@ -8,12 +8,19 @@ using ShampanBFRS.ViewModel.CommonVMs;
 
 namespace ShampanBFRS.ViewModel.SetUpVMs
 {
-    public class ChargeDetailVM :AuditVM
+    public class ChargeDetailVM : AuditVM
     {
         public int Id { get; set; }
+        public string? Code { get; set; }
+        public string? Name { get; set; }
+        public string? ProductGroupName { get; set; }
+        public decimal? ConversionFactor { get; set; }
         public int ChargeHeaderId { get; set; }
         public int ProductId { get; set; }
         public string? ProductName { get; set; }
+        public int? ChargeGroupId { get; set; }
+        public string? ChargeGroup { get; set; }
+
         public decimal? CIFCharge { get; set; }
         public decimal? ExchangeRateUsd { get; set; }
         public decimal? InsuranceRate { get; set; }
@@ -37,6 +44,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public decimal? VATRateFixed { get; set; }
         public decimal? RiverDues { get; set; }
 
+
         public decimal? TariffRate { get; set; }
         public decimal? FobPriceBBL { get; set; }
         public decimal? FreightUsd { get; set; }
@@ -45,11 +53,11 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         public decimal? RcoTreatmentFee { get; set; }
         public decimal? AbpTreatmentFee { get; set; }
 
-
         public decimal? ProcessFeeRate { get; set; }
         public decimal? RcoTreatmentFeeRate { get; set; }
         public decimal? AbpTreatmentFeeRate { get; set; }
         public decimal? ProductImprovementFee { get; set; }
+
 
 
     }

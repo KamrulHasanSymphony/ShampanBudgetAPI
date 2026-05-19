@@ -44,7 +44,7 @@ namespace ShampanBFRS.Service.SetUp
                 #endregion open connection and transaction
                 // check
 
-                string[] conditionField = { "ChargeGroup"};
+                string[] conditionField = { "ChargeGroup" };
                 string[] conditionValue = { chargeHeader.ChargeGroup ?? string.Empty };
 
                 bool exists = _commonRepo.CheckExists("ChargeHeaders", conditionField, conditionValue, conn, transaction);
@@ -54,32 +54,32 @@ namespace ShampanBFRS.Service.SetUp
 
 
                 result = await _repo.Insert(chargeHeader, conn, transaction);
-                    chargeHeader.Id = Convert.ToInt32(result.Id);
+                chargeHeader.Id = Convert.ToInt32(result.Id);
 
-                    if (result.Status.ToLower() == "success")
+                if (result.Status.ToLower() == "success")
+                {
+                    foreach (var details in chargeHeader.ChargeDetails)
                     {
-                        foreach (var details in chargeHeader.ChargeDetails)
+                        details.ChargeHeaderId = chargeHeader.Id;
+
+
+
+                        var detailresult = await _repo.InsertDetails(details, conn, transaction);
+
+                        if (detailresult.Status.ToLower() != "success")
                         {
-                            details.ChargeHeaderId = chargeHeader.Id;
-
-
-
-                            var detailresult = await _repo.InsertDetails(details, conn, transaction);
-
-                            if (detailresult.Status.ToLower() != "success")
-                            {
-                                throw new Exception(detailresult.Message);
-                            }
-
+                            throw new Exception(detailresult.Message);
                         }
 
+                    }
 
-                    }
-                    else
-                    {
-                        throw new Exception(result.Message);
-                    }
-               
+
+                }
+                else
+                {
+                    throw new Exception(result.Message);
+                }
+
                 #region Commit
                 if (Vtransaction == null && transaction != null)
                 {
@@ -126,6 +126,7 @@ namespace ShampanBFRS.Service.SetUp
             ChargeHeaderRepository _repo = new ChargeHeaderRepository();
             _commonRepo = new CommonRepository();
             ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = chargeHeader.Id.ToString(), DataVM = chargeHeader };
+            ResultVM detailresult = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = chargeHeader.Id.ToString(), DataVM = chargeHeader };
 
             SqlConnection conn = null;
             SqlTransaction transaction = null;
@@ -155,42 +156,76 @@ namespace ShampanBFRS.Service.SetUp
                 }
                 #endregion open connection and transaction
 
-
-
-                var record = _commonRepo.DetailsDelete("ChargeDetails", new[] { "ChargeHeaderId" }, new[] { chargeHeader.Id.ToString() }, conn, transaction);
+                ResultVM record = new ResultVM();
+                if (chargeHeader.IsHeaderUpdate == true)
+                {
+                    //var record = _commonRepo.DetailsDelete("ChargeDetails", new[] { "ChargeHeaderId" }, new[] { chargeHeader.Id.ToString() }, conn, transaction);                    
+                    record = _commonRepo.DetailsDelete("ChargeDetails", new[] { "ChargeHeaderId" }, new[] { chargeHeader.Id.ToString() }, conn, transaction);
+                }
+                else
+                {
+                    record = _commonRepo.DetailsDelete("ChargeDetails", new[] { "Id" }, new[] { chargeHeader.ChargeDetails.FirstOrDefault().Id.ToString() }, conn, transaction);
+                }
 
                 if (record.Status == "Fail")
                 {
                     throw new Exception("Error in Delete for Details Data.");
                 }
-
-                result = await _repo.Update(chargeHeader, conn, transaction);
-                if (result.Status.ToLower() == "success")
+                // 
+                if(chargeHeader.IsHeaderUpdate == true)
                 {
-                    foreach (var details in chargeHeader.ChargeDetails)
+                    result = await _repo.Update(chargeHeader, conn, transaction);
+
+
+                    if (result.Status.ToLower() == "success")
                     {
-                        details.ChargeHeaderId = chargeHeader.Id;
-
-
-                        var detailresult = await _repo.InsertDetails(details, conn, transaction);
-
-                        if (detailresult.Status.ToLower() != "success")
+                        foreach (var details in chargeHeader.ChargeDetails)
                         {
-                            throw new Exception(detailresult.Message);
+                             details.ChargeHeaderId = chargeHeader.Id;
+
+                             detailresult = await _repo.InsertDetails(details, conn, transaction);
+
+                            if (detailresult.Status.ToLower() != "success")
+                            {
+                                throw new Exception(detailresult.Message);
+                            }
+
                         }
-
                     }
-                   
-
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
                 }
+    
                 else
                 {
-                    throw new Exception(result.Message);
+                    if (chargeHeader.IsHeaderUpdate == false)
+                    {
+                        foreach (var details in chargeHeader.ChargeDetails)
+                        {
+                            //var detailresult = await _repo.InsertDetails(details, conn, transaction);
+                            detailresult = await _repo.InsertDetails(details, conn, transaction);
+
+                            if (detailresult.Status.ToLower() != "success")
+                            {
+                                throw new Exception(detailresult.Message);
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
+                    
                 }
+
+
                 #region Commit
                 if (Vtransaction == null && transaction != null)
                 {
-                    if (result.Status == "Success")
+                    if (result.Status == "Success" || detailresult.Status == "Success")
                     {
                         transaction.Commit();
                     }
@@ -226,7 +261,14 @@ namespace ShampanBFRS.Service.SetUp
             }
 
             #endregion Catch & Finally
-            return result;
+            if (chargeHeader.IsHeaderUpdate == true)
+            {
+                return result;
+            }
+            else
+            {
+                return detailresult;
+            }
         }
 
         public async Task<ResultVM> MultipleDelete(CommonVM vm, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
@@ -891,6 +933,83 @@ namespace ShampanBFRS.Service.SetUp
 
                 result.Message = ex.Message.ToString();
                 result.ExMessage = ex.ToString();
+            }
+            finally
+            {
+                if (VcurrConn == null)
+                {
+                    if (conn != null)
+                    {
+                        if (conn.State == ConnectionState.Open)
+                        {
+                            conn.Close();
+                        }
+                    }
+                }
+            }
+            #endregion Catch & Finally
+            return result;
+        }
+
+        public async Task<ResultVM> ChargeDetailList(string[] conditionalFields, string[] conditionalValues, PeramModel vm = null, SqlTransaction Vtransaction = null, SqlConnection VcurrConn = null)
+        {
+            ChargeHeaderRepository _repo = new ChargeHeaderRepository();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+
+            SqlConnection conn = null;
+            SqlTransaction transaction = null;
+            try
+            {
+                #region open connection and transaction
+                if (VcurrConn != null)
+                {
+                    conn = VcurrConn;
+                }
+                if (Vtransaction != null)
+                {
+                    transaction = Vtransaction;
+                }
+                if (conn == null)
+                {
+                    conn = new SqlConnection(DatabaseHelper.GetConnectionString());
+                    if (conn.State != ConnectionState.Open)
+                    {
+                        conn.Open();
+                    }
+                }
+                if (transaction == null)
+                {
+                    transaction = conn.BeginTransaction("");
+                }
+                #endregion open connection and transaction
+
+                result = await _repo.ChargeDetailList(conditionalFields, conditionalValues, conn, transaction, vm);
+
+                
+                #region Commit
+                if (Vtransaction == null && transaction != null)
+                {
+                    if (result.Status == "Success")
+                    {
+                        transaction.Commit();
+                        return result;
+                    }
+                    else
+                    {
+                        throw new Exception(result.Message);
+                    }
+                }
+                #endregion Commit
+
+            }
+            #region Catch & Finally
+            catch (Exception ex)
+            {
+                if (transaction != null && Vtransaction == null) { transaction.Rollback(); }
+
+                result.Message = ex.Message.ToString();
+                result.ExMessage = ex.ToString();
+                return result;
             }
             finally
             {

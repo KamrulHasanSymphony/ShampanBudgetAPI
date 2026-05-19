@@ -926,5 +926,147 @@ namespace ShampanBFRS.Repository.SetUp
         }
 
 
+        //DetailsList
+        public async Task<ResultVM> ChargeDetailList(string[] conditionalFields, string[] conditionalValues, SqlConnection conn, SqlTransaction transaction, PeramModel vm)
+        {
+
+            DataTable dataTable = new DataTable();
+            ResultVM result = new ResultVM { Status = "Fail", Message = "Error", ExMessage = null, DataVM = null };
+
+            try
+            {
+                string query = @"
+                    Select
+                    ROW_NUMBER() OVER (ORDER BY Cd.Id) AS Serial,
+                    ISNULL(cd.id, 0) AS id,
+                    ISNULL(cd.ChargeHeaderId, 0) AS ChargeHeaderId,
+                    ISNULL(P.Id, 0) AS ProductId,
+                    ISNULL(P.Code, '') AS Code,
+                    ISNULL(P.Name, '') AS ProductName,
+                    ISNULL(PG.Name, '') AS ProductGroupName,
+                    ISNULL(P.ConversionFactor, 0) AS ConversionFactor,
+                    ISNULL(ch.ChargeGroup, '') AS ChargeGroup,
+                    ISNULL(cd.CIFCharge, 0) AS CIFCharge,
+                    ISNULL(cd.ExchangeRateUsd, 0) AS ExchangeRateUsd,
+                    ISNULL(cd.InsuranceRate, 0) AS InsuranceRate,
+                    ISNULL(cd.BankCharge, 0) AS BankCharge,
+                    ISNULL(cd.OceanLoss, 0) AS OceanLoss,
+                    ISNULL(cd.CPACharge, 0) AS CPACharge,
+                    ISNULL(cd.HandelingCharge, 0) AS HandelingCharge,
+                    ISNULL(cd.LightCharge, 0) AS LightCharge,
+                    ISNULL(cd.Survey, 0) AS Survey,
+                    ISNULL(cd.CostLiterExImport, 0) AS CostLiterExImport,
+                    ISNULL(cd.ExERLRate, 0) AS ExERLRate,
+                    ISNULL(cd.DutyPerLiter, 0) AS DutyPerLiter,
+                    ISNULL(cd.Refined, 0) AS Refined,
+                    ISNULL(cd.Crude, 0) AS Crude,
+                    ISNULL(cd.SDRate, 0) AS SDRate,
+                    ISNULL(cd.DutyInTariff, 0) AS DutyInTariff,
+                    ISNULL(cd.ATRate, 0) AS ATRate,
+                    ISNULL(cd.AITRate, 0) AS AITRate,
+                    ISNULL(cd.VATRate, 0) AS VATRate,
+                    ISNULL(cd.ConversionFactorFixedValue, 0) AS ConversionFactorFixedValue,
+                    ISNULL(cd.VATRateFixed, 0) AS VATRateFixed,
+                    ISNULL(cd.RiverDues, 0) AS RiverDues,
+                    ISNULL(cd.TariffRate, 0) AS TariffRate,
+                    ISNULL(cd.FobPriceBBL, 0) AS FobPriceBBL,
+                    ISNULL(cd.FreightUsd, 0) AS FreightUsd,
+                    ISNULL(cd.ServiceCharge, 0) AS ServiceCharge,
+                    ISNULL(cd.ProcessFee, 0) AS ProcessFee,
+                    ISNULL(cd.RcoTreatmentFee, 0) AS RcoTreatmentFee,
+                    ISNULL(cd.AbpTreatmentFee, 0) AS AbpTreatmentFee,
+                    ISNULL(cd.ProcessFeeRate, 0) AS ProcessFeeRate,
+                    ISNULL(cd.RcoTreatmentFeeRate, 0) AS RcoTreatmentFeeRate,
+                    ISNULL(cd.AbpTreatmentFeeRate, 0) AS AbpTreatmentFeeRate,
+                    ISNULL(cd.ProductImprovementFee, 0) AS ProductImprovementFee
+
+
+                    from ChargeDetails cd
+                    LEFT JOIN ChargeHeaders ch ON ch.Id = cd.ChargeHeaderId
+                    LEFT JOIN Products P ON Cd.ProductId = P.Id 
+                    LEFT JOIN ProductGroups PG ON P.ProductGroupId = PG.Id 
+                    WHERE 1 = 1 
+                ";
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    query += " AND Id = @Id ";
+                }
+
+                // Apply additional conditions
+                query = ApplyConditions(query, conditionalFields, conditionalValues, false);
+
+                SqlDataAdapter objComm = CreateAdapter(query, conn, transaction);
+
+                // SET additional conditions param
+                objComm.SelectCommand = ApplyParameters(objComm.SelectCommand, conditionalFields, conditionalValues);
+
+                if (vm != null && !string.IsNullOrEmpty(vm.Id))
+                {
+                    objComm.SelectCommand.Parameters.AddWithValue("@Id", vm.Id);
+                }
+
+                objComm.Fill(dataTable);
+
+                var modelList = dataTable.AsEnumerable().Select(row => new ChargeDetailVM
+                {
+                    Id = row.Field<int>("Id"),
+                    ProductId = row.Field<int>("ProductId"),
+                    Code = row.Field<string>("Code"),
+                    Name = row.Field<string>("ProductName"),
+                    ProductGroupName = row.Field<string>("ProductGroupName"),
+                    ConversionFactor = row.Field<decimal?>("ConversionFactor") ?? 0,
+                    ChargeGroup = row.Field<string>("ChargeGroup"),
+                    ChargeHeaderId = row.Field<int?>("ChargeHeaderId") ?? 0,
+                    CIFCharge = row.Field<decimal?>("CIFCharge") ?? 0,
+                    ExchangeRateUsd = row.Field<decimal?>("ExchangeRateUsd") ?? 0,
+                    InsuranceRate = row.Field<decimal?>("InsuranceRate") ?? 0,
+                    BankCharge = row.Field<decimal?>("BankCharge") ?? 0,
+                    OceanLoss = row.Field<decimal?>("OceanLoss") ?? 0,
+                    CPACharge = row.Field<decimal?>("CPACharge") ?? 0,
+                    HandelingCharge = row.Field<decimal?>("HandelingCharge") ?? 0,
+                    LightCharge = row.Field<decimal?>("LightCharge") ?? 0,
+                    Survey = row.Field<decimal?>("Survey") ?? 0,
+                    CostLiterExImport = row.Field<decimal?>("CostLiterExImport") ?? 0,
+                    ExERLRate = row.Field<decimal?>("ExERLRate") ?? 0,
+                    DutyPerLiter = row.Field<decimal?>("DutyPerLiter") ?? 0,
+                    Refined = row.Field<decimal?>("Refined") ?? 0,
+                    Crude = row.Field<decimal?>("Crude") ?? 0,
+                    SDRate = row.Field<decimal?>("SDRate") ?? 0,
+                    DutyInTariff = row.Field<decimal?>("DutyInTariff") ?? 0,
+                    ATRate = row.Field<decimal?>("ATRate") ?? 0,
+                    AITRate = row.Field<decimal?>("AITRate") ?? 0,
+                    VATRate = row.Field<decimal?>("VATRate") ?? 0,
+                    ConversionFactorFixedValue = row.Field<decimal?>("ConversionFactorFixedValue") ?? 0,
+                    VATRateFixed = row.Field<decimal?>("VATRateFixed") ?? 0,
+                    RiverDues = row.Field<decimal?>("RiverDues") ?? 0,
+                    TariffRate = row.Field<decimal?>("TariffRate") ?? 0,
+                    FobPriceBBL = row.Field<decimal?>("FobPriceBBL") ?? 0,
+                    FreightUsd = row.Field<decimal?>("FreightUsd") ?? 0,
+                    ServiceCharge = row.Field<decimal?>("ServiceCharge") ?? 0,
+                    ProcessFee = row.Field<decimal?>("ProcessFee") ?? 0,
+                    RcoTreatmentFee = row.Field<decimal?>("RcoTreatmentFee") ?? 0,
+                    AbpTreatmentFee = row.Field<decimal?>("AbpTreatmentFee") ?? 0,
+                    ProcessFeeRate = row.Field<decimal?>("ProcessFeeRate") ?? 0,
+                    RcoTreatmentFeeRate = row.Field<decimal?>("RcoTreatmentFeeRate") ?? 0,
+                    AbpTreatmentFeeRate = row.Field<decimal?>("AbpTreatmentFeeRate") ?? 0,
+                    ProductImprovementFee = row.Field<decimal?>("ProductImprovementFee") ?? 0
+
+                }).ToList();
+
+                result.Status = MessageModel.Success;
+                result.Message = MessageModel.RetrievedSuccess;
+                result.DataVM = modelList;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                result.ExMessage = ex.Message;
+                return result;
+            }
+
+        }
+
     }
 }

@@ -295,14 +295,35 @@ namespace ShampanBFRSAPI.Controllers.SetUp
             {
                 return new ResultVM
                 {
-                    Status =MessageModel.Fail,
+                    Status = MessageModel.Fail,
                     Message = ex.Message,
                     ExMessage = ex.Message,
                     DataVM = null
                 };
             }
         }
-        
+
+        [HttpPost("ChargeDetailList")]
+        public async Task<ResultVM> ChargeDetailList(CommonVM vm)
+        {
+            ResultVM resultVM = new ResultVM { Status = MessageModel.Fail, Message = "Error", ExMessage = null, Id = "0", DataVM = null };
+            try
+            {
+                //resultVM = await _chargeHeaderService.ChargeDetailList(new[] { "CH.ChargeGroup" }, new[] { vm.Id.ToString() }, null);
+                resultVM = await _chargeHeaderService.ChargeDetailList(new[] { "cd.Id" }, new[] { vm.Id.ToString() }, null);
+                return resultVM;
+            }
+            catch (Exception ex)
+            {
+                return new ResultVM
+                {
+                    Status = MessageModel.Fail,
+                    Message = ex.Message,
+                    ExMessage = ex.Message,
+                    DataVM = vm
+                };
+            }
+        }
 
     }
 }
