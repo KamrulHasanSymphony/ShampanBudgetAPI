@@ -543,17 +543,17 @@ EXEC sp_executesql @SQL;
                 //---------------------------------------------------
                 // Parameters
                 //---------------------------------------------------
-                int branchId = 1;
-                int fiscalYearId = 6;
+                //int branchId = 1;
+                //int fiscalYearId = 6;
 
-                if (conditionalValues != null)
-                {
-                    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
-                        int.TryParse(conditionalValues[0], out branchId);
+                //if (conditionalValues != null)
+                //{
+                //    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
+                //        int.TryParse(conditionalValues[0], out branchId);
 
-                    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
-                        int.TryParse(conditionalValues[1], out fiscalYearId);
-                }
+                //    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
+                //        int.TryParse(conditionalValues[1], out fiscalYearId);
+                //}
 
                 //---------------------------------------------------
                 // SQL
@@ -706,8 +706,12 @@ EXEC sp_executesql @SQL;
                 SqlDataAdapter da = new SqlDataAdapter(sql, conn);
                 da.SelectCommand.Transaction = transaction;
 
-                da.SelectCommand.Parameters.AddWithValue("@BId", branchId);
-                da.SelectCommand.Parameters.AddWithValue("@FiscalYearId", fiscalYearId);
+                int branchId = Convert.ToInt32(vm.BranchId ?? "0");
+                int fiscalYearId = Convert.ToInt32(vm.FiscalYearId ?? "0");
+
+
+                da.SelectCommand.Parameters.Add("@BId", SqlDbType.Int).Value = branchId;
+                da.SelectCommand.Parameters.Add("@FiscalYearId", SqlDbType.Int).Value = fiscalYearId;
 
                 da.Fill(dataTable);
 
@@ -757,25 +761,23 @@ EXEC sp_executesql @SQL;
                 //---------------------------------------------------
                 // Parameters
                 //---------------------------------------------------
-                int branchId = 1;
-                int fiscalYearId = 6;
+                //int branchId = 1;
+                //int fiscalYearId = 6;
 
-                if (conditionalValues != null)
-                {
-                    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
-                        int.TryParse(conditionalValues[0], out branchId);
+                //if (conditionalValues != null)
+                //{
+                //    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
+                //        int.TryParse(conditionalValues[0], out branchId);
 
-                    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
-                        int.TryParse(conditionalValues[1], out fiscalYearId);
-                }
+                //    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
+                //        int.TryParse(conditionalValues[1], out fiscalYearId);
+                //}
 
                 //---------------------------------------------------
                 // SQL (YOUR SALE QUERY WRAPPED PROPERLY)
                 //---------------------------------------------------
                 string sql = @"
 DECLARE @BranchId INT = @BId;
-DECLARE @FiscalYearId INT = @FiscalYearIdParam;
-
 DECLARE @Year INT;
 DECLARE @EstimatedYear INT;
 DECLARE @ApprovedYear INT;
@@ -907,8 +909,13 @@ EXEC sp_executesql @SQL;
                 SqlDataAdapter da = new SqlDataAdapter(sql, conn);
                 da.SelectCommand.Transaction = transaction;
 
-                da.SelectCommand.Parameters.AddWithValue("@BId", branchId);
-                da.SelectCommand.Parameters.AddWithValue("@FiscalYearIdParam", fiscalYearId);
+
+                int branchId = Convert.ToInt32(vm.BranchId ?? "0");
+                int fiscalYearId = Convert.ToInt32(vm.FiscalYearId ?? "0");
+
+
+                da.SelectCommand.Parameters.Add("@BId", SqlDbType.Int).Value = branchId;
+                da.SelectCommand.Parameters.Add("@FiscalYearId", SqlDbType.Int).Value = fiscalYearId;
 
                 da.Fill(dataTable);
 
