@@ -213,14 +213,18 @@ EXEC sp_executesql @SQL;
                 SqlDataAdapter objComm = new SqlDataAdapter(sql, conn);
                 objComm.SelectCommand.Transaction = transaction;
 
-                var fiscalYearId = 6;
-                var branchId = 1;
-                var reportType = "1st_6months_actual";
+                //var fiscalYearId = 6;
+                //var branchId = 1;
+                //var reportType = "1st_6months_actual";
 
-                objComm.SelectCommand.Parameters.AddWithValue("@BId", branchId);
-                objComm.SelectCommand.Parameters.AddWithValue("@FYId", fiscalYearId);
-                objComm.SelectCommand.Parameters.AddWithValue("@RType", reportType);
-                objComm.SelectCommand.Parameters.AddWithValue("@CompanyId", companyId);
+                int fiscalYearId = Convert.ToInt32(vm.FiscalYearId ?? "0");
+                int branchId = Convert.ToInt32(vm.BranchId ?? "0");
+                string reportType = vm.ReportType ?? "";
+
+                objComm.SelectCommand.Parameters.Add("@BId", SqlDbType.Int).Value = branchId;
+                objComm.SelectCommand.Parameters.Add("@FYId", SqlDbType.Int).Value = fiscalYearId;
+                objComm.SelectCommand.Parameters.Add("@RType", SqlDbType.VarChar).Value = reportType;
+                objComm.SelectCommand.Parameters.Add("@CompanyId", SqlDbType.VarChar).Value = companyId;
 
                 objComm.Fill(dataTable);
 

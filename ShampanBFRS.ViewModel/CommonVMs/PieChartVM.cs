@@ -8,6 +8,7 @@ namespace ShampanBFRS.ViewModel.CommonVMs
 {
     public class PieChartVM
     {
+      
         public string? Particular { get; set; }
         public decimal? TotalValue { get; set; }
     }
