@@ -269,17 +269,17 @@ EXEC sp_executesql @SQL;
                 //---------------------------------------------------
                 // Parameters
                 //---------------------------------------------------
-                int branchId = 1;
-                int fiscalYearId = 6;
+                //int branchId = 1;
+                //int fiscalYearId = 6;
 
-                if (conditionalValues != null)
-                {
-                    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
-                        int.TryParse(conditionalValues[0], out branchId);
+                //if (conditionalValues != null)
+                //{
+                //    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
+                //        int.TryParse(conditionalValues[0], out branchId);
 
-                    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
-                        int.TryParse(conditionalValues[1], out fiscalYearId);
-                }
+                //    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
+                //        int.TryParse(conditionalValues[1], out fiscalYearId);
+                //}
 
                 //---------------------------------------------------
                 // SQL
@@ -489,8 +489,11 @@ EXEC sp_executesql @SQL;
                 SqlDataAdapter objComm = new SqlDataAdapter(sql, conn);
                 objComm.SelectCommand.Transaction = transaction;
 
-                objComm.SelectCommand.Parameters.AddWithValue("@BId", branchId);
-                objComm.SelectCommand.Parameters.AddWithValue("@FiscalYearId", fiscalYearId);
+                int fiscalYearId = Convert.ToInt32(vm.FiscalYearId ?? "0");
+                int branchId = Convert.ToInt32(vm.BranchId ?? "0");
+
+                objComm.SelectCommand.Parameters.Add("@BId", SqlDbType.Int).Value = branchId;
+                objComm.SelectCommand.Parameters.Add("@FiscalYearId", SqlDbType.Int).Value = fiscalYearId;
 
                 objComm.Fill(dataTable);
 
