@@ -36,6 +36,22 @@ namespace ShampanBFRS.Service.Ceiling
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
+
+                #region Fiscal Year Lock Check
+
+                if (model.FiscalYearId.HasValue &&
+                    _commonRepo.FiscalYearLockCheckExist(model.FiscalYearId.Value, conn, transaction))
+                {
+                    return new ResultVM
+                    {
+                        Status = MessageModel.Fail,
+                        Message = "You have already Lock Fiscal Year For Budget"
+                    };
+                }
+
+                #endregion
+
+
                 #region Check Exist Data
 
                 string tableName = "BudgetHeaders";
@@ -54,6 +70,7 @@ namespace ShampanBFRS.Service.Ceiling
                 }
 
                 #endregion
+
                 string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
                 model.Code = code;
 
@@ -167,8 +184,15 @@ namespace ShampanBFRS.Service.Ceiling
                 }
                 #endregion open connection and transaction
 
+                #region Fiscal Year Lock Check
 
+                if (bugetHeader.FiscalYearId.HasValue &&
+                    _commonRepo.FiscalYearLockCheckExist(bugetHeader.FiscalYearId.Value, conn, transaction))
+                {
+                    throw new Exception("Fiscal Year is locked. Budget update is not allowed.");
+                }
 
+                #endregion
 
                 var record = _commonRepo.DetailsDelete("BudgetDetails", new[] { "BudgetHeaderId" }, new[] { bugetHeader.Id.ToString() }, conn, transaction);
 

@@ -15,7 +15,7 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
         [DisplayName("iBAS Group")]
         public int? COAGroupId { get; set; }
 
-        [Display(Name = "Company Code")]
+        [Display(Name = "Project Code/GO")]
         public string? Code { get; set; }
         [Display(Name = "Company Name")]
         [Required(ErrorMessage = "Company Name is required")]

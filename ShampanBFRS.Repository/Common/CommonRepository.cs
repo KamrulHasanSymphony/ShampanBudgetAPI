@@ -2615,7 +2615,27 @@ where 1=1
             }
         }
 
-       
+        public bool FiscalYearLockCheckExist(int fiscalYearId, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            try
+            {
+                string sqlText = @"
+                    SELECT COUNT(*)
+                    FROM FiscalYears
+                    WHERE Id = @FiscalYearId
+                    AND YearLock = 1";
+
+                SqlCommand command = CreateCommand(sqlText, conn, transaction);
+                command.Parameters.AddWithValue("@FiscalYearId", fiscalYearId);
+                int totalRecords = Convert.ToInt32(command.ExecuteScalar());
+                return totalRecords > 0;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
     }
 
 }

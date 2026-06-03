@@ -40,8 +40,8 @@ namespace ShampanBFRS.Repository.SetUp
 
                 using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
-                    cmd.Parameters.AddWithValue("@Year", vm.Year);
-                    cmd.Parameters.AddWithValue("@YearName", vm.YearName );
+                    cmd.Parameters.AddWithValue("@Year", vm.Year ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@YearName", vm.YearName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@YearStart", vm.YearStart);
                     cmd.Parameters.AddWithValue("@YearEnd", vm.YearEnd);
                     cmd.Parameters.AddWithValue("@YearLock", vm.YearLock);
@@ -301,7 +301,7 @@ WHERE 1=1";
                     model.Add(new FiscalYearVM
                     {
                         Id = row.Field<int>("Id"),
-                        Year = row.Field<int>("Year"),
+                        Year = row.Field<int?>("Year"),
                         YearName = row.Field<string?>("YearName"),
                         YearStart = row.Field<string>("YearStart"),
                         YearEnd = row.Field<string>("YearEnd"),
@@ -646,7 +646,8 @@ FROM
 
                 var YearVM = dataTable.AsEnumerable().Select(row => new FiscalYearVM
                 {
-                    Year = Convert.ToInt32(row["Year"]),
+                    //Year = Convert.ToInt32(row["Year"]),
+                    Year = row["Year"] == DBNull.Value? (int?)null: Convert.ToInt32(row["Year"]),
                     YearName = row["YearName"]?.ToString(),
                     YearStart = (row["YearStart"] as DateTime?)?.ToString("yyyy-MM-dd"),
                     YearEnd = (row["YearEnd"] as DateTime?)?.ToString("yyyy-MM-dd"),
