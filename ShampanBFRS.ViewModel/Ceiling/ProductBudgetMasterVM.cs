@@ -25,6 +25,7 @@ namespace ShampanBFRS.ViewModel.Ceiling
         public string? ChargeGroup { get; set; }
         public string? ChargeGroupText { get; set; }
 
+
         public List<ProductBudgetVM> DetailList { set; get; }
         public ProductBudgetMasterVM()
         {

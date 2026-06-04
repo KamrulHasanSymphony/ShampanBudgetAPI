@@ -36,19 +36,16 @@ namespace ShampanBFRS.Service.Ceiling
                 isNewConnection = true;
                 transaction = conn.BeginTransaction();
 
-
                 #region Fiscal Year Lock Check
-
                 if (model.FiscalYearId.HasValue &&
                     _commonRepo.FiscalYearLockCheckExist(model.FiscalYearId.Value, conn, transaction))
                 {
                     return new ResultVM
                     {
                         Status = MessageModel.Fail,
-                        Message = "You have already Lock Fiscal Year For Budget"
+                        Message = "Fiscal Year is locked. You cannot modify data."
                     };
                 }
-
                 #endregion
 
 

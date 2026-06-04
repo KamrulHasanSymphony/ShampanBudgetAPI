@@ -43,6 +43,18 @@ namespace ShampanBFRS.Service.SalaryAllowance
                 if (transaction == null) transaction = conn.BeginTransaction();
                 #endregion open connection and transaction
 
+                #region Fiscal Year Lock Check
+
+                if (salaryAllowanceHeader.FiscalYearId.HasValue &&
+                    _commonRepo.FiscalYearLockCheckExist(salaryAllowanceHeader.FiscalYearId.Value, conn, transaction))
+                {
+                    throw new Exception("Fiscal Year is locked. Budget update is not allowed.");
+                }
+
+                #endregion
+
+
+
                 string code = _commonRepo.CodeGenerationNo(CodeGroup, CodeName, conn, transaction);
 
                 string[] conditionField = { "Code" };
@@ -174,6 +186,15 @@ namespace ShampanBFRS.Service.SalaryAllowance
                     throw new Exception("Data already posted.Updates not allowed.");
                 }
 
+                #region Fiscal Year Lock Check
+
+                if (salaryAllowanceHeader.FiscalYearId.HasValue &&
+                    _commonRepo.FiscalYearLockCheckExist(salaryAllowanceHeader.FiscalYearId.Value, conn, transaction))
+                {
+                    throw new Exception("Fiscal Year is locked. Budget update is not allowed.");
+                }
+
+                #endregion
                 var record = _commonRepo.DetailsDelete("SalaryAllowanceDetails", new[] { "SalaryAllowanceHeaderId" }, new[] { salaryAllowanceHeader.Id.ToString() }, conn, transaction);
 
                 if (record.Status == "Fail")

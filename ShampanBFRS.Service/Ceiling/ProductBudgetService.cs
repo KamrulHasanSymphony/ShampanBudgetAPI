@@ -38,8 +38,17 @@ namespace ShampanBFRS.Service.Ceiling
 
                 #endregion
 
-                //string CodeGroup = "Ceiling";
-                //string CodeName = "Ceiling";
+                #region Fiscal Year Lock Check
+                if (model.GLFiscalYearId.HasValue &&
+                    _commonRepo.FiscalYearLockCheckExist(model.GLFiscalYearId.Value, conn, transaction))
+                {
+                    return new ResultVM
+                    {
+                        Status = MessageModel.Fail,
+                        Message = "Fiscal Year is locked. You cannot modify data."
+                    };
+                }
+                #endregion
 
                 if (model == null)
                 {
@@ -100,14 +109,24 @@ namespace ShampanBFRS.Service.Ceiling
                 #region Open Connection & Transaction
 
                 conn = VcurrConn ?? new SqlConnection(DatabaseHelper.GetConnectionString());
-
                 if (conn.State != ConnectionState.Open)
                 {
                     await conn.OpenAsync();
                 }
-
                 transaction = Vtransaction ?? conn.BeginTransaction();
 
+                #endregion
+
+                #region Fiscal Year Lock Check
+                if (productbudget.GLFiscalYearId.HasValue &&
+                    _commonRepo.FiscalYearLockCheckExist(productbudget.GLFiscalYearId.Value, conn, transaction))
+                {
+                    return new ResultVM
+                    {
+                        Status = MessageModel.Fail,
+                        Message = "Fiscal Year is locked. You cannot modify data."
+                    };
+                }
                 #endregion
 
                 #region Delete Existing Data

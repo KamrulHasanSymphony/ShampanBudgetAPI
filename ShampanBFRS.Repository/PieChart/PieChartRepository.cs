@@ -23,12 +23,6 @@ namespace ShampanBFRS.Repository.PieChart
                     throw new Exception("Database connection fail!");
                 }
 
-                string companyId = "0";
-
-                // ✅ FIX: Get CompanyId properly
-                if (conditionalValues != null && conditionalValues.Length > 0)
-                    companyId = conditionalValues[0] ?? "0";
-
                 string sql = @"
 DECLARE @BranchId INT = @BId;
 DECLARE @Year INT;
@@ -224,7 +218,6 @@ EXEC sp_executesql @SQL;
                 objComm.SelectCommand.Parameters.Add("@BId", SqlDbType.Int).Value = branchId;
                 objComm.SelectCommand.Parameters.Add("@FYId", SqlDbType.Int).Value = fiscalYearId;
                 objComm.SelectCommand.Parameters.Add("@RType", SqlDbType.VarChar).Value = reportType;
-                objComm.SelectCommand.Parameters.Add("@CompanyId", SqlDbType.VarChar).Value = companyId;
 
                 objComm.Fill(dataTable);
 
@@ -265,25 +258,7 @@ EXEC sp_executesql @SQL;
             {
                 if (conn == null)
                     throw new Exception("Database connection fail!");
-
-                //---------------------------------------------------
-                // Parameters
-                //---------------------------------------------------
-                //int branchId = 1;
-                //int fiscalYearId = 6;
-
-                //if (conditionalValues != null)
-                //{
-                //    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
-                //        int.TryParse(conditionalValues[0], out branchId);
-
-                //    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
-                //        int.TryParse(conditionalValues[1], out fiscalYearId);
-                //}
-
-                //---------------------------------------------------
-                // SQL
-                //---------------------------------------------------
+ 
                 string sql = @"
 DECLARE @BranchId INT = @BId;
 DECLARE @Year INT;
@@ -483,9 +458,6 @@ ORDER BY SortOrder
 EXEC sp_executesql @SQL;
 ";
 
-                //---------------------------------------------------
-                // Execute
-                //---------------------------------------------------
                 SqlDataAdapter objComm = new SqlDataAdapter(sql, conn);
                 objComm.SelectCommand.Transaction = transaction;
 
@@ -497,9 +469,6 @@ EXEC sp_executesql @SQL;
 
                 objComm.Fill(dataTable);
 
-                //---------------------------------------------------
-                // Mapping
-                //---------------------------------------------------
                 var modelList = dataTable.AsEnumerable()
                     .Select(row => new PieChartVM
                     {
@@ -540,24 +509,7 @@ EXEC sp_executesql @SQL;
                 if (conn == null)
                     throw new Exception("Database connection fail!");
 
-                //---------------------------------------------------
-                // Parameters
-                //---------------------------------------------------
-                //int branchId = 1;
-                //int fiscalYearId = 6;
 
-                //if (conditionalValues != null)
-                //{
-                //    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
-                //        int.TryParse(conditionalValues[0], out branchId);
-
-                //    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
-                //        int.TryParse(conditionalValues[1], out fiscalYearId);
-                //}
-
-                //---------------------------------------------------
-                // SQL
-                //---------------------------------------------------
                 string sql = @"
 DECLARE @BranchId INT = @BId;
 DECLARE @Year INT;
@@ -758,24 +710,6 @@ EXEC sp_executesql @SQL;
                 if (conn == null)
                     throw new Exception("Database connection fail!");
 
-                //---------------------------------------------------
-                // Parameters
-                //---------------------------------------------------
-                //int branchId = 1;
-                //int fiscalYearId = 6;
-
-                //if (conditionalValues != null)
-                //{
-                //    if (conditionalValues.Length > 0 && !string.IsNullOrWhiteSpace(conditionalValues[0]))
-                //        int.TryParse(conditionalValues[0], out branchId);
-
-                //    if (conditionalValues.Length > 1 && !string.IsNullOrWhiteSpace(conditionalValues[1]))
-                //        int.TryParse(conditionalValues[1], out fiscalYearId);
-                //}
-
-                //---------------------------------------------------
-                // SQL (YOUR SALE QUERY WRAPPED PROPERLY)
-                //---------------------------------------------------
                 string sql = @"
 DECLARE @BranchId INT = @BId;
 DECLARE @Year INT;

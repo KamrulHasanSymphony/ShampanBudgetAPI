@@ -35,7 +35,7 @@ namespace ShampanBFRS.ViewModel.CommonVMs
         public string? ChargeGroupId { get; set; }
         public string? ChargeGroup { get; set; }
         public string? FiscalYearId { get; set; }
-
+        public string? CurrentDate { get; set; }
 
     }
 

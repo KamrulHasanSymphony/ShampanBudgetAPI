@@ -2636,6 +2636,28 @@ where 1=1
             }
         }
 
+        public int FiscalYearIdByDate(string CurrentDate, SqlConnection conn = null, SqlTransaction transaction = null)
+        {
+            try
+            {
+                string sqlText = @"
+SELECT TOP 1 Id
+FROM FiscalYears
+WHERE @InputDate >= YearStart
+AND @InputDate < DATEADD(DAY, 1, YearEnd);
+ ";
+
+                SqlCommand command = CreateCommand(sqlText, conn, transaction);
+                command.Parameters.AddWithValue("@InputDate", CurrentDate);
+                int totalRecords = Convert.ToInt32(command.ExecuteScalar());
+                return totalRecords;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
     }
 
 }
