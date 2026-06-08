@@ -64,7 +64,8 @@ namespace ShampanBFRS.ViewModel.SetUpVMs
 
         public string? UserId { get; set; }
 
-        
+        [Display(Name = "Fiscal Year")]
+        public int? FiscalYearId { get; set; }
     }
 
 
